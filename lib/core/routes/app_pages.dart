@@ -1,7 +1,10 @@
 import 'package:get/get.dart';
+import '../../core/bindings/login_binding.dart';
+import '../../core/bindings/signup_binding.dart';
 import '../../presentation/views/splash/splash_view.dart';
-// import '../../presentation/views/auth/login_view.dart'; // Phase 1에서 생성
-// import '../../presentation/views/home/home_view.dart';
+import '../../presentation/views/auth/login_view.dart';
+import '../../presentation/views/auth/signup_view.dart';
+import '../../presentation/views/home/home_view.dart';
 
 class AppPages {
   static const initial = Routes.splash;
@@ -11,15 +14,27 @@ class AppPages {
       name: Routes.splash,
       page: () => const SplashView(),
     ),
-    // Phase 1에서 추가
-    // GetPage(name: Routes.login, page: () => const LoginView()),
-    // GetPage(name: Routes.home, page: () => const HomeView()),
+    GetPage(
+      name: Routes.login,
+      page: () => const LoginView(),
+      binding: LoginBinding(),
+    ),
+    GetPage(
+      name: Routes.signup,
+      page: () => const SignupView(),
+      binding: SignupBinding(),
+    ),
+    GetPage(
+      name: Routes.home,
+      page: () => const HomeView(),
+    ),
   ];
 }
 
 class Routes {
   static const splash = '/splash';
   static const login = '/login';
+  static const signup = '/signup';
   static const home = '/home';
   static const createAlbum = '/create-album';
   static const albumDetail = '/album-detail';

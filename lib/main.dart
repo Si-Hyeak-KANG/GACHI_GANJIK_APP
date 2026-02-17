@@ -7,14 +7,6 @@ import 'core/storage/local_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Firebase 초기화 (Phase 1에서 추가)
-  // await Firebase.initializeApp();
-
-  // Local Storage 초기화
-  final localStorage = LocalStorage();
-  await localStorage.init();
-
   runApp(const MyApp());
 }
 
@@ -29,11 +21,17 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.main),
         useMaterial3: true,
         scaffoldBackgroundColor: AppColors.bg,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.bg,
+          elevation: 0,
+          centerTitle: false,
+        ),
       ),
       initialBinding: InitialBinding(),
       initialRoute: AppPages.initial,
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
+      defaultTransition: Transition.fadeIn,
     );
   }
 }
