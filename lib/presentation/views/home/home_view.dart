@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/routes/app_pages.dart';
 import '../../controllers/album/album_list_controller.dart';
-import '../../controllers/auth/auth_controller.dart';
 import '../../widgets/album/album_card.dart';
 import '../../widgets/common/empty_state.dart';
 

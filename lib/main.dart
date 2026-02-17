@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'core/bindings/initial_binding.dart';
 import 'core/constants/app_colors.dart';
 import 'core/routes/app_pages.dart';
-import 'core/storage/local_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

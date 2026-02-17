@@ -46,7 +46,6 @@ class _SplashViewState extends State<SplashView>
   Future<void> _navigate() async {
     await Future.delayed(const Duration(seconds: 2));
 
-    final authController = Get.find<AuthController>();
     final isLoggedIn = await Get.find<AuthController>()
         .isLoggedInState();
 
