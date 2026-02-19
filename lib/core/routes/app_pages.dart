@@ -1,13 +1,15 @@
 import 'package:get/get.dart';
+import '../../core/bindings/album_detail_binding.dart';
+import '../../core/bindings/create_album_binding.dart';
 import '../../core/bindings/home_binding.dart';
 import '../../core/bindings/login_binding.dart';
 import '../../core/bindings/signup_binding.dart';
-import '../../core/bindings/create_album_binding.dart';
-import '../../presentation/views/splash/splash_view.dart';
+import '../../presentation/views/album/album_detail_view.dart';
+import '../../presentation/views/album/create_album_view.dart';
 import '../../presentation/views/auth/login_view.dart';
 import '../../presentation/views/auth/signup_view.dart';
 import '../../presentation/views/home/home_view.dart';
-import '../../presentation/views/album/create_album_view.dart';
+import '../../presentation/views/splash/splash_view.dart';
 
 class AppPages {
   static const initial = Routes.splash;
@@ -36,6 +38,11 @@ class AppPages {
       name: Routes.createAlbum,
       page: () => const CreateAlbumView(),
       binding: CreateAlbumBinding(),
+    ),
+    GetPage(
+      name: Routes.albumDetail,
+      page: () => const AlbumDetailView(),
+      binding: AlbumDetailBinding(),
     ),
   ];
 }

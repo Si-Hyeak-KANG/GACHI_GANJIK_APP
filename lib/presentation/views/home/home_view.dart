@@ -47,11 +47,13 @@ class HomeView extends GetView<AlbumListController> {
                       return AlbumCard(
                         album: album,
                         onTap: () {
-                          // Phase 3에서 구현
-                          Get.snackbar(
-                            album.title,
-                            'Phase 3에서 앨범 상세 화면이 구현됩니다',
-                            snackPosition: SnackPosition.BOTTOM,
+                          // Phase 3: 앨범 상세로 이동
+                          Get.toNamed(
+                            Routes.albumDetail,
+                            arguments: {
+                              'album': album,
+                              'albumId': album.id,
+                            },
                           );
                         },
                       );

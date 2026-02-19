@@ -45,5 +45,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- 카메라 권한 -->
+    <key>NSCameraUsageDescription</key>
+    <string>사진을 촬영하여 앨범에 업로드합니다</string>
+
+    <!-- 사진 라이브러리 권한 -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>사진을 선택하여 앨범에 업로드합니다</string>
 </dict>
 </plist>
