@@ -1,9 +1,12 @@
 import 'package:get/get.dart';
 import '../../core/bindings/album_detail_binding.dart';
 import '../../core/bindings/create_album_binding.dart';
+import '../../core/bindings/edit_profile_binding.dart';
 import '../../core/bindings/home_binding.dart';
 import '../../core/bindings/login_binding.dart';
+import '../../core/bindings/mypage_binding.dart';
 import '../../core/bindings/photo_detail_binding.dart';
+import '../../core/bindings/settings_binding.dart';
 import '../../core/bindings/signup_binding.dart';
 import '../../presentation/views/album/album_detail_view.dart';
 import '../../presentation/views/album/create_album_view.dart';
@@ -11,7 +14,9 @@ import '../../presentation/views/auth/login_view.dart';
 import '../../presentation/views/auth/signup_view.dart';
 import '../../presentation/views/home/home_view.dart';
 import '../../presentation/views/photo/photo_detail_view.dart';
+import '../../presentation/views/settings/settings_view.dart';
 import '../../presentation/views/splash/splash_view.dart';
+import '../../presentation/views/user/edit_profile_view.dart';
 
 class AppPages {
   static const initial = Routes.splash;
@@ -50,7 +55,19 @@ class AppPages {
       name: Routes.photoDetail,
       page: () => const PhotoDetailView(),
       binding: PhotoDetailBinding(),
-    )
+    ),
+    // ✅ 추가
+    GetPage(
+      name: Routes.editProfile,
+      page: () => const EditProfileView(),
+      binding: EditProfileBinding(),
+    ),
+    // ✅ 추가
+    GetPage(
+      name: Routes.settings,
+      page: () => const SettingsView(),
+      binding: SettingsBinding(),
+    ),
   ];
 }
 
@@ -62,4 +79,6 @@ class Routes {
   static const createAlbum = '/create-album';
   static const albumDetail = '/album-detail';
   static const photoDetail = '/photo-detail';
+  static const editProfile = '/edit-profile';
+  static const settings = '/settings';
 }

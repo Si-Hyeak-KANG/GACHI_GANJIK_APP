@@ -6,6 +6,30 @@ import 'package:path/path.dart' as path;
 class FirebaseStorageSource {
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
+  // ✅ 추가: 프로필 이미지 업로드
+  Future<String> uploadProfileImage(File imageFile) async {
+    try {
+      // 1. 이미지 압축
+      final compressedFile = await _compressImage(imageFile);
+
+      // 2. Storage 경로 생성
+      // profiles/{timestamp}_{filename}
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = path.basename(imageFile.path);
+      final storagePath = 'profiles/${timestamp}_$fileName';
+
+      // 3. 업로드
+      final ref = _storage.ref().child(storagePath);
+      await ref.putFile(compressedFile);
+
+      // 4. 다운로드 URL 반환
+      final downloadUrl = await ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      throw Exception('프로필 이미지 업로드 실패: $e');
+    }
+  }
+  
   // 이미지 업로드
   // 왜 압축? → 1MB 이하로 줄여서 업로드 속도 향상 & Storage 비용 절감
   Future<String> uploadImage(File imageFile, int albumId) async {

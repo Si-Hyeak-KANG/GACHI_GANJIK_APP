@@ -4,6 +4,7 @@ import '../../../domain/entities/photo.dart';
 import '../../../domain/repositories/comment_repository.dart';
 import '../../../data/sources/local/like_local_source.dart';
 import '../../../core/network/network_exception.dart';
+import '../../../core/utils/gallery_saver.dart';
 
 class PhotoDetailController extends GetxController {
   final CommentRepository _commentRepository;
@@ -26,6 +27,7 @@ class PhotoDetailController extends GetxController {
   final RxList<Comment> comments = <Comment>[].obs;
   final RxBool isLoadingComments = false.obs;
   final RxBool isAddingComment = false.obs;
+  final RxBool isSavingImage = false.obs;
 
   final commentController = TextEditingController();
 
@@ -197,12 +199,38 @@ class PhotoDetailController extends GetxController {
     }
   }
 
-  // 이미지 저장 (Phase 5에서 구현)
-  void saveImage() {
-    Get.snackbar(
-      '준비 중',
-      'Phase 5에서 갤러리 저장 기능이 구현됩니다',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  // 이미지 저장
+  Future<void> saveImage() async {
+    isSavingImage.value = true;
+
+    try {
+      final success = await GallerySaver.saveImageFromUrl(
+        currentPhoto.imageUrl,
+      );
+
+      if (success) {
+        Get.snackbar(
+          '완료',
+          '갤러리에 저장되었습니다',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        Get.snackbar(
+          '실패',
+          '이미지 저장에 실패했습니다',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        '오류',
+        e.toString().contains('권한')
+            ? '갤러리 접근 권한이 필요합니다'
+            : '이미지 저장에 실패했습니다',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isSavingImage.value = false;
+    }
   }
 }

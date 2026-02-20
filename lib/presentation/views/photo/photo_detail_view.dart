@@ -178,11 +178,14 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
                       onTap: controller.toggleLike,
                     ),
                     const SizedBox(width: 16),
-                    // 저장 (Phase 5에서 구현)
+                    // 저장
                     _ActionButton(
                       icon: Icons.file_download_outlined,
                       label: '저장',
-                      onTap: controller.saveImage,
+                      onTap: controller.isSavingImage.value
+                          ? null
+                          : controller.saveImage,
+                      isLoading: controller.isSavingImage.value,
                     ),
                   ],
                 ),
@@ -212,13 +215,15 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color? color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool isLoading;
 
   const _ActionButton({
     required this.icon,
     required this.label,
     this.color,
-    required this.onTap,
+    this.onTap,
+    this.isLoading = false,
   });
 
   @override
@@ -230,7 +235,16 @@ class _ActionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: color ?? AppColors.textSecondary),
+            isLoading
+                ? SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                color: color ?? AppColors.textSecondary,
+                strokeWidth: 2,
+              ),
+            )
+                : Icon(icon, size: 20, color: color ?? AppColors.textSecondary),
             const SizedBox(width: 4),
             Text(
               label,

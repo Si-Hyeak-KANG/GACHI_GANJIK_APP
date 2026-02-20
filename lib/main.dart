@@ -5,6 +5,8 @@ import 'firebase_options.dart';
 import 'core/bindings/initial_binding.dart';
 import 'core/constants/app_colors.dart';
 import 'core/routes/app_pages.dart';
+import 'core/storage/local_storage.dart';
+import 'core/storage/secure_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,8 +15,20 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // storage 초기화
+  await _initializeStorage();
 
   runApp(const MyApp());
+}
+
+Future<void> _initializeStorage() async {
+  // LocalStorage 초기화
+  final localStorage = LocalStorage();
+  await localStorage.onInit();
+  Get.put(localStorage, permanent: true);
+
+  // SecureStorage 초기화
+  Get.put(SecureStorage(), permanent: true);
 }
 
 class MyApp extends StatelessWidget {
