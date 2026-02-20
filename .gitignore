@@ -65,4 +65,4 @@ build/
 *.iws
 
 # macOS
-.DS_Store
+.DS_Storelib/firebase_options.dart
