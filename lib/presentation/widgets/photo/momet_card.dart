@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/routes/app_pages.dart';
 import '../../../domain/entities/moment.dart';
 
 class MomentCard extends StatelessWidget {
@@ -87,10 +88,12 @@ class MomentCard extends StatelessWidget {
                 final isLast = index == 5 && moment.photos.length > 6;
 
                 return GestureDetector(
-                  onTap: () => Get.snackbar(
-                    '준비 중',
-                    'Phase 4에서 사진 상세 화면이 구현됩니다',
-                    snackPosition: SnackPosition.BOTTOM,
+                  onTap: () => Get.toNamed(
+                    Routes.photoDetail,
+                    arguments: {
+                      'photos': moment.photos,
+                      'initialIndex': index,
+                    },
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.only(

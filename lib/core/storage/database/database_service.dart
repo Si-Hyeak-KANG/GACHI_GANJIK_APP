@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../../core/storage/database/photo_local.dart';
+import 'like_local.dart';
 
 class DatabaseService {
   static Isar? _isar;
@@ -10,9 +11,12 @@ class DatabaseService {
 
     final dir = await getApplicationDocumentsDirectory();
     _isar = await Isar.open(
-      [PhotoLocalSchema],
+      [
+        PhotoLocalSchema,
+        LikeLocalSchema,
+      ],
       directory: dir.path,
-      inspector: true, // 개발 중 Isar Inspector 사용 가능
+      inspector: true,
     );
     return _isar!;
   }
@@ -50,5 +54,52 @@ class DatabaseService {
         .filter()
         .statusEqualTo('pending')
         .findAll();
+  }
+
+  // 좋아요 상태 확인
+  static Future<bool> isLiked(int photoId, String userId) async {
+    final isar = await instance;
+    final like = await isar.likeLocals
+        .filter()
+        .photoIdEqualTo(photoId)
+        .and()
+        .userIdEqualTo(userId)
+        .findFirst();
+    return like != null;
+  }
+  // 좋아요 추가
+  static Future<void> addLike(int photoId, String userId) async {
+    final isar = await instance;
+    final like = LikeLocal()
+      ..photoId = photoId
+      ..userId = userId
+      ..likedAt = DateTime.now();
+
+    await isar.writeTxn(() async {
+      await isar.likeLocals.put(like);
+    });
+  }
+
+  // 좋아요 취소
+  static Future<void> removeLike(int photoId, String userId) async {
+    final isar = await instance;
+    final like = await isar.likeLocals
+        .filter()
+        .photoIdEqualTo(photoId)
+        .and()
+        .userIdEqualTo(userId)
+        .findFirst();
+
+    if (like != null) {
+      await isar.writeTxn(() async {
+        await isar.likeLocals.delete(like.id);
+      });
+    }
+  }
+
+  // 사진의 총 좋아요 수 (로컬)
+  static Future<int> getLikeCount(int photoId) async {
+    final isar = await instance;
+    return isar.likeLocals.filter().photoIdEqualTo(photoId).count();
   }
 }

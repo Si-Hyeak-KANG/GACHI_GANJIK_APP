@@ -3,12 +3,14 @@ import '../../core/bindings/album_detail_binding.dart';
 import '../../core/bindings/create_album_binding.dart';
 import '../../core/bindings/home_binding.dart';
 import '../../core/bindings/login_binding.dart';
+import '../../core/bindings/photo_detail_binding.dart';
 import '../../core/bindings/signup_binding.dart';
 import '../../presentation/views/album/album_detail_view.dart';
 import '../../presentation/views/album/create_album_view.dart';
 import '../../presentation/views/auth/login_view.dart';
 import '../../presentation/views/auth/signup_view.dart';
 import '../../presentation/views/home/home_view.dart';
+import '../../presentation/views/photo/photo_detail_view.dart';
 import '../../presentation/views/splash/splash_view.dart';
 
 class AppPages {
@@ -44,6 +46,11 @@ class AppPages {
       page: () => const AlbumDetailView(),
       binding: AlbumDetailBinding(),
     ),
+    GetPage(
+      name: Routes.photoDetail,
+      page: () => const PhotoDetailView(),
+      binding: PhotoDetailBinding(),
+    )
   ];
 }
 
