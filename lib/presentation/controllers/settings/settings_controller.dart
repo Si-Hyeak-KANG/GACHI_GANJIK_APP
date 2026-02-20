@@ -4,7 +4,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../domain/repositories/user_repository.dart';
-import '../../../core/storage/database/database_service.dart';
 import '../../controllers/auth/auth_controller.dart';
 
 class SettingsController extends GetxController {
