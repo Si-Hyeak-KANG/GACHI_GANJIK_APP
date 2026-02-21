@@ -1,17 +1,22 @@
 class CreateAlbumRequest {
   final String title;
-  final String? category;
-  final String? eventDate;
+  final List<String> categories;
+  final String eventStartDate;
+  final String? eventEndDate;
 
   CreateAlbumRequest({
     required this.title,
-    this.category,
-    this.eventDate,
+    required this.categories,
+    required this.eventStartDate,
+    this.eventEndDate,
   });
 
-  Map<String, dynamic> toJson() => {
-    'title': title,
-    if (category != null) 'category': category,
-    if (eventDate != null) 'eventDate': eventDate,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'categories': categories,
+      'eventStartDate': eventStartDate,
+      'eventEndDate': eventEndDate,
+    };
+  }
 }

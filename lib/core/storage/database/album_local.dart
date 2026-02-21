@@ -12,8 +12,9 @@ class AlbumLocal {
   late int albumId; // 서버의 실제 앨범 ID
 
   late String title;
-  String? category;
-  String? eventDate;
+  String? categoriesJson;
+  String? eventStartDate;
+  String? eventEndDate;
   String? coverImage;
   late String inviteCode;
 

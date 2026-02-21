@@ -9,8 +9,9 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
     AlbumDto(
       id: 1,
       title: '우리의 결혼식',
-      category: '결혼',
-      eventDate: '2026.10.27',
+      categories: ['결혼'],
+      eventStartDate: '2026.10.27',
+      eventEndDate: '2026.10.27',
       coverImage: null,
       inviteCode: 'WD2025A',
       photoCount: 24,
@@ -20,8 +21,9 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
     AlbumDto(
       id: 2,
       title: '제주 여행 추억',
-      category: '여행',
-      eventDate: '2025.01.20',
+      categories: ['여행','친구','기록'],
+      eventStartDate: '2025.01.27',
+      eventEndDate: '2025.12.27',
       coverImage: null,
       inviteCode: 'JJ03B2',
       photoCount: 48,
@@ -30,14 +32,15 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
     ),
     AlbumDto(
       id: 3,
-      title: '동기 모임',
-      category: '모임',
-      eventDate: '2025.05.14',
+      title: '세바독',
+      categories: ['모임', '독서'],
+      eventStartDate: '2022.03.27',
+        eventEndDate: null,
       coverImage: null,
       inviteCode: 'MT14C3',
       photoCount: 12,
       memberCount: 8,
-      createdAt: '2025.02.14',
+      createdAt: '2022.02.14'
     ),
   ];
 
@@ -56,8 +59,9 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
     final newAlbum = AlbumDto(
       id: _nextId++,
       title: request.title,
-      category: request.category,
-      eventDate: request.eventDate,
+      categories: request.categories,
+      eventStartDate: request.eventStartDate,
+      eventEndDate: request.eventEndDate,
       coverImage: null,
       inviteCode: _generateInviteCode(),
       photoCount: 0,

@@ -12,20 +12,25 @@ class AlbumCard extends StatelessWidget {
     required this.onTap,
   });
 
-  // 카테고리별 배경 그라디언트
-  // 왜 카테고리별로 다른 색상?
-  // → 커버 이미지가 없을 때도 시각적으로 구분 가능
   static const _categoryGradients = {
-    '결혼식': [Color(0xFFFFF4F5), Color(0xFFFFE4E8)],
-    '여행': [Color(0xFFF0F8FF), Color(0xFFDCF0FF)],
-    '모임': [Color(0xFFF5F0FF), Color(0xFFE8DCFF)],
-    '생일': [Color(0xFFFFFBF0), Color(0xFFFFEFD0)],
-    '기념일': [Color(0xFFF0FFF5), Color(0xFFDCFFEA)],
-    '기타': [Color(0xFFFAFAFA), Color(0xFFF0F0F0)],
+    '결혼': [Color(0xFFFFF4F5), Color(0xFFFFE4E8)],      // 핑크/로즈
+    '여행': [Color(0xFFF0F8FF), Color(0xFFDCF0FF)],      // 블루/하늘
+    '모임': [Color(0xFFF5F0FF), Color(0xFFE8DCFF)],      // 보라/퍼플
+    '생일': [Color(0xFFFFFBF0), Color(0xFFFFEFD0)],      // 노랑/골드
+    '기념일': [Color(0xFFF0FFF5), Color(0xFFDCFFEA)],    // 민트/그린
+    '연인': [Color(0xFFFFEBEE), Color(0xFFFFCDD2)],      // 레드/핑크
+    '반려동물': [Color(0xFFFFF8E1), Color(0xFFFFE0B2)],  // 베이지/브라운
+    '취미': [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],      // 오렌지
+    '일상': [Color(0xFFF5F5F5), Color(0xFFEEEEEE)],      // 회색/무채색
+    '기록': [Color(0xFFE8EAF6), Color(0xFFC5CAE9)],      // 네이비/인디고
+    '친구': [Color(0xFFF1F8E9), Color(0xFFDCEDC8)],      // 연두/라임
+    '독서': [Color(0xFFEFEBE9), Color(0xFFD7CCC8)],      // 카키/올리브
+    '공부': [Color(0xFFE0F2F1), Color(0xFFB2DFDB)],      // 청록/틸
+    '기타': [Color(0xFFFAFAFA), Color(0xFFF0F0F0)],      // 회색
   };
 
   List<Color> get _gradientColors {
-    final key = album.category ?? '기타';
+    final key = album.categories.isNotEmpty ? album.categories.first : '기타';
     return _categoryGradients[key] ?? _categoryGradients['기타']!;
   }
 
@@ -51,8 +56,7 @@ class AlbumCard extends StatelessWidget {
           children: [
             // 커버 영역
             ClipRRect(
-              borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               child: Container(
                 height: 140,
                 decoration: BoxDecoration(
@@ -72,28 +76,33 @@ class AlbumCard extends StatelessWidget {
                         color: AppColors.main,
                       ),
                     ),
-                    // 카테고리 뱃지
-                    if (album.category != null)
+                    if (album.categories.isNotEmpty)
                       Positioned(
                         top: 12,
                         left: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.main,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            album.category!,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: album.categories.map((cat) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.main,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                cat,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
                   ],
@@ -121,11 +130,14 @@ class AlbumCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        album.eventDate ?? album.createdAt,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
+                      // ✅ 수정: eventDateDisplay 사용
+                      Expanded(
+                        child: Text(
+                          album.eventDateDisplay,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
                       Row(

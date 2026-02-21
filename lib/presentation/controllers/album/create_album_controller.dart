@@ -13,13 +13,30 @@ class CreateAlbumController extends GetxController {
   final formKey = GlobalKey<FormState>();
   final titleController = TextEditingController();
 
-  final RxString selectedCategory = ''.obs;
-  final RxString selectedDate = ''.obs;
+  final RxList<String> selectedCategories = <String>[].obs;
+  final RxString selectedStartDate = ''.obs;
+  final RxString selectedEndDate = ''.obs;
   final RxBool isLoading = false.obs;
+  final RxString titleText = ''.obs;
+
+  RxBool get isFormValid => (
+      titleController.text.trim().length >= 2 &&
+          selectedCategories.isNotEmpty &&
+          selectedStartDate.value.isNotEmpty
+  ).obs;
 
   static const List<String> categories = [
-    '결혼', '여행', '모임', '생일', '기념일', '연인', '반려동물', '취미', '일상', '기록', '기타',
+    '결혼', '여행', '모임', '생일', '기념일', '연인', '반려동물', '취미', '일상', '기록', '친구', '독서', '공부','기타',
   ];
+
+  @override
+  void onInit() {
+    super.onInit();
+    titleController.addListener(() {
+      titleText.value = titleController.text;
+    });
+  }
+
 
   @override
   void onClose() {
@@ -28,19 +45,25 @@ class CreateAlbumController extends GetxController {
   }
 
   void selectCategory(String category) {
-    // 같은 카테고리 재선택 시 해제
-    if (selectedCategory.value == category) {
-      selectedCategory.value = '';
+    if (selectedCategories.contains(category)) {
+      // 이미 선택됨 → 해제
+      selectedCategories.remove(category);
     } else {
-      selectedCategory.value = category;
+      // 선택되지 않음 → 추가 (단, 최대 3개)
+      if (selectedCategories.length < 3) {
+        selectedCategories.add(category);
+      } else {
+        Get.snackbar(
+          '알림',
+          '카테고리는 최대 3개까지 선택할 수 있습니다',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
+        );
+      }
     }
   }
 
-  void selectDate(String date) {
-    selectedDate.value = date;
-  }
-
-  Future<void> pickDate(BuildContext context) async {
+  Future<void> pickStartDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -61,34 +84,121 @@ class CreateAlbumController extends GetxController {
     if (picked != null) {
       final formatted =
           '${picked.year}.${picked.month.toString().padLeft(2, '0')}.${picked.day.toString().padLeft(2, '0')}';
-      selectedDate.value = formatted;
+      selectedStartDate.value = formatted;
+
+      // ✅ 추가: 종료 날짜가 시작 날짜보다 이전이면 초기화
+      if (selectedEndDate.value.isNotEmpty) {
+        if (_compareDates(selectedEndDate.value, formatted) < 0) {
+          selectedEndDate.value = '';
+          Get.snackbar(
+            '알림',
+            '종료 날짜가 시작 날짜보다 이전이어서 초기화되었습니다',
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 2),
+          );
+        }
+      }
     }
   }
 
-  Future<void> createAlbum() async {
+  // ✅ 추가: 종료 날짜 선택
+  Future<void> pickEndDate(BuildContext context) async {
+    if (selectedStartDate.value.isEmpty) {
+      Get.snackbar(
+        '알림',
+        '시작 날짜를 먼저 선택해주세요',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+      return;
+    }
 
-    print('====== CreateAlbumController.createAlbum ======');
+    // 시작 날짜를 DateTime으로 변환
+    final startDate = _parseDate(selectedStartDate.value);
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: startDate,
+      firstDate: startDate, // ✅ 시작 날짜 이후만 선택 가능
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFFFF6F7D),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final formatted =
+          '${picked.year}.${picked.month.toString().padLeft(2, '0')}.${picked.day.toString().padLeft(2, '0')}';
+      selectedEndDate.value = formatted;
+    }
+  }
+
+  DateTime _parseDate(String dateStr) {
+    final parts = dateStr.split('.');
+    return DateTime(
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+      int.parse(parts[2]),
+    );
+  }
+
+  int _compareDates(String date1, String date2) {
+    final d1 = _parseDate(date1);
+    final d2 = _parseDate(date2);
+    return d1.compareTo(d2);
+  }
+
+  // 앨범 생성
+  Future<void> createAlbum() async {
+    print('🔵 CreateAlbumController.createAlbum 시작');
 
     if (!formKey.currentState!.validate()) {
-      print('!!!!!! 폼 검증 실패');
+      print('⚠️ 폼 검증 실패');
+      return;
+    }
+
+    // 추가 검증
+    if (selectedCategories.isEmpty) {
+      Get.snackbar(
+        '알림',
+        '카테고리를 최소 1개 선택해주세요',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    if (selectedStartDate.value.isEmpty) {
+      Get.snackbar(
+        '알림',
+        '이벤트 시작 날짜를 선택해주세요',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
     print('  title: ${titleController.text.trim()}');
-    print('  category: ${selectedCategory.value}');
-    print('  eventDate: ${selectedDate.value}');
+    print('  categories: ${selectedCategories.toList()}');
+    print('  eventStartDate: ${selectedStartDate.value}');
+    print('  eventEndDate: ${selectedEndDate.value}');
 
     isLoading.value = true;
     try {
       final album = await _albumRepository.createAlbum(
         title: titleController.text.trim(),
-        category: selectedCategory.value.isEmpty ? null : selectedCategory.value,
-        eventDate: selectedDate.value.isEmpty ? null : selectedDate.value,
+        categories: selectedCategories.toList(),
+        eventStartDate: selectedStartDate.value,
+        eventEndDate: selectedEndDate.value.isEmpty ? null : selectedEndDate.value,
       );
 
       print('🟢 앨범 생성 성공: ${album.id} - ${album.title}');
 
-      // AlbumListController가 등록되어 있으면 목록에 추가
       if (Get.isRegistered<AlbumListController>()) {
         print('🟢 AlbumListController에 앨범 추가');
         Get.find<AlbumListController>().addAlbum(album);
@@ -103,17 +213,15 @@ class CreateAlbumController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } on NetworkException catch (e) {
-      // ✅ 수정: 네트워크 에러 로그 추가
       print('🔴 NetworkException: ${e.message}');
       Get.snackbar('실패', e.message, snackPosition: SnackPosition.BOTTOM);
     } catch (e, stackTrace) {
-      // ✅ 수정: 에러 상세 로그 출력
       print('🔴 CreateAlbumController 에러: $e');
       print('🔴 StackTrace: $stackTrace');
 
       Get.snackbar(
         '오류',
-        '사진첩 생성에 실패했습니다\n$e',  // ✅ 에러 내용 표시
+        '사진첩 생성에 실패했습니다\n$e',
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 4),
       );
@@ -121,7 +229,6 @@ class CreateAlbumController extends GetxController {
       isLoading.value = false;
     }
   }
-
 
   String? validateTitle(String? value) {
     if (value == null || value.trim().isEmpty) return '사진첩 이름을 입력해주세요';

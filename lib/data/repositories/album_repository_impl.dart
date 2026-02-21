@@ -30,20 +30,22 @@ class AlbumRepositoryImpl implements AlbumRepository {
   @override
   Future<Album> createAlbum({
     required String title,
-    String? category,
-    String? eventDate,
+    required List<String> categories,   // ✅ 변경
+    required String eventStartDate,     // ✅ 변경
+    String? eventEndDate,                // ✅ 추가
   }) async {
-
     print('🔵 AlbumRepositoryImpl.createAlbum 시작');
     print('  title: $title');
-    print('  category: $category');
-    print('  eventDate: $eventDate');
+    print('  categories: $categories');
+    print('  eventStartDate: $eventStartDate');
+    print('  eventEndDate: $eventEndDate');
 
     try {
       final request = CreateAlbumRequest(
         title: title,
-        category: category,
-        eventDate: eventDate,
+        categories: categories,           // ✅ 변경
+        eventStartDate: eventStartDate,   // ✅ 변경
+        eventEndDate: eventEndDate,       // ✅ 추가
       );
 
       print('🔵 Request 생성 완료');
@@ -122,8 +124,9 @@ class AlbumRepositoryImpl implements AlbumRepository {
       final local = AlbumLocal()
         ..albumId = album.id
         ..title = album.title
-        ..category = album.category
-        ..eventDate = album.eventDate
+        ..categoriesJson = album.categories.join(',')
+        ..eventStartDate = album.eventStartDate
+        ..eventEndDate = album.eventEndDate
         ..coverImage = album.coverImage
         ..inviteCode = album.inviteCode
         ..photoCount = album.photoCount
@@ -147,11 +150,14 @@ class AlbumRepositoryImpl implements AlbumRepository {
   }
 
   Album _localToEntity(AlbumLocal local) {
+    final categories = local.categoriesJson?.split(',').where((c) => c.isNotEmpty).toList() ?? [];
+
     return Album(
       id: local.albumId,
       title: local.title,
-      category: local.category,
-      eventDate: local.eventDate,
+      categories: categories,
+      eventStartDate: local.eventStartDate ?? '',
+      eventEndDate: local.eventEndDate,
       coverImage: local.coverImage,
       inviteCode: local.inviteCode,
       photoCount: local.photoCount,

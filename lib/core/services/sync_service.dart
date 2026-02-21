@@ -61,8 +61,9 @@ class SyncService extends GetxService {
         final local = AlbumLocal()
           ..albumId = album.id
           ..title = album.title
-          ..category = album.category
-          ..eventDate = album.eventDate
+          ..categoriesJson = album.categories.join(',')
+          ..eventStartDate = album.eventStartDate
+          ..eventEndDate = album.eventEndDate
           ..coverImage = album.coverImage
           ..inviteCode = album.inviteCode
           ..photoCount = album.photoCount

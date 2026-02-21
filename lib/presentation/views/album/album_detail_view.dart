@@ -180,12 +180,13 @@ class _AppBar extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${album.category ?? ''} · ${album.eventDate ?? album.createdAt}',
+                  '${album.categoriesDisplay} · ${album.eventDateDisplay}',
                   style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.textSecondary,
                   ),
                 ),
+
               ],
             ),
           ),
