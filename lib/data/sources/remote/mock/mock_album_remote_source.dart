@@ -5,15 +5,12 @@ import '../../../models/album/join_album_request.dart';
 import '../../../../../core/network/network_exception.dart';
 
 class MockAlbumRemoteSource implements AlbumRemoteSource {
-  // Mock 데이터 (JSX SAMPLE_ALBUMS 기반)
-  // 왜 List로 관리?
-  // → 생성/입장 시 실제처럼 목록에 추가되어 UI 갱신 확인 가능
   final List<AlbumDto> _albums = [
     AlbumDto(
       id: 1,
       title: '우리의 결혼식',
-      category: '결혼식',
-      eventDate: '2025.04.18',
+      category: '결혼',
+      eventDate: '2026.10.27',
       coverImage: null,
       inviteCode: 'WD2025A',
       photoCount: 24,
@@ -24,7 +21,7 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       id: 2,
       title: '제주 여행 추억',
       category: '여행',
-      eventDate: '2025.03.20',
+      eventDate: '2025.01.20',
       coverImage: null,
       inviteCode: 'JJ03B2',
       photoCount: 48,
@@ -35,7 +32,7 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       id: 3,
       title: '동기 모임',
       category: '모임',
-      eventDate: '2025.02.14',
+      eventDate: '2025.05.14',
       coverImage: null,
       inviteCode: 'MT14C3',
       photoCount: 12,

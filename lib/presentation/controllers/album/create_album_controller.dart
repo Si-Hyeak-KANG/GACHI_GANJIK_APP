@@ -18,7 +18,7 @@ class CreateAlbumController extends GetxController {
   final RxBool isLoading = false.obs;
 
   static const List<String> categories = [
-    '결혼식', '여행', '모임', '생일', '기념일', '기타',
+    '결혼', '여행', '모임', '생일', '기념일', '연인', '반려동물', '취미', '일상', '기록', '기타',
   ];
 
   @override
@@ -66,7 +66,17 @@ class CreateAlbumController extends GetxController {
   }
 
   Future<void> createAlbum() async {
-    if (!formKey.currentState!.validate()) return;
+
+    print('====== CreateAlbumController.createAlbum ======');
+
+    if (!formKey.currentState!.validate()) {
+      print('!!!!!! 폼 검증 실패');
+      return;
+    }
+
+    print('  title: ${titleController.text.trim()}');
+    print('  category: ${selectedCategory.value}');
+    print('  eventDate: ${selectedDate.value}');
 
     isLoading.value = true;
     try {
@@ -76,9 +86,14 @@ class CreateAlbumController extends GetxController {
         eventDate: selectedDate.value.isEmpty ? null : selectedDate.value,
       );
 
+      print('🟢 앨범 생성 성공: ${album.id} - ${album.title}');
+
       // AlbumListController가 등록되어 있으면 목록에 추가
       if (Get.isRegistered<AlbumListController>()) {
+        print('🟢 AlbumListController에 앨범 추가');
         Get.find<AlbumListController>().addAlbum(album);
+      } else {
+        print('⚠️ AlbumListController가 등록되지 않음');
       }
 
       Get.back();
@@ -88,14 +103,25 @@ class CreateAlbumController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } on NetworkException catch (e) {
+      // ✅ 수정: 네트워크 에러 로그 추가
+      print('🔴 NetworkException: ${e.message}');
       Get.snackbar('실패', e.message, snackPosition: SnackPosition.BOTTOM);
-    } catch (_) {
-      Get.snackbar('오류', '사진첩 생성에 실패했습니다',
-          snackPosition: SnackPosition.BOTTOM);
+    } catch (e, stackTrace) {
+      // ✅ 수정: 에러 상세 로그 출력
+      print('🔴 CreateAlbumController 에러: $e');
+      print('🔴 StackTrace: $stackTrace');
+
+      Get.snackbar(
+        '오류',
+        '사진첩 생성에 실패했습니다\n$e',  // ✅ 에러 내용 표시
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 4),
+      );
     } finally {
       isLoading.value = false;
     }
   }
+
 
   String? validateTitle(String? value) {
     if (value == null || value.trim().isEmpty) return '사진첩 이름을 입력해주세요';

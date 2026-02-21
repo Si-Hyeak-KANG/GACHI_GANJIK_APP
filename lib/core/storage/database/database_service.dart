@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import '../../../core/storage/database/photo_local.dart';
+import 'album_local.dart';
+import 'photo_local.dart';
 import 'like_local.dart';
 
 class DatabaseService {
@@ -12,6 +13,7 @@ class DatabaseService {
     final dir = await getApplicationDocumentsDirectory();
     _isar = await Isar.open(
       [
+        AlbumLocalSchema,
         PhotoLocalSchema,
         LikeLocalSchema,
       ],
@@ -47,12 +49,13 @@ class DatabaseService {
     });
   }
 
-  // 업로드 대기 중인 사진 조회 (Phase 6 동기화에서 사용)
+  // 대기 중인 사진 조회
   static Future<List<PhotoLocal>> getPendingPhotos() async {
     final isar = await instance;
     return isar.photoLocals
         .filter()
         .statusEqualTo('pending')
+        .sortByUploadedAtDesc()
         .findAll();
   }
 
@@ -101,5 +104,43 @@ class DatabaseService {
   static Future<int> getLikeCount(int photoId) async {
     final isar = await instance;
     return isar.likeLocals.filter().photoIdEqualTo(photoId).count();
+  }
+
+  // 모든 앨범 조회
+  static Future<List<AlbumLocal>> getAllAlbums() async {
+    final isar = await instance;
+    return isar.albumLocals.where().sortByCreatedAtDesc().findAll();
+  }
+
+  // 앨범 저장
+  static Future<void> saveAlbum(AlbumLocal album) async {
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      await isar.albumLocals.put(album);
+    });
+  }
+
+  // 앨범 삭제
+  static Future<void> deleteAlbum(int id) async {
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      await isar.albumLocals.delete(id);
+    });
+  }
+
+  // 앨범 ID로 조회
+  static Future<AlbumLocal?> getAlbumById(int albumId) async {
+    final isar = await instance;
+    return isar.albumLocals.filter().albumIdEqualTo(albumId).findFirst();
+  }
+
+  // 전체 데이터 삭제 (회원탈퇴용)
+  static Future<void> clearAll() async {
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      await isar.albumLocals.clear();
+      await isar.photoLocals.clear();
+      await isar.likeLocals.clear();
+    });
   }
 }

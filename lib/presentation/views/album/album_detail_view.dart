@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/album.dart';
 import '../../controllers/photo/album_detail_controller.dart';
+import '../../controllers/network/network_controller.dart';
 import '../../widgets/common/empty_state.dart';
-import '../../widgets/photo/momet_card.dart';
+import '../../widgets/photo/moment_card.dart';
 
 class AlbumDetailView extends GetView<AlbumDetailController> {
   const AlbumDetailView({super.key});
@@ -21,6 +22,9 @@ class AlbumDetailView extends GetView<AlbumDetailController> {
           children: [
             Column(
               children: [
+                // 오프라인 배너
+                const _OfflineBanner(),
+
                 _AppBar(album: album),
                 _ShareCodeBanner(inviteCode: album.inviteCode),
                 Expanded(child: _MomentsList()),
@@ -56,13 +60,20 @@ class AlbumDetailView extends GetView<AlbumDetailController> {
       ),
 
       // 카메라 FAB
-      floatingActionButton: Obx(() => controller.isUploading.value
-          ? const SizedBox()
-          : FloatingActionButton(
-        onPressed: () => _showImageSourceDialog(context),
-        backgroundColor: AppColors.main,
-        child: const Icon(Icons.camera_alt, color: Colors.white),
-      )),
+      floatingActionButton: Obx(() {
+        if (controller.isUploading.value) return const SizedBox();
+
+        final networkController = Get.find<NetworkController>();
+
+        return FloatingActionButton(
+          onPressed: () => _showImageSourceDialog(context),
+          backgroundColor: AppColors.main,
+          tooltip: networkController.isConnected.value
+              ? '사진 업로드'
+              : '사진 업로드 (온라인 복구 시 자동 업로드)',
+          child: const Icon(Icons.camera_alt, color: Colors.white),
+        );
+      }),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -103,7 +114,40 @@ class AlbumDetailView extends GetView<AlbumDetailController> {
     );
   }
 }
+// 오프라인 배너
+class _OfflineBanner extends GetView<NetworkController> {
+  const _OfflineBanner();
 
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (controller.isConnected.value) {
+        return const SizedBox.shrink();
+      }
+
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        color: Colors.orange,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wifi_off, color: Colors.white, size: 16),
+            SizedBox(width: 8),
+            Text(
+              '오프라인 - 저장된 사진만 표시됩니다',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
 // 앱바
 class _AppBar extends StatelessWidget {
   final Album album;

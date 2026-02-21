@@ -7,10 +7,12 @@ import '../../../data/sources/firebase/firebase_storage_source.dart';
 import '../../../data/sources/remote/mock/mock_user_remote_source.dart';
 import '../../../domain/repositories/user_repository.dart';
 import '../../controllers/album/album_list_controller.dart';
+import '../../controllers/network/network_controller.dart';
 import '../../controllers/settings/settings_controller.dart';
 import '../../controllers/user/user_controller.dart';
 import '../../widgets/album/album_card.dart';
 import '../../widgets/common/empty_state.dart';
+import '../qr/qr_scan_view.dart';
 import '../user/mypage_view.dart';
 import '../settings/settings_view.dart';
 
@@ -32,12 +34,18 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-
     _initializeControllers();
 
     return Scaffold(
       backgroundColor: AppColors.bg,
-      body: _screens[_currentIndex],
+      body: Column(
+        children: [
+          const _OfflineBanner(),
+
+          // 기존 화면
+          Expanded(child: _screens[_currentIndex]),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
@@ -55,7 +63,7 @@ class _HomeViewState extends State<HomeView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
-            label: '마이',
+            label: '마이페이지',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),
@@ -69,7 +77,6 @@ class _HomeViewState extends State<HomeView> {
 
   void _initializeControllers() {
     if (_currentIndex == 1) {
-      // 마이페이지
       if (!Get.isRegistered<UserRepository>()) {
         Get.lazyPut<UserRepository>(
               () => UserRepositoryImpl(
@@ -87,7 +94,6 @@ class _HomeViewState extends State<HomeView> {
         );
       }
     } else if (_currentIndex == 2) {
-      // 설정
       if (!Get.isRegistered<UserRepository>()) {
         Get.lazyPut<UserRepository>(
               () => UserRepositoryImpl(
@@ -108,6 +114,41 @@ class _HomeViewState extends State<HomeView> {
         );
       }
     }
+  }
+}
+
+// 오프라인 배너
+class _OfflineBanner extends GetView<NetworkController> {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (controller.isConnected.value) {
+        return const SizedBox.shrink();
+      }
+
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        color: Colors.orange,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.wifi_off, color: Colors.white, size: 16),
+            const SizedBox(width: 8),
+            const Text(
+              '오프라인 모드',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -225,7 +266,6 @@ class _AlbumListScreen extends GetView<AlbumListController> {
     );
   }
 
-  // 앨범 입장 다이얼로그
   void _showJoinDialog(BuildContext context) {
     final codeController = TextEditingController();
 
@@ -248,7 +288,6 @@ class _AlbumListScreen extends GetView<AlbumListController> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 핸들
             Center(
               child: Container(
                 width: 40,
@@ -261,7 +300,6 @@ class _AlbumListScreen extends GetView<AlbumListController> {
             ),
             const SizedBox(height: 20),
 
-            // 제목
             const Text(
               '사진첩 입장',
               style: TextStyle(
@@ -280,7 +318,6 @@ class _AlbumListScreen extends GetView<AlbumListController> {
             ),
             const SizedBox(height: 24),
 
-            // 입력 필드
             TextField(
               controller: codeController,
               decoration: InputDecoration(
@@ -301,7 +338,6 @@ class _AlbumListScreen extends GetView<AlbumListController> {
             ),
             const SizedBox(height: 12),
 
-            // 입장 버튼
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -339,17 +375,13 @@ class _AlbumListScreen extends GetView<AlbumListController> {
             ),
             const SizedBox(height: 12),
 
-            // QR 스캔 버튼
+            // QR 스캔 화면으로 이동
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
                   Get.back();
-                  Get.snackbar(
-                    '준비 중',
-                    'QR 스캔 기능은 Phase 6에서 구현됩니다',
-                    snackPosition: SnackPosition.BOTTOM,
-                  );
+                  Get.to(() => const QRScanView());
                 },
                 icon: const Icon(Icons.qr_code_scanner, size: 20),
                 label: const Text(

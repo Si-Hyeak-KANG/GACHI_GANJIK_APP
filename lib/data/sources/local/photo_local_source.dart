@@ -20,9 +20,19 @@ class PhotoLocalSource {
       ..uploadedAt = DateTime.parse(dto.uploadedAt.replaceAll('.', '-'))
       ..likeCount = dto.likeCount
       ..commentsJson = jsonEncode(dto.comments.map((c) => {'user': c.user, 'text': c.text}).toList())
-      ..status = 'uploaded';
+      ..status = 'synced';
 
     await DatabaseService.savePhoto(local);
+  }
+
+  // PhotoLocal 직접 저장 (대기열용)
+  Future<void> savePhotoLocal(PhotoLocal photo) async {
+  await DatabaseService.savePhoto(photo);
+  }
+
+  // 대기 중인 사진 조회
+  Future<List<PhotoLocal>> getPendingPhotos() async {
+  return await DatabaseService.getPendingPhotos();
   }
 
   // DTO 변환

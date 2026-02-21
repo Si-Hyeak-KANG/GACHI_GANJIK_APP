@@ -165,37 +165,6 @@ class LoginView extends GetView<LoginController> {
                     ),
                   ),
                 ),
-
-                // 테스트 안내 (개발 중에만 표시)
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.mainLight,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '🧪 테스트 계정',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.main,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Email: test@test.com\nPW: 1234',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 40),
               ],
             ),

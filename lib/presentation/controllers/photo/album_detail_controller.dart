@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../domain/entities/moment.dart';
 import '../../../domain/repositories/photo_repository.dart';
 import '../../../core/network/network_exception.dart';
+import '../network/network_controller.dart';
 
 class AlbumDetailController extends GetxController {
   final PhotoRepository _photoRepository;
@@ -86,6 +87,8 @@ class AlbumDetailController extends GetxController {
     isUploading.value = true;
 
     try {
+      final networkController = Get.find<NetworkController>();
+      final isOffline = !networkController.isConnected.value;
       final photo = await _photoRepository.uploadPhoto(
         albumId: albumId,
         imageFile: imageFile,
@@ -95,11 +98,22 @@ class AlbumDetailController extends GetxController {
       // 목록 갱신
       await fetchMoments();
 
-      Get.snackbar(
-        '업로드 완료',
-        '사진이 추가되었습니다',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      if (isOffline) {
+        Get.snackbar(
+          '오프라인 업로드',
+          '온라인 복구 시 자동으로 업로드됩니다.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      } else {
+        Get.snackbar(
+          '업로드 완료',
+          '사진이 추가되었습니다',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
     } on NetworkException catch (e) {
       Get.snackbar('업로드 실패', e.message, snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
