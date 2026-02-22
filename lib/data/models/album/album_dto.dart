@@ -11,6 +11,9 @@ class AlbumDto {
   final int photoCount;
   final int memberCount;
   final String createdAt;
+  final int ownerId;
+  final int currentUserId;
+  final bool isAdmin;
 
   AlbumDto({
     required this.id,
@@ -23,6 +26,9 @@ class AlbumDto {
     required this.photoCount,
     required this.memberCount,
     required this.createdAt,
+    required this.ownerId,
+    required this.currentUserId,
+    this.isAdmin = false,
   });
 
   factory AlbumDto.fromJson(Map<String, dynamic> json) {
@@ -39,6 +45,9 @@ class AlbumDto {
       photoCount: json['photoCount'] as int,
       memberCount: json['memberCount'] as int,
       createdAt: json['createdAt'] as String,
+      ownerId: json['ownerId'] as int,
+      currentUserId: json['currentUserId'] as int,
+      isAdmin: json['isAdmin'] as bool ?? false,
     );
   }
 
@@ -54,6 +63,9 @@ class AlbumDto {
       'photoCount': photoCount,
       'memberCount': memberCount,
       'createdAt': createdAt,
+      'ownerId' : ownerId,
+      'currentUserId' : currentUserId,
+      'isAdmin' : isAdmin
     };
   }
 
@@ -69,6 +81,9 @@ class AlbumDto {
       photoCount: photoCount,
       memberCount: memberCount,
       createdAt: createdAt,
+      ownerId: ownerId,
+      currentUserId: currentUserId,
+      isAdmin: isAdmin,
     );
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:gachiganjik_app/presentation/widgets/album/album_menu_sheet.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/album.dart';
@@ -22,11 +24,8 @@ class AlbumDetailView extends GetView<AlbumDetailController> {
           children: [
             Column(
               children: [
-                // 오프라인 배너
                 const _OfflineBanner(),
-
-                _AppBar(album: album),
-                _ShareCodeBanner(inviteCode: album.inviteCode),
+                _CoverSection(album: album),
                 Expanded(child: _MomentsList()),
               ],
             ),
@@ -114,6 +113,156 @@ class AlbumDetailView extends GetView<AlbumDetailController> {
     );
   }
 }
+
+class _CoverSection extends StatelessWidget {
+  final Album album;
+
+  const _CoverSection({required this.album});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // 커버 이미지 또는 그라디언트 배경
+        Container(
+          width: double.infinity,
+          height: 240,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: _getCoverGradient(),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40), // AppBar 공간 확보
+
+              // 앨범 아이콘
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.photo_album_rounded,
+                  size: 48,
+                  color: Colors.white,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // 앨범 제목
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  album.title,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // 카테고리 & 날짜
+              Text(
+                '${album.categoriesDisplay} · ${album.eventDateDisplay}',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+
+        // AppBar (투명 배경)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.3),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, size: 20),
+                  color: Colors.white,
+                  onPressed: Get.back,
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  color: Colors.white,
+                  onPressed: () => _showAlbumMenu(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 카테고리별 커버 그라디언트
+  List<Color> _getCoverGradient() {
+    const gradients = {
+      '결혼': [Color(0xFFFF6F7D), Color(0xFFFF9A9E)],
+      '여행': [Color(0xFF4facfe), Color(0xFF00f2fe)],
+      '모임': [Color(0xFFa18cd1), Color(0xFFfbc2eb)],
+      '생일': [Color(0xFFffecd2), Color(0xFFfcb69f)],
+      '기념일': [Color(0xFF89f7fe), Color(0xFF66a6ff)],
+      '연인': [Color(0xFFff9a9e), Color(0xFFfecfef)],
+      '반려동물': [Color(0xFFffeaa7), Color(0xFFfdcb6e)],
+      '취미': [Color(0xFFffa502), Color(0xFFff6348)],
+      '일상': [Color(0xFFdfe6e9), Color(0xFFb2bec3)],
+      '기록': [Color(0xFF6c5ce7), Color(0xFFa29bfe)],
+      '친구': [Color(0xFF00b894), Color(0xFF55efc4)],
+      '독서': [Color(0xFFe17055), Color(0xFFfdcb6e)],
+      '공부': [Color(0xFF00cec9), Color(0xFF81ecec)],
+    };
+
+    final firstCategory = album.categories.isNotEmpty
+        ? album.categories.first
+        : '기타';
+
+    return gradients[firstCategory] ?? [
+      const Color(0xFFbdc3c7),
+      const Color(0xFF95a5a6),
+    ];
+  }
+
+  void _showAlbumMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => AlbumMenuSheet(album: album),
+    );
+  }
+}
+
 // 오프라인 배너
 class _OfflineBanner extends GetView<NetworkController> {
   const _OfflineBanner();
@@ -190,86 +339,21 @@ class _AppBar extends StatelessWidget {
               ],
             ),
           ),
-          // 더보기 메뉴 (Phase 4에서 구현)
           IconButton(
             icon: const Icon(Icons.more_vert),
-            onPressed: () => Get.snackbar(
-              '준비 중',
-              'Phase 4에서 구현됩니다',
-              snackPosition: SnackPosition.BOTTOM,
-            ),
+            onPressed: () => _showAlbumMenu(context),
           ),
         ],
       ),
     );
   }
-}
 
-// 공유 코드 배너
-class _ShareCodeBanner extends StatelessWidget {
-  final String inviteCode;
-
-  const _ShareCodeBanner({required this.inviteCode});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.mainLight,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '초대 코드',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                inviteCode,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.main,
-                  letterSpacing: 2,
-                ),
-              ),
-            ],
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Clipboard 복사는 flutter/services 사용
-              Get.snackbar(
-                '복사 완료',
-                '초대 코드가 복사되었습니다',
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.main,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 0,
-            ),
-            child: const Text(
-              '복사',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
+  void _showAlbumMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => AlbumMenuSheet(album: album),
     );
   }
 }

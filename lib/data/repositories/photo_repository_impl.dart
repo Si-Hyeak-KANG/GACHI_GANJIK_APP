@@ -85,8 +85,7 @@ class PhotoRepositoryImpl implements PhotoRepository {
     final grouped = <String, List<Photo>>{};
 
     for (final photo in photos) {
-      // "2025.04.18 10:30" → "2025.04.18"
-      final date = photo.uploadedAt.split('T')[0];
+      final date = photo.uploadedAt.split(' ')[0];
       grouped.putIfAbsent(date, () => []).add(photo);
     }
 

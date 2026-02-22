@@ -31,7 +31,7 @@ class MomentCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      moment.date,
+                      _formatDateOnly(moment.date),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -40,7 +40,7 @@ class MomentCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${moment.contributors.join(", ")}이 남긴 순간',
+                      '${moment.contributors.join(", ")} 님이 남긴 순간',
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -155,5 +155,12 @@ class MomentCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatDateOnly(String dateStr) {
+    if (dateStr.contains(' ')) {
+      return dateStr.split(' ')[0];
+    }
+    return dateStr;
   }
 }

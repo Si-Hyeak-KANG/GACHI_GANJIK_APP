@@ -133,7 +133,10 @@ class AlbumRepositoryImpl implements AlbumRepository {
         ..memberCount = album.memberCount
         ..createdAt = createdAt
         ..lastSyncedAt = DateTime.now()
-        ..syncStatus = 'synced';
+        ..syncStatus = 'synced'
+        ..ownerId = album.ownerId
+        ..currentUserId = album.currentUserId
+        ..isAdmin = album.isAdmin;
 
       await DatabaseService.saveAlbum(local);
       print('  🟢 _saveAlbumToLocal 완료');
@@ -163,6 +166,9 @@ class AlbumRepositoryImpl implements AlbumRepository {
       photoCount: local.photoCount,
       memberCount: local.memberCount,
       createdAt: local.createdAt.toIso8601String(),
+      ownerId: local.ownerId,
+      currentUserId: local.currentUserId,
+      isAdmin: local.isAdmin,
     );
   }
 }

@@ -27,4 +27,8 @@ class AlbumLocal {
   // 동기화 상태
   @Index()
   String syncStatus = 'synced'; // synced, pending, failed
+
+  int ownerId = 0;
+  int currentUserId = 0;
+  bool isAdmin = false;
 }

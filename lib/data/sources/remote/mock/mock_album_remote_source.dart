@@ -5,6 +5,9 @@ import '../../../models/album/join_album_request.dart';
 import '../../../../../core/network/network_exception.dart';
 
 class MockAlbumRemoteSource implements AlbumRemoteSource {
+
+  static const int _currentUserId = 1;
+
   final List<AlbumDto> _albums = [
     AlbumDto(
       id: 1,
@@ -17,6 +20,8 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       photoCount: 24,
       memberCount: 15,
       createdAt: '2025.04.18',
+      ownerId: 1,
+      currentUserId: _currentUserId,
     ),
     AlbumDto(
       id: 2,
@@ -29,6 +34,8 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       photoCount: 48,
       memberCount: 6,
       createdAt: '2025.03.20',
+      ownerId: 2, // 다른 사용자가 생성
+      currentUserId: _currentUserId,
     ),
     AlbumDto(
       id: 3,
@@ -40,7 +47,9 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       inviteCode: 'MT14C3',
       photoCount: 12,
       memberCount: 8,
-      createdAt: '2022.02.14'
+      createdAt: '2022.02.14',
+      ownerId: 1,
+      currentUserId: _currentUserId,
     ),
   ];
 
@@ -67,6 +76,8 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       photoCount: 0,
       memberCount: 1,
       createdAt: _formatToday(),
+      ownerId: _currentUserId,
+      currentUserId: _currentUserId,
     );
 
     _albums.insert(0, newAlbum); // 최신 앨범을 맨 앞에
