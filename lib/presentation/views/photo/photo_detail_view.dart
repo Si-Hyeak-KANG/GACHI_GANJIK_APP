@@ -12,46 +12,35 @@ class PhotoDetailView extends GetView<PhotoDetailController> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: Column(
+        child: Obx(() => Stack(
           children: [
-            // 앱바
-            _AppBar(),
-
-            // 사진 영역 (PageView)
-            Expanded(
-              flex: 6,
-              child: PageView.builder(
-                controller: controller.pageController,
-                onPageChanged: controller.onPageChanged,
-                itemCount: controller.photos.length,
-                itemBuilder: (context, index) {
-                  final photo = controller.photos[index];
-                  return _PhotoViewer(imageUrl: photo.imageUrl);
-                },
-              ),
-            ),
-
-            // 정보 영역
-            Expanded(
-              flex: 4,
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(24),
+            // 사진 영역 (전체 화면)
+            Column(
+              children: [
+                _AppBar(),
+                Expanded(
+                  child: PageView.builder(
+                    controller: controller.pageController,
+                    onPageChanged: controller.onPageChanged,
+                    itemCount: controller.photos.length,
+                    itemBuilder: (context, index) {
+                      final photo = controller.photos[index];
+                      return _PhotoViewer(imageUrl: photo.imageUrl);
+                    },
                   ),
                 ),
-                child: Column(
-                  children: [
-                    _PhotoInfo(),
-                    const Divider(height: 1),
-                    Expanded(child: _CommentSection()),
-                  ],
-                ),
-              ),
+              ],
             ),
+
+            // ✅ 닫힌 상태: 하단 오버레이
+            if (!controller.isModalExpanded.value)
+              _CompactInfoOverlay(),
+
+            // ✅ 열린 상태: 확장 모달
+            if (controller.isModalExpanded.value)
+              _ExpandedInfoSheet(),
           ],
-        ),
+        )),
       ),
     );
   }
@@ -108,6 +97,265 @@ class _PhotoViewer extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ✅ 새로 추가: 닫힌 상태 오버레이
+class _CompactInfoOverlay extends GetView<PhotoDetailController> {
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: GestureDetector(
+        onTap: () {
+          // 메시지 영역 탭 시 모달 열기
+          if (controller.currentPhoto.message != null &&
+              controller.currentPhoto.message!.isNotEmpty) {
+            controller.expandModal();
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black.withOpacity(0.7),
+              ],
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 업로더 & 날짜
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                    child: Text(
+                      controller.currentPhoto.uploader[0],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          controller.currentPhoto.uploader,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          controller.currentPhoto.dateOnly,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // 메시지 (1줄 + 더보기)
+              if (controller.currentPhoto.message != null &&
+                  controller.currentPhoto.message!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  controller.currentPhoto.message!,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.white,
+                    height: 1.4,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '더보기',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.7),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 16),
+
+              // ✅ 아이콘 버튼들 (테두리만 흰색)
+              Row(
+                children: [
+                  // 좋아요
+                  _OutlinedIconButton(
+                    icon: controller.isLiked.value
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    label: controller.likeCount.value.toString(),
+                    filled: controller.isLiked.value,
+                    onTap: controller.toggleLike,
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // 댓글 (모달 열기)
+                  _OutlinedIconButton(
+                    icon: Icons.chat_bubble_outline,
+                    label: controller.currentPhoto.comments.length.toString(),
+                    onTap: controller.expandModal,
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // 다운로드 (관리자만)
+                  if (controller.canDownload)
+                    Obx(() => _OutlinedIconButton(
+                      icon: Icons.file_download_outlined,
+                      label: '저장',
+                      onTap: controller.isSavingImage.value
+                          ? null
+                          : controller.saveImage,
+                      isLoading: controller.isSavingImage.value,
+                    )),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ✅ 새로 추가: 테두리만 흰색 아이콘 버튼
+class _OutlinedIconButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool filled;
+  final VoidCallback? onTap;
+  final bool isLoading;
+
+  const _OutlinedIconButton({
+    required this.icon,
+    required this.label,
+    this.filled = false,
+    this.onTap,
+    this.isLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.white,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          color: filled ? Colors.white : Colors.transparent,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            isLoading
+                ? SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                color: filled ? Colors.black : Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+                : Icon(
+              icon,
+              size: 18,
+              color: filled ? Colors.red : Colors.white,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: filled ? Colors.black : Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ✅ 새로 추가: 열린 상태 모달
+class _ExpandedInfoSheet extends GetView<PhotoDetailController> {
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) {
+        return GestureDetector(
+          onVerticalDragUpdate: (details) {
+            // ✅ 아래로 드래그 시 닫기
+            if (details.primaryDelta! > 10) {
+              controller.collapseModal();
+            }
+          },
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              children: [
+                // 핸들바
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.inactive,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+
+                // 사진 정보
+                _PhotoInfo(),
+
+                const Divider(height: 1),
+
+                // 댓글 섹션
+                Expanded(child: _CommentSection(scrollController)),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -177,16 +425,19 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
                           : AppColors.textSecondary,
                       onTap: controller.toggleLike,
                     ),
-                    const SizedBox(width: 16),
-                    // 저장
-                    _ActionButton(
-                      icon: Icons.file_download_outlined,
-                      label: '저장',
-                      onTap: controller.isSavingImage.value
-                          ? null
-                          : controller.saveImage,
-                      isLoading: controller.isSavingImage.value,
-                    ),
+
+                    // ✅ 추가: 다운로드 (관리자만)
+                    if (controller.canDownload) ...[
+                      const SizedBox(width: 16),
+                      _ActionButton(
+                        icon: Icons.file_download_outlined,
+                        label: '저장',
+                        onTap: controller.isSavingImage.value
+                            ? null
+                            : controller.saveImage,
+                        isLoading: controller.isSavingImage.value,
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -263,6 +514,10 @@ class _ActionButton extends StatelessWidget {
 
 // 댓글 섹션
 class _CommentSection extends GetView<PhotoDetailController> {
+  final ScrollController scrollController;
+
+  const _CommentSection(this.scrollController);
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -300,6 +555,7 @@ class _CommentSection extends GetView<PhotoDetailController> {
             }
 
             return ListView.separated(
+              controller: scrollController,
               padding: const EdgeInsets.all(16),
               itemCount: controller.comments.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -351,7 +607,6 @@ class _CommentSection extends GetView<PhotoDetailController> {
                         ],
                       ),
                     ),
-                    // 삭제 버튼 (본인 댓글만)
                     if (isMine)
                       IconButton(
                         icon: const Icon(

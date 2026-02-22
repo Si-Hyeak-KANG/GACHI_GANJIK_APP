@@ -4,11 +4,17 @@ import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/routes/app_pages.dart';
 import '../../../domain/entities/moment.dart';
+import '../../../domain/entities/album.dart';
 
 class MomentCard extends StatelessWidget {
   final Moment moment;
+  final Album album;
 
-  const MomentCard({super.key, required this.moment});
+  const MomentCard({
+    super.key,
+    required this.moment,
+    required this.album,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +99,7 @@ class MomentCard extends StatelessWidget {
                     arguments: {
                       'photos': moment.photos,
                       'initialIndex': index,
+                      'album': album,
                     },
                   ),
                   child: ClipRRect(

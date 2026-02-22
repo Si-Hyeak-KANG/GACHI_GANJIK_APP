@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gachiganjik_app/presentation/widgets/album/album_menu_sheet.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
@@ -26,7 +25,7 @@ class AlbumDetailView extends GetView<AlbumDetailController> {
               children: [
                 const _OfflineBanner(),
                 _CoverSection(album: album),
-                Expanded(child: _MomentsList()),
+                Expanded(child: _MomentsList(album: album)),
               ],
             ),
 
@@ -297,69 +296,13 @@ class _OfflineBanner extends GetView<NetworkController> {
     });
   }
 }
-// 앱바
-class _AppBar extends StatelessWidget {
-  final Album album;
-
-  const _AppBar({required this.album});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios, size: 20),
-            onPressed: Get.back,
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  album.title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${album.categoriesDisplay} · ${album.eventDateDisplay}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () => _showAlbumMenu(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAlbumMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => AlbumMenuSheet(album: album),
-    );
-  }
-}
 
 // 모멘트 리스트
 class _MomentsList extends GetView<AlbumDetailController> {
+  final Album album;
+
+  const _MomentsList({required this.album});
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -386,7 +329,10 @@ class _MomentsList extends GetView<AlbumDetailController> {
           separatorBuilder: (_, __) => const SizedBox(height: 20),
           itemBuilder: (_, index) {
             final moment = controller.moments[index];
-            return MomentCard(moment: moment);
+            return MomentCard(
+              moment: moment,
+              album: album,
+            );
           },
         ),
       );
