@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
+
 import '../../core/bindings/album_detail_binding.dart';
 import '../../core/bindings/create_album_binding.dart';
 import '../../core/bindings/edit_profile_binding.dart';
 import '../../core/bindings/home_binding.dart';
 import '../../core/bindings/login_binding.dart';
-import '../../core/bindings/mypage_binding.dart';
 import '../../core/bindings/photo_detail_binding.dart';
 import '../../core/bindings/settings_binding.dart';
 import '../../core/bindings/signup_binding.dart';
@@ -21,52 +21,82 @@ import '../../presentation/views/user/edit_profile_view.dart';
 class AppPages {
   static const initial = Routes.splash;
 
+  static const defaultTransition = Transition.cupertino;
+  static const transitionDuration = Duration(milliseconds: 300);
+
+  static const modalTransition = Transition.downToUp;
+  static const fadeTransition = Transition.fade;
+
   static final routes = [
     GetPage(
       name: Routes.splash,
       page: () => const SplashView(),
+      transition: fadeTransition,
+      transitionDuration: const Duration(milliseconds: 500),
     ),
+
     GetPage(
       name: Routes.login,
       page: () => const LoginView(),
       binding: LoginBinding(),
+      transition: modalTransition,
+      transitionDuration: transitionDuration,
     ),
+
     GetPage(
       name: Routes.signup,
       page: () => const SignupView(),
       binding: SignupBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
     ),
+
     GetPage(
       name: Routes.home,
       page: () => const HomeView(),
       binding: HomeBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
     ),
+
     GetPage(
       name: Routes.createAlbum,
       page: () => const CreateAlbumView(),
       binding: CreateAlbumBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
     ),
+
     GetPage(
       name: Routes.albumDetail,
       page: () => const AlbumDetailView(),
       binding: AlbumDetailBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
     ),
+
     GetPage(
       name: Routes.photoDetail,
       page: () => const PhotoDetailView(),
       binding: PhotoDetailBinding(),
+      transition: Transition.zoom,
+      transitionDuration: const Duration(milliseconds: 250),
     ),
-    // ✅ 추가
+
     GetPage(
       name: Routes.editProfile,
       page: () => const EditProfileView(),
       binding: EditProfileBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
     ),
-    // ✅ 추가
+
     GetPage(
       name: Routes.settings,
       page: () => const SettingsView(),
       binding: SettingsBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
     ),
   ];
 }

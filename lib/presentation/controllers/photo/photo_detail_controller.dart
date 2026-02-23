@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gachiganjik_app/domain/enum/album_role.dart';
 import 'package:get/get.dart';
 import '../../../domain/entities/photo.dart';
-import '../../../domain/entities/album.dart';  // ✅ 추가
+import '../../../domain/entities/album.dart';
 import '../../../domain/repositories/comment_repository.dart';
 import '../../../data/sources/local/like_local_source.dart';
 import '../../../core/network/network_exception.dart';
@@ -13,14 +13,14 @@ class PhotoDetailController extends GetxController {
   final LikeLocalSource _likeLocalSource;
   final List<Photo> photos;
   final int initialIndex;
-  final Album album;  // ✅ 추가: 권한 체크용
+  final Album album;
 
   PhotoDetailController({
     required CommentRepository commentRepository,
     required LikeLocalSource likeLocalSource,
     required this.photos,
     required this.initialIndex,
-    required this.album,  // ✅ 추가
+    required this.album,
   })  : _commentRepository = commentRepository,
         _likeLocalSource = likeLocalSource;
 
@@ -33,14 +33,12 @@ class PhotoDetailController extends GetxController {
   final RxBool isAddingComment = false.obs;
   final RxBool isSavingImage = false.obs;
 
-  // ✅ 추가: 모달 상태
   final RxBool isModalExpanded = false.obs;
 
   final commentController = TextEditingController();
 
   Photo get currentPhoto => photos[currentIndex.value];
 
-  // ✅ 추가: 관리자 권한 체크
   bool get canDownload => album.role.canManage;
 
   @override
@@ -64,7 +62,6 @@ class PhotoDetailController extends GetxController {
   void onPageChanged(int index) {
     currentIndex.value = index;
 
-    // ✅ 추가: 사진 전환 시 모달 닫기
     if (isModalExpanded.value) {
       isModalExpanded.value = false;
     }
@@ -72,17 +69,14 @@ class PhotoDetailController extends GetxController {
     _loadPhotoData();
   }
 
-  // ✅ 추가: 모달 열기
   void expandModal() {
     isModalExpanded.value = true;
 
-    // 댓글 로드 (아직 안 했다면)
     if (comments.isEmpty && !isLoadingComments.value) {
       _loadComments();
     }
   }
 
-  // ✅ 추가: 모달 닫기
   void collapseModal() {
     isModalExpanded.value = false;
 
@@ -221,7 +215,6 @@ class PhotoDetailController extends GetxController {
 
   // 이미지 저장
   Future<void> saveImage() async {
-    // ✅ 추가: 권한 체크
     if (!canDownload) {
       Get.snackbar(
         '권한 없음',

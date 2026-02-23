@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/album.dart';
 
-import 'album_share_dialog.dart';  // ✅ 추가
+import 'album_share_dialog.dart';
 
 class AlbumMenuSheet extends StatelessWidget {
   final Album album;
@@ -36,7 +36,6 @@ class AlbumMenuSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // ✅ 수정: 역할 뱃지
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
@@ -53,7 +52,6 @@ class AlbumMenuSheet extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                // ✅ 수정: enum 사용
                 if (album.role.canManage)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -65,7 +63,7 @@ class AlbumMenuSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      album.role.displayName,  // ✅ "생성자" 또는 "관리자"
+                      album.role.displayName,
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -80,7 +78,6 @@ class AlbumMenuSheet extends StatelessWidget {
           const SizedBox(height: 8),
           const Divider(height: 1, color: AppColors.divider),
 
-          // ✅ 수정: 앨범 공유하기 (관리자만)
           if (album.role.canManage)
             _MenuItem(
               icon: Icons.share,
@@ -90,9 +87,6 @@ class AlbumMenuSheet extends StatelessWidget {
                 _showShareDialog(context);
               },
             ),
-
-          // ✅ 제거: QR 코드 보기
-          // ✅ 제거: 초대 코드 복사
 
           if (album.role.canManage)
             const Divider(height: 1, color: AppColors.divider),
@@ -111,7 +105,6 @@ class AlbumMenuSheet extends StatelessWidget {
             },
           ),
 
-          // ✅ 수정: 관리자 전용 메뉴
           if (album.role.canManage) ...[
             _MenuItem(
               icon: Icons.settings,
@@ -130,7 +123,6 @@ class AlbumMenuSheet extends StatelessWidget {
 
           const Divider(height: 1, color: AppColors.divider),
 
-          // ✅ 수정: enum 사용
           _MenuItem(
             icon: album.role.canDelete ? Icons.delete_outline : Icons.logout,
             title: album.role.canDelete ? '앨범 삭제' : '앨범 나가기',
@@ -147,16 +139,12 @@ class AlbumMenuSheet extends StatelessWidget {
     );
   }
 
-  // ✅ 추가: 공유 다이얼로그
   void _showShareDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (_) => AlbumShareDialog(album: album),
     );
   }
-
-  // ✅ 제거: _showQRCodeDialog (AlbumShareDialog로 통합)
-  // ✅ 제거: _copyInviteCode (AlbumShareDialog로 통합)
 
   void _showDeleteConfirmDialog(BuildContext context) {
     showDialog(
@@ -166,7 +154,7 @@ class AlbumMenuSheet extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         title: Text(
-          album.role.canDelete ? '앨범을 삭제할까요?' : '앨범에서 나갈까요?',  // ✅ enum 사용
+          album.role.canDelete ? '앨범을 삭제할까요?' : '앨범에서 나갈까요?',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -205,7 +193,7 @@ class AlbumMenuSheet extends StatelessWidget {
               );
             },
             child: Text(
-              album.role.canDelete ? '삭제' : '나가기',  // ✅ enum 사용
+              album.role.canDelete ? '삭제' : '나가기',
               style: const TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.w600,
