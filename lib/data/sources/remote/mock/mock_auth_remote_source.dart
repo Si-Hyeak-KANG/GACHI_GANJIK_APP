@@ -18,7 +18,7 @@ class MockAuthRemoteSource implements AuthRemoteSource {
 
     if (request.email == _testEmail && request.password == _testPassword) {
       return _mockAuthResponse(
-        userId: 1,
+        userId: 'testUserId1',
         email: request.email,
         nickname: '석스키',
       );
@@ -38,7 +38,7 @@ class MockAuthRemoteSource implements AuthRemoteSource {
 
     // Google 로그인은 항상 성공 (Mock)
     return _mockAuthResponse(
-      userId: 2,
+      userId: 'testUserIdGoogle',
       email: 'google@test.com',
       nickname: 'Google유저',
     );
@@ -58,7 +58,7 @@ class MockAuthRemoteSource implements AuthRemoteSource {
     }
 
     return _mockAuthResponse(
-      userId: 3,
+      userId: 'testUserId2',
       email: request.email,
       nickname: request.nickname,
     );
@@ -66,7 +66,7 @@ class MockAuthRemoteSource implements AuthRemoteSource {
 
   // Mock 응답 생성 헬퍼
   AuthResponse _mockAuthResponse({
-    required int userId,
+    required String userId,
     required String email,
     required String nickname,
   }) {
@@ -74,10 +74,12 @@ class MockAuthRemoteSource implements AuthRemoteSource {
       accessToken: 'mock_access_token_$userId',
       refreshToken: 'mock_refresh_token_$userId',
       user: UserDto(
-        id: userId,
+        userId: userId,
         email: email,
         nickname: nickname,
-        profileImage: null,
+        profileImageUrl: null,
+        createdAt: '',
+        userTag: '',
       ),
     );
   }
