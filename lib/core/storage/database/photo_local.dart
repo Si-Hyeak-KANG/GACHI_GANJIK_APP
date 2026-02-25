@@ -7,26 +7,28 @@ class PhotoLocal {
   Id id = Isar.autoIncrement;
 
   @Index()
-  late int albumId;
+  late String photoId;
+
+  @Index()
+  late String albumId;
 
   late String imageUrl;
+  String? thumbnailUrl;
   String? message;
-  late String uploader;
-  late DateTime uploadedAt;
+  late String photoDate;
 
+  late String uploaderId;
+  late String uploaderNickname;
+  String? uploaderProfileImageUrl;
+
+  late DateTime createdAt;
   int likeCount = 0;
-  String? commentsJson;
+  int commentCount = 0;
 
-  // 동기화 상태 추가
   @Index()
-  String status = 'synced'; // synced, pending, failed
+  String status = 'synced';         // synced, pending, failed
 
-  // 로컬 파일 경로 (업로드 대기 중)
-  String? localPath;
-
-  // 재시도 횟수
+  String? localPath;                // 업로드 대기 중인 로컬 파일
   int retryCount = 0;
-
-  // 마지막 동기화 시도 시간
   DateTime? lastSyncAttempt;
 }

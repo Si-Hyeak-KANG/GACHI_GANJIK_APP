@@ -2,33 +2,30 @@ import 'package:isar_community/isar.dart';
 
 part 'album_local.g.dart';
 
-// → 오프라인에서 앨범 목록 표시
-// → 네트워크 없이도 앱 사용 가능
 @collection
 class AlbumLocal {
   Id id = Isar.autoIncrement;
 
   @Index()
-  late int albumId; // 서버의 실제 앨범 ID
+  late String albumId;
 
   late String title;
   String? categoriesJson;
   String? eventStartDate;
   String? eventEndDate;
-  String? coverImage;
+  String? coverImageUrl;
   late String inviteCode;
-
   int photoCount = 0;
   int memberCount = 0;
-
   late DateTime createdAt;
-  late DateTime lastSyncedAt; // 마지막 동기화 시간
+  DateTime? updatedAt;
+  late DateTime lastSyncedAt;
 
-  // 동기화 상태
   @Index()
-  String syncStatus = 'synced'; // synced, pending, failed
+  String syncStatus = 'synced';     // synced, pending, failed
 
-  int ownerId = 0;
-  int currentUserId = 0;
+  late String ownerId;
+  late String currentUserId;
+  late String role;
   bool isAdmin = false;
 }
