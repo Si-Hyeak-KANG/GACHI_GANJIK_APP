@@ -10,7 +10,7 @@ class AlbumDetailBinding extends Bindings {
   @override
   void dependencies() {
     final args = Get.arguments as Map<String, dynamic>;
-    final albumId = args['albumId'] as int;
+    final albumId = args['albumId'] as String;  // ✅ int → String
 
     Get.lazyPut<PhotoRepository>(
           () => PhotoRepositoryImpl(

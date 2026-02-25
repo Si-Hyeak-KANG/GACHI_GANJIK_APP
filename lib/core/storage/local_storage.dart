@@ -10,8 +10,8 @@ class LocalStorage extends GetxService {
     _prefs = await SharedPreferences.getInstance();
   }
 
-  Future<void> saveUserId(int userId) async {
-    await _prefs.setInt('user_id', userId);
+  Future<void> saveUserId(String userId) async {
+    await _prefs.setString('user_id', userId);
   }
 
   int? getUserId() {

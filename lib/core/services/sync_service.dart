@@ -64,13 +64,18 @@ class SyncService extends GetxService {
           ..categoriesJson = album.categories.join(',')
           ..eventStartDate = album.eventStartDate
           ..eventEndDate = album.eventEndDate
-          ..coverImage = album.coverImage
+          ..coverImageUrl = album.coverImageUrl              // ✅ coverImage → coverImageUrl
           ..inviteCode = album.inviteCode
           ..photoCount = album.photoCount
           ..memberCount = album.memberCount
-          ..createdAt = DateTime.parse(album.createdAt)
+          ..createdAt = album.createdAt                       // ✅ DateTime 그대로
+          ..updatedAt = album.updatedAt                       // ✅ 추가
           ..lastSyncedAt = DateTime.now()
-          ..syncStatus = 'synced';
+          ..syncStatus = 'synced'
+          ..ownerId = album.ownerId                           // ✅ 추가
+          ..currentUserId = album.currentUserId               // ✅ 추가
+          ..role = album.role                                 // ✅ 추가
+          ..isAdmin = album.isAdmin;                          // ✅ 추가
 
         await DatabaseService.saveAlbum(local);
       }
@@ -82,7 +87,8 @@ class SyncService extends GetxService {
   // 업로드 대기열 처리
   Future<void> processPendingUploads() async {
     try {
-      final pendingPhotos = await _photoLocalSource.getPendingPhotos();
+      // ✅ PhotoLocalSource에 getPendingPhotos 메서드 필요
+      final pendingPhotos = await DatabaseService.getPendingPhotos();  // ✅ 직접 사용
 
       for (final photo in pendingPhotos) {
         try {
@@ -90,11 +96,12 @@ class SyncService extends GetxService {
           if (photo.localPath != null) {
             final file = File(photo.localPath!);
             if (await file.exists()) {
-              // PhotoRepository를 통해 업로드
+              // ✅ photoDate 추가
               await _photoRepository.uploadPhoto(
                 albumId: photo.albumId,
                 imageFile: file,
                 message: photo.message,
+                photoDate: photo.photoDate,  // ✅ 추가
               );
 
               // 성공 시 상태 업데이트
@@ -102,14 +109,14 @@ class SyncService extends GetxService {
               photo.localPath = null;
               photo.retryCount = 0;
 
-              await _photoLocalSource.savePhotoLocal(photo);
+              await DatabaseService.savePhoto(photo);  // ✅ 직접 사용
 
               // 로컬 파일 삭제
               await file.delete();
             } else {
               // 파일이 없으면 실패 처리
               photo.status = 'failed';
-              await _photoLocalSource.savePhotoLocal(photo);
+              await DatabaseService.savePhoto(photo);  // ✅ 직접 사용
             }
           }
         } catch (e) {
@@ -122,7 +129,7 @@ class SyncService extends GetxService {
             photo.status = 'failed';
           }
 
-          await _photoLocalSource.savePhotoLocal(photo);
+          await DatabaseService.savePhoto(photo);  // ✅ 직접 사용
           print('사진 업로드 실패: $e');
         }
       }

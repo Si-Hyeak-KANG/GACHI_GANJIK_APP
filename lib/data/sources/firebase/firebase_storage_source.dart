@@ -32,7 +32,7 @@ class FirebaseStorageSource {
   
   // 이미지 업로드
   // 왜 압축? → 1MB 이하로 줄여서 업로드 속도 향상 & Storage 비용 절감
-  Future<String> uploadImage(File imageFile, int albumId) async {
+  Future<String> uploadImage(File imageFile, String albumId) async {
     try {
       // 1. 이미지 압축
       final compressedFile = await _compressImage(imageFile);

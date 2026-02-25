@@ -1,62 +1,59 @@
-import 'dart:convert';
 import '../../../core/storage/database/database_service.dart';
 import '../../../core/storage/database/photo_local.dart';
 import '../../models/photo/photo_dto.dart';
+import 'dart:convert';
 
 class PhotoLocalSource {
-  // 앨범의 로컬 사진 조회
-  Future<List<PhotoDto>> getLocalPhotos(int albumId) async {
+  /// 앨범의 로컬 사진 조회
+  Future<List<PhotoDto>> getLocalPhotos(String albumId) async {  // ✅ String
     final locals = await DatabaseService.getPhotosByAlbum(albumId);
-    return locals.map(_toDto).toList();
+    return locals.map(_localToDto).toList();
   }
 
-  // 사진 로컬 저장
+  /// 사진 저장
   Future<void> savePhoto(PhotoDto dto) async {
-    final local = PhotoLocal()
-      ..albumId = dto.albumId
-      ..imageUrl = dto.imageUrl
-      ..message = dto.message
-      ..uploader = dto.uploader
-      ..uploadedAt = DateTime.parse(dto.uploadedAt.replaceAll('.', '-'))
-      ..likeCount = dto.likeCount
-      ..commentsJson = jsonEncode(dto.comments.map((c) => {'user': c.user, 'text': c.text}).toList())
-      ..status = 'synced';
-
+    final local = _dtoToLocal(dto);
     await DatabaseService.savePhoto(local);
   }
 
-  // PhotoLocal 직접 저장 (대기열용)
-  Future<void> savePhotoLocal(PhotoLocal photo) async {
-  await DatabaseService.savePhoto(photo);
+  /// PhotoLocal 저장
+  Future<void> savePhotoLocal(PhotoLocal local) async {
+    await DatabaseService.savePhoto(local);
   }
 
-  // 대기 중인 사진 조회
-  Future<List<PhotoLocal>> getPendingPhotos() async {
-  return await DatabaseService.getPendingPhotos();
+  /// DTO → PhotoLocal 변환
+  PhotoLocal _dtoToLocal(PhotoDto dto) {
+    return PhotoLocal()
+      ..photoId = dto.id
+      ..albumId = dto.albumId
+      ..imageUrl = dto.imageUrl
+      ..thumbnailUrl = dto.thumbnailUrl
+      ..message = dto.message
+      ..photoDate = dto.photoDate
+      ..uploaderId = dto.uploaderId
+      ..uploaderNickname = dto.uploaderNickname
+      ..uploaderProfileImageUrl = dto.uploaderProfileImageUrl
+      ..createdAt = DateTime.parse(dto.createdAt)
+      ..likeCount = dto.likeCount
+      ..commentCount = dto.commentCount
+      ..status = 'synced';
   }
 
-  // DTO 변환
-  PhotoDto _toDto(PhotoLocal local) {
-    List<CommentDto> comments = [];
-    if (local.commentsJson != null) {
-      final list = jsonDecode(local.commentsJson!) as List;
-      comments = list.map((c) => CommentDto.fromJson(c as Map<String, dynamic>)).toList();
-    }
-
+  /// PhotoLocal → DTO 변환
+  PhotoDto _localToDto(PhotoLocal local) {
     return PhotoDto(
-      id: local.id,
+      id: local.photoId,
       albumId: local.albumId,
       imageUrl: local.imageUrl,
+      thumbnailUrl: local.thumbnailUrl,
       message: local.message,
-      uploader: local.uploader,
-      uploadedAt: _formatDate(local.uploadedAt),
+      photoDate: local.photoDate,
+      uploaderId: local.uploaderId,
+      uploaderNickname: local.uploaderNickname,
+      uploaderProfileImageUrl: local.uploaderProfileImageUrl,
+      createdAt: local.createdAt.toIso8601String(),
       likeCount: local.likeCount,
-      comments: comments,
+      commentCount: local.commentCount,
     );
-  }
-
-  String _formatDate(DateTime dt) {
-    return '${dt.year}.${dt.month.toString().padLeft(2, '0')}.${dt.day.toString().padLeft(2, '0')} '
-        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }
