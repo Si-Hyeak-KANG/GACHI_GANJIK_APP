@@ -14,8 +14,8 @@ class CreateAlbumController extends GetxController {
   final titleController = TextEditingController();
 
   final RxList<String> selectedCategories = <String>[].obs;
-  final RxString selectedStartDate = ''.obs;
-  final RxString selectedEndDate = ''.obs;
+  final RxString selectedStartDate = ''.obs;  // ✅ YYYY-MM-DD 형식
+  final RxString selectedEndDate = ''.obs;    // ✅ YYYY-MM-DD 형식
   final RxBool isLoading = false.obs;
   final RxString titleText = ''.obs;
 
@@ -26,7 +26,8 @@ class CreateAlbumController extends GetxController {
   ).obs;
 
   static const List<String> categories = [
-    '결혼', '여행', '모임', '생일', '기념일', '연인', '반려동물', '취미', '일상', '기록', '친구', '독서', '공부','기타',
+    '결혼', '여행', '모임', '생일', '기념일', '연인', '반려동물',
+    '취미', '일상', '기록', '친구', '독서', '공부', '기타',
   ];
 
   @override
@@ -37,7 +38,6 @@ class CreateAlbumController extends GetxController {
     });
   }
 
-
   @override
   void onClose() {
     titleController.dispose();
@@ -46,10 +46,8 @@ class CreateAlbumController extends GetxController {
 
   void selectCategory(String category) {
     if (selectedCategories.contains(category)) {
-      // 이미 선택됨 → 해제
       selectedCategories.remove(category);
     } else {
-      // 선택되지 않음 → 추가 (단, 최대 3개)
       if (selectedCategories.length < 3) {
         selectedCategories.add(category);
       } else {
@@ -63,6 +61,7 @@ class CreateAlbumController extends GetxController {
     }
   }
 
+  // ✅ 시작 날짜 선택
   Future<void> pickStartDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
@@ -82,11 +81,11 @@ class CreateAlbumController extends GetxController {
     );
 
     if (picked != null) {
-      final formatted =
-          '${picked.year}.${picked.month.toString().padLeft(2, '0')}.${picked.day.toString().padLeft(2, '0')}';
+      // ✅ YYYY-MM-DD 형식으로 저장
+      final formatted = _formatDateToApi(picked);
       selectedStartDate.value = formatted;
 
-      // ✅ 추가: 종료 날짜가 시작 날짜보다 이전이면 초기화
+      // 종료 날짜가 시작 날짜보다 이전이면 초기화
       if (selectedEndDate.value.isNotEmpty) {
         if (_compareDates(selectedEndDate.value, formatted) < 0) {
           selectedEndDate.value = '';
@@ -101,7 +100,7 @@ class CreateAlbumController extends GetxController {
     }
   }
 
-  // ✅ 추가: 종료 날짜 선택
+  // ✅ 종료 날짜 선택
   Future<void> pickEndDate(BuildContext context) async {
     if (selectedStartDate.value.isEmpty) {
       Get.snackbar(
@@ -113,13 +112,12 @@ class CreateAlbumController extends GetxController {
       return;
     }
 
-    // 시작 날짜를 DateTime으로 변환
-    final startDate = _parseDate(selectedStartDate.value);
+    final startDate = _parseApiDate(selectedStartDate.value);
 
     final picked = await showDatePicker(
       context: context,
       initialDate: startDate,
-      firstDate: startDate, // ✅ 시작 날짜 이후만 선택 가능
+      firstDate: startDate,  // 시작 날짜 이후만 선택 가능
       lastDate: DateTime(2100),
       builder: (context, child) {
         return Theme(
@@ -134,14 +132,20 @@ class CreateAlbumController extends GetxController {
     );
 
     if (picked != null) {
-      final formatted =
-          '${picked.year}.${picked.month.toString().padLeft(2, '0')}.${picked.day.toString().padLeft(2, '0')}';
+      // ✅ YYYY-MM-DD 형식으로 저장
+      final formatted = _formatDateToApi(picked);
       selectedEndDate.value = formatted;
     }
   }
 
-  DateTime _parseDate(String dateStr) {
-    final parts = dateStr.split('.');
+  // ✅ 날짜 형식 변환: DateTime → YYYY-MM-DD
+  String _formatDateToApi(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  // ✅ 날짜 파싱: YYYY-MM-DD → DateTime
+  DateTime _parseApiDate(String dateStr) {
+    final parts = dateStr.split('-');
     return DateTime(
       int.parse(parts[0]),
       int.parse(parts[1]),
@@ -149,10 +153,17 @@ class CreateAlbumController extends GetxController {
     );
   }
 
+  // ✅ 날짜 비교
   int _compareDates(String date1, String date2) {
-    final d1 = _parseDate(date1);
-    final d2 = _parseDate(date2);
+    final d1 = _parseApiDate(date1);
+    final d2 = _parseApiDate(date2);
     return d1.compareTo(d2);
+  }
+
+  // ✅ UI 표시용: YYYY-MM-DD → YYYY.MM.DD
+  String formatDateForDisplay(String apiDate) {
+    if (apiDate.isEmpty) return '';
+    return apiDate.replaceAll('-', '.');
   }
 
   // 앨범 생성
@@ -164,7 +175,6 @@ class CreateAlbumController extends GetxController {
       return;
     }
 
-    // 추가 검증
     if (selectedCategories.isEmpty) {
       Get.snackbar(
         '알림',
@@ -185,11 +195,12 @@ class CreateAlbumController extends GetxController {
 
     print('  title: ${titleController.text.trim()}');
     print('  categories: ${selectedCategories.toList()}');
-    print('  eventStartDate: ${selectedStartDate.value}');
-    print('  eventEndDate: ${selectedEndDate.value}');
+    print('  eventStartDate: ${selectedStartDate.value}');  // ✅ YYYY-MM-DD
+    print('  eventEndDate: ${selectedEndDate.value}');      // ✅ YYYY-MM-DD
 
     isLoading.value = true;
     try {
+      // ✅ API 형식 그대로 전달 (YYYY-MM-DD)
       final album = await _albumRepository.createAlbum(
         title: titleController.text.trim(),
         categories: selectedCategories.toList(),

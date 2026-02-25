@@ -143,7 +143,7 @@ class _CompactInfoOverlay extends GetView<PhotoDetailController> {
                   radius: 16,
                   backgroundColor: Colors.white.withOpacity(0.2),
                   child: Text(
-                    controller.currentPhoto.uploader[0],
+                    controller.currentPhoto.uploaderNickname[0],
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -157,7 +157,7 @@ class _CompactInfoOverlay extends GetView<PhotoDetailController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        controller.currentPhoto.uploader,
+                        controller.currentPhoto.uploaderNickname,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -165,7 +165,7 @@ class _CompactInfoOverlay extends GetView<PhotoDetailController> {
                         ),
                       ),
                       Text(
-                        controller.currentPhoto.dateOnly,
+                        controller.currentPhoto.photoDateDisplay,
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.white.withOpacity(0.8),
@@ -231,7 +231,7 @@ class _CompactInfoOverlay extends GetView<PhotoDetailController> {
                 // 댓글 (모달 열기)
                 _OutlinedIconButton(
                   icon: Icons.chat_bubble_outline,
-                  label: controller.currentPhoto.comments.length.toString(),
+                  label: controller.currentPhoto.commentCount.toString(),
                   onTap: controller.expandModal,
                 ),
 
@@ -391,7 +391,7 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
                   radius: 18,
                   backgroundColor: AppColors.mainLight,
                   child: Text(
-                    photo.uploader[0],
+                    photo.uploaderNickname[0],
                     style: const TextStyle(
                       color: AppColors.main,
                       fontWeight: FontWeight.w700,
@@ -405,7 +405,7 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        photo.uploader,
+                        photo.uploaderNickname,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -413,7 +413,7 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
                         ),
                       ),
                       Text(
-                        photo.uploadedAt,
+                        photo.uploadedAtDisplay,
                         style: const TextStyle(
                           fontSize: 11,
                           color: AppColors.textSecondary,
@@ -573,7 +573,7 @@ class _CommentSection extends GetView<PhotoDetailController> {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (_, index) {
                 final comment = controller.comments[index];
-                final isMine = comment.user == '나';
+                final isMine = comment.nickname == controller.currentUserNickname;
 
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -584,7 +584,7 @@ class _CommentSection extends GetView<PhotoDetailController> {
                           ? AppColors.mainLight
                           : AppColors.cardBg,
                       child: Text(
-                        comment.user[0],
+                        comment.nickname[0],
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -600,7 +600,7 @@ class _CommentSection extends GetView<PhotoDetailController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            comment.user,
+                            comment.nickname,
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -609,7 +609,7 @@ class _CommentSection extends GetView<PhotoDetailController> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            comment.text,
+                            comment.content,
                             style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.textPrimary,

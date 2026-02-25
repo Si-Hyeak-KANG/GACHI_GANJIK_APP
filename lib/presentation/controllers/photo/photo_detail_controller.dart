@@ -32,22 +32,22 @@ class PhotoDetailController extends GetxController {
   final RxBool isLoadingComments = false.obs;
   final RxBool isAddingComment = false.obs;
   final RxBool isSavingImage = false.obs;
-
   final RxBool isModalExpanded = false.obs;
 
   final commentController = TextEditingController();
 
   Photo get currentPhoto => photos[currentIndex.value];
+  bool get canDownload => album.albumRole.canManage;  // ✅ role → albumRole
 
-  bool get canDownload => album.role.canManage;
-
+  // ✅ 현재 사용자 정보 (추후 AuthController에서 가져오기)
+  String get _currentUserId => 'user-uuid-1';
+  String get _currentUserNickname => '석스키';
+  String get currentUserNickname => _currentUserNickname;
   @override
   void onInit() {
     super.onInit();
     currentIndex.value = initialIndex;
     pageController = PageController(initialPage: initialIndex);
-
-    // 현재 사진 데이터 로드
     _loadPhotoData();
   }
 
@@ -58,20 +58,16 @@ class PhotoDetailController extends GetxController {
     super.onClose();
   }
 
-  // 페이지 변경 시
   void onPageChanged(int index) {
     currentIndex.value = index;
-
     if (isModalExpanded.value) {
       isModalExpanded.value = false;
     }
-
     _loadPhotoData();
   }
 
   void expandModal() {
     isModalExpanded.value = true;
-
     if (comments.isEmpty && !isLoadingComments.value) {
       _loadComments();
     }
@@ -79,22 +75,19 @@ class PhotoDetailController extends GetxController {
 
   void collapseModal() {
     isModalExpanded.value = false;
-
-    // 키보드 닫기
     FocusScope.of(Get.context!).unfocus();
   }
 
-  // 사진 데이터 로드 (좋아요만 - 댓글은 모달 열 때)
   Future<void> _loadPhotoData() async {
     await _loadLikeStatus();
   }
 
-  // 좋아요 상태 로드
   Future<void> _loadLikeStatus() async {
     try {
+      // ✅ String UUID 사용
       isLiked.value = await _likeLocalSource.isLiked(
         currentPhoto.id,
-        'user_1',
+        _currentUserId,
       );
       likeCount.value = currentPhoto.likeCount;
     } catch (_) {
@@ -102,13 +95,12 @@ class PhotoDetailController extends GetxController {
     }
   }
 
-  // 댓글 로드
   Future<void> _loadComments() async {
     isLoadingComments.value = true;
     try {
+      // ✅ String UUID 사용
       final result = await _commentRepository.getComments(currentPhoto.id);
-      final allComments = [...currentPhoto.comments, ...result];
-      comments.assignAll(allComments);
+      comments.assignAll(result);
     } on NetworkException catch (e) {
       Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
     } finally {
@@ -116,12 +108,12 @@ class PhotoDetailController extends GetxController {
     }
   }
 
-  // 좋아요 토글
   Future<void> toggleLike() async {
     try {
+      // ✅ String UUID 사용
       await _likeLocalSource.toggleLike(
         currentPhoto.id,
-        'user_1',
+        _currentUserId,
       );
 
       isLiked.value = !isLiked.value;
@@ -135,13 +127,13 @@ class PhotoDetailController extends GetxController {
     }
   }
 
-  // 댓글 추가
   Future<void> addComment() async {
     final text = commentController.text.trim();
     if (text.isEmpty) return;
 
     isAddingComment.value = true;
     try {
+      // ✅ String UUID 사용
       final comment = await _commentRepository.addComment(
         currentPhoto.id,
         text,
@@ -149,7 +141,6 @@ class PhotoDetailController extends GetxController {
 
       comments.add(comment);
       commentController.clear();
-
       FocusScope.of(Get.context!).unfocus();
 
       Get.snackbar(
@@ -165,10 +156,11 @@ class PhotoDetailController extends GetxController {
     }
   }
 
-  // 댓글 삭제
   Future<void> deleteComment(int index) async {
     final comment = comments[index];
-    if (comment.user != '나') {
+
+    // ✅ nickname 비교
+    if (comment.nickname != _currentUserNickname) {
       Get.snackbar(
         '알림',
         '본인의 댓글만 삭제할 수 있습니다',
@@ -199,7 +191,11 @@ class PhotoDetailController extends GetxController {
     if (confirmed != true) return;
 
     try {
-      await _commentRepository.deleteComment(currentPhoto.id, index);
+      // ✅ String UUID 사용
+      await _commentRepository.deleteComment(
+        currentPhoto.id,
+        comment.commentId,  // ✅ index → commentId
+      );
       comments.removeAt(index);
 
       Get.snackbar(
@@ -213,7 +209,6 @@ class PhotoDetailController extends GetxController {
     }
   }
 
-  // 이미지 저장
   Future<void> saveImage() async {
     if (!canDownload) {
       Get.snackbar(

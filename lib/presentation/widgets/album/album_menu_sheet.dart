@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gachiganjik_app/domain/enum/album_role.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
@@ -52,7 +51,7 @@ class AlbumMenuSheet extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (album.role.canManage)
+                if (album.albumRole.canManage)
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -63,7 +62,7 @@ class AlbumMenuSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      album.role.displayName,
+                      album.albumRole.displayName,
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -78,7 +77,7 @@ class AlbumMenuSheet extends StatelessWidget {
           const SizedBox(height: 8),
           const Divider(height: 1, color: AppColors.divider),
 
-          if (album.role.canManage)
+          if (album.albumRole.canManage)
             _MenuItem(
               icon: Icons.share,
               title: '앨범 공유하기',
@@ -88,7 +87,7 @@ class AlbumMenuSheet extends StatelessWidget {
               },
             ),
 
-          if (album.role.canManage)
+          if (album.albumRole.canManage)
             const Divider(height: 1, color: AppColors.divider),
 
           _MenuItem(
@@ -105,7 +104,7 @@ class AlbumMenuSheet extends StatelessWidget {
             },
           ),
 
-          if (album.role.canManage) ...[
+          if (album.albumRole.canManage) ...[
             _MenuItem(
               icon: Icons.settings,
               title: '앨범 정보 관리',
@@ -124,8 +123,8 @@ class AlbumMenuSheet extends StatelessWidget {
           const Divider(height: 1, color: AppColors.divider),
 
           _MenuItem(
-            icon: album.role.canDelete ? Icons.delete_outline : Icons.logout,
-            title: album.role.canDelete ? '앨범 삭제' : '앨범 나가기',
+            icon: album.albumRole.canDelete ? Icons.delete_outline : Icons.logout,
+            title: album.albumRole.canDelete ? '앨범 삭제' : '앨범 나가기',
             isDestructive: true,
             onTap: () {
               Navigator.pop(context);
@@ -154,14 +153,14 @@ class AlbumMenuSheet extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         title: Text(
-          album.role.canDelete ? '앨범을 삭제할까요?' : '앨범에서 나갈까요?',
+          album.albumRole.canDelete ? '앨범을 삭제할까요?' : '앨범에서 나갈까요?',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
         ),
         content: Text(
-          album.role.canDelete
+          album.albumRole.canDelete
               ? '앨범을 삭제하면 모든 사진과 댓글이 영구적으로 삭제됩니다.\n정말 삭제하시겠습니까?'
               : '앨범에서 나가면 더 이상 사진을 볼 수 없습니다.\n정말 나가시겠습니까?',
           style: const TextStyle(
@@ -186,14 +185,14 @@ class AlbumMenuSheet extends StatelessWidget {
               Navigator.pop(context);
               Get.snackbar(
                 '준비 중',
-                album.role.canDelete
+                album.albumRole.canDelete
                     ? '앨범 삭제 기능은 곧 제공될 예정입니다'
                     : '앨범 나가기 기능은 곧 제공될 예정입니다',
                 snackPosition: SnackPosition.BOTTOM,
               );
             },
             child: Text(
-              album.role.canDelete ? '삭제' : '나가기',
+              album.albumRole.canDelete ? '삭제' : '나가기',
               style: const TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.w600,

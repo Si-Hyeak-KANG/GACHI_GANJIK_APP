@@ -175,7 +175,7 @@ class CreateAlbumView extends GetView<CreateAlbumController> {
                         Text(
                           controller.selectedStartDate.value.isEmpty
                               ? '시작 날짜를 선택해주세요'
-                              : controller.selectedStartDate.value,
+                              : controller.formatDateForDisplay(controller.selectedStartDate.value),
                           style: TextStyle(
                             fontSize: 15,
                             color: controller.selectedStartDate.value.isEmpty
@@ -226,7 +226,7 @@ class CreateAlbumView extends GetView<CreateAlbumController> {
                         Text(
                           controller.selectedEndDate.value.isEmpty
                               ? '종료 날짜를 선택해주세요'
-                              : controller.selectedEndDate.value,
+                              : controller.formatDateForDisplay(controller.selectedEndDate.value),
                           style: TextStyle(
                             fontSize: 15,
                             color: controller.selectedEndDate.value.isEmpty

@@ -16,18 +16,18 @@ class NetworkController extends GetxController {
   }
 
   Future<void> _checkInitialConnection() async {
-    final result = await _connectivity.checkConnectivity();
-    _updateConnectionStatus(result);
+    final results = await _connectivity.checkConnectivity();
+    _updateConnectionStatus(results);
   }
 
   void _listenToConnectionChanges() {
-    _connectivity.onConnectivityChanged.listen((result) {
-      _updateConnectionStatus(result);
+    _connectivity.onConnectivityChanged.listen((results) {
+      _updateConnectionStatus(results);
     });
   }
 
-  void _updateConnectionStatus(ConnectivityResult result) {
-    final connected = result != ConnectivityResult.none;
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
+    final connected = results.any((r) => r != ConnectivityResult.none);
 
     // 오프라인 → 온라인 전환 감지
     if (!isConnected.value && connected) {

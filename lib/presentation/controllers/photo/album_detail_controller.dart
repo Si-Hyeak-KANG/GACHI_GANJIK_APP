@@ -9,7 +9,7 @@ import '../network/network_controller.dart';
 
 class AlbumDetailController extends GetxController {
   final PhotoRepository _photoRepository;
-  final int albumId;
+  final String albumId;  // ✅ int → String
 
   AlbumDetailController({
     required PhotoRepository photoRepository,
@@ -31,19 +31,22 @@ class AlbumDetailController extends GetxController {
   Future<void> fetchMoments() async {
     isLoading.value = true;
     try {
+      // ✅ String UUID 사용
       final result = await _photoRepository.getAlbumMoments(albumId);
       moments.assignAll(result);
     } on NetworkException catch (e) {
       Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
     } catch (_) {
-      Get.snackbar('오류', '사진을 불러오지 못했습니다',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        '오류',
+        '사진을 불러오지 못했습니다',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isLoading.value = false;
     }
   }
 
-  // 카메라에서 촬영
   Future<void> pickFromCamera() async {
     final image = await _picker.pickImage(
       source: ImageSource.camera,
@@ -57,7 +60,6 @@ class AlbumDetailController extends GetxController {
     }
   }
 
-  // 갤러리에서 선택
   Future<void> pickFromGallery() async {
     final image = await _picker.pickImage(
       source: ImageSource.gallery,
@@ -71,7 +73,6 @@ class AlbumDetailController extends GetxController {
     }
   }
 
-  // 메시지 입력 다이얼로그 표시
   void _showMessageDialog(File imageFile) {
     Get.dialog(
       _MessageInputDialog(
@@ -81,21 +82,26 @@ class AlbumDetailController extends GetxController {
     );
   }
 
-  // 사진 업로드
+  // ✅ 사진 업로드 (photoDate 추가)
   Future<void> _uploadPhoto(File imageFile, String? message) async {
-    Get.back(); // 다이얼로그 닫기
+    Get.back();
     isUploading.value = true;
 
     try {
       final networkController = Get.find<NetworkController>();
       final isOffline = !networkController.isConnected.value;
+
+      // ✅ photoDate: 오늘 날짜 (YYYY-MM-DD)
+      final now = DateTime.now();
+      final photoDate = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
       final photo = await _photoRepository.uploadPhoto(
         albumId: albumId,
         imageFile: imageFile,
         message: message,
+        photoDate: photoDate,  // ✅ 추가
       );
 
-      // 목록 갱신
       await fetchMoments();
 
       if (isOffline) {
@@ -117,15 +123,17 @@ class AlbumDetailController extends GetxController {
     } on NetworkException catch (e) {
       Get.snackbar('업로드 실패', e.message, snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
-      Get.snackbar('오류', '사진 업로드에 실패했습니다',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        '오류',
+        '사진 업로드에 실패했습니다',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isUploading.value = false;
     }
   }
 }
 
-// 메시지 입력 다이얼로그 위젯
 class _MessageInputDialog extends StatelessWidget {
   final Function(String?) onSubmit;
 
