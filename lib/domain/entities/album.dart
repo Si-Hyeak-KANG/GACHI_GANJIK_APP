@@ -1,20 +1,23 @@
 import '../enum/album_role.dart';
 
 class Album {
-  final int id;
+  final String id;                  // ✅ String (UUID)
   final String title;
   final List<String> categories;
-  final String eventStartDate;
+  final String eventStartDate;      // ✅ YYYY-MM-DD 형식
   final String? eventEndDate;
-  final String? coverImage;
+  final String? coverImageUrl;      // ✅ coverImage → coverImageUrl
   final String inviteCode;
   final int photoCount;
   final int memberCount;
-  final String createdAt;
+  final DateTime createdAt;         // ✅ DateTime
+  final DateTime? updatedAt;        // ✅ 추가
 
-  final int ownerId; // 앨범 생성자 ID
-  final int currentUserId; // 현재 로그인한 사용자 ID
-  final bool isAdmin;
+  // 권한 관련
+  final String ownerId;             // ✅ String (UUID)
+  final String currentUserId;       // ✅ String (UUID)
+  final String role;                // ✅ "OWNER" | "MEMBER"
+  final bool isAdmin;               // ✅ 로컬 전용 (API 없음)
 
   Album({
     required this.id,
@@ -22,52 +25,46 @@ class Album {
     required this.categories,
     required this.eventStartDate,
     this.eventEndDate,
-    this.coverImage,
+    this.coverImageUrl,
     required this.inviteCode,
     required this.photoCount,
     required this.memberCount,
     required this.createdAt,
+    this.updatedAt,
     required this.ownerId,
     required this.currentUserId,
+    required this.role,
     this.isAdmin = false,
   });
 
-  AlbumRole get role {
-    if (currentUserId == ownerId) return AlbumRole.owner;
-    if (isAdmin) return AlbumRole.admin;
-    if (currentUserId > 0) return AlbumRole.member;
+  AlbumRole get albumRole {
+    if (role == 'OWNER') return AlbumRole.owner;
+    if (isAdmin) return AlbumRole.admin;  // 로컬 전용
+    if (currentUserId.isNotEmpty) return AlbumRole.member;
     return AlbumRole.guest;
   }
 
-  bool get isOwner => currentUserId == ownerId;
+  bool get isOwner => role == 'OWNER';
   bool get canManage => isOwner || isAdmin;
   bool get canShare => canManage;
 
-  // 날짜 파싱 헬퍼
-  DateTime get createdAtAsDateTime {
-    try {
-      final dateStr = createdAt.trim();
-      if (dateStr.contains('.')) {
-        return DateTime.parse(dateStr.replaceAll('.', '-'));
-      }
-      return DateTime.parse(dateStr);
-    } catch (e) {
-      return DateTime.now();
-    }
-  }
-
-  // 카테고리 문자열 - 표시용
+  // 카테고리 문자열
   String get categoriesDisplay {
     if (categories.isEmpty) return '';
     return categories.join(' · ');
   }
 
-  // 날짜 기간 문자열 - 표시용
+  // 날짜 기간 문자열
   String get eventDateDisplay {
     if (eventEndDate == null || eventEndDate == eventStartDate) {
-      return eventStartDate;
+      return _formatDate(eventStartDate);
     }
-    return '$eventStartDate - $eventEndDate';
+    return '${_formatDate(eventStartDate)} ~ ${_formatDate(eventEndDate!)}';
+  }
+
+  // YYYY-MM-DD → YYYY.MM.DD 변환 (UI 표시용)
+  String _formatDate(String isoDate) {
+    return isoDate.replaceAll('-', '.');
   }
 
   String get qrCodeData => 'gachiganjik://join?code=$inviteCode';
