@@ -1,7 +1,12 @@
 import '../entities/photo.dart';
 
 abstract class CommentRepository {
-  Future<List<Comment>> getComments(int photoId);
-  Future<Comment> addComment(int photoId, String text);
-  Future<void> deleteComment(int photoId, int commentIndex);
+  /// 댓글 목록 조회
+  Future<List<Comment>> getComments(String photoId);  // ✅ String
+
+  /// 댓글 작성
+  Future<Comment> addComment(String photoId, String content);  // ✅ String
+
+  /// 댓글 삭제
+  Future<void> deleteComment(String photoId, String commentId);  // ✅ String (index → commentId)
 }

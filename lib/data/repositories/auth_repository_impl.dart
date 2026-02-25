@@ -31,7 +31,7 @@ class AuthRepositoryImpl implements AuthRepository {
     await _saveTokens(
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
-      userId: response.user.id,
+      userId: response.user.userId,
     );
 
     return response.user.toEntity();
@@ -82,7 +82,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> _saveTokens({
     required String accessToken,
     required String refreshToken,
-    required int userId,
+    required String userId,
   }) async {
     await _secureStorage.saveAccessToken(accessToken);
     await _secureStorage.saveRefreshToken(refreshToken);
