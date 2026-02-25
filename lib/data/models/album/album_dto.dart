@@ -1,18 +1,23 @@
 import '../../../domain/entities/album.dart';
 
 class AlbumDto {
-  final int id;
+  final String id;                  // String (UUID)
   final String title;
   final List<String> categories;
   final String eventStartDate;
   final String? eventEndDate;
-  final String? coverImage;
+  final String? coverImageUrl;
   final String inviteCode;
   final int photoCount;
   final int memberCount;
   final String createdAt;
-  final int ownerId;
-  final int currentUserId;
+  final String? updatedAt;
+
+  // 권한
+  final String ownerId;
+  final String role;
+
+  final String? currentUserId;
   final bool isAdmin;
 
   AlbumDto({
@@ -21,51 +26,47 @@ class AlbumDto {
     required this.categories,
     required this.eventStartDate,
     this.eventEndDate,
-    this.coverImage,
+    this.coverImageUrl,
     required this.inviteCode,
     required this.photoCount,
     required this.memberCount,
     required this.createdAt,
+    this.updatedAt,
     required this.ownerId,
-    required this.currentUserId,
+    required this.role,
+    this.currentUserId,
     this.isAdmin = false,
   });
 
-  factory AlbumDto.fromJson(Map<String, dynamic> json) {
+  factory AlbumDto.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
     return AlbumDto(
-      id: json['id'] as int,
+      id: json['albumId'] as String,
       title: json['title'] as String,
       categories: (json['categories'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ?? [],
       eventStartDate: json['eventStartDate'] as String,
       eventEndDate: json['eventEndDate'] as String?,
-      coverImage: json['coverImage'] as String?,
+      coverImageUrl: json['coverImageUrl'] as String?,
       inviteCode: json['inviteCode'] as String,
-      photoCount: json['photoCount'] as int,
-      memberCount: json['memberCount'] as int,
+      photoCount: json['photoCount'] as int? ?? 0,
+      memberCount: json['memberCount'] as int? ?? 0,
       createdAt: json['createdAt'] as String,
-      ownerId: json['ownerId'] as int,
-      currentUserId: json['currentUserId'] as int,
-      isAdmin: json['isAdmin'] as bool ?? false,
+      updatedAt: json['updatedAt'] as String?,
+      ownerId: json['ownerId'] as String,
+      role: json['role'] as String,
+      currentUserId: currentUserId,
+      isAdmin: false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'title': title,
       'categories': categories,
       'eventStartDate': eventStartDate,
       'eventEndDate': eventEndDate,
-      'coverImage': coverImage,
-      'inviteCode': inviteCode,
-      'photoCount': photoCount,
-      'memberCount': memberCount,
-      'createdAt': createdAt,
-      'ownerId' : ownerId,
-      'currentUserId' : currentUserId,
-      'isAdmin' : isAdmin
+      'coverImageUrl': coverImageUrl,
     };
   }
 
@@ -76,13 +77,15 @@ class AlbumDto {
       categories: categories,
       eventStartDate: eventStartDate,
       eventEndDate: eventEndDate,
-      coverImage: coverImage,
+      coverImageUrl: coverImageUrl,
       inviteCode: inviteCode,
       photoCount: photoCount,
       memberCount: memberCount,
-      createdAt: createdAt,
+      createdAt: DateTime.parse(createdAt),
+      updatedAt: updatedAt != null ? DateTime.parse(updatedAt!) : null,
       ownerId: ownerId,
-      currentUserId: currentUserId,
+      currentUserId: currentUserId ?? '',
+      role: role,
       isAdmin: isAdmin,
     );
   }
