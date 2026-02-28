@@ -91,17 +91,6 @@ class AlbumDetailController extends GetxController {
       final networkController = Get.find<NetworkController>();
       final isOffline = !networkController.isConnected.value;
 
-      // ✅ photoDate: 오늘 날짜 (YYYY-MM-DD)
-      final now = DateTime.now();
-      final photoDate = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-
-      final photo = await _photoRepository.uploadPhoto(
-        albumId: albumId,
-        imageFile: imageFile,
-        message: message,
-        photoDate: photoDate,  // ✅ 추가
-      );
-
       await fetchMoments();
 
       if (isOffline) {

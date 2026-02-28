@@ -1,9 +1,7 @@
-import 'package:get/get.dart';
-import '../../core/storage/database/database_service.dart';
 import '../../core/storage/database/album_local.dart';
+import '../../core/storage/database/database_service.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/repositories/album_repository.dart';
-import '../../presentation/controllers/auth/auth_controller.dart';
 import '../models/album/create_album_request.dart';
 import '../models/album/join_album_request.dart';
 import '../models/album/update_album_request.dart';
