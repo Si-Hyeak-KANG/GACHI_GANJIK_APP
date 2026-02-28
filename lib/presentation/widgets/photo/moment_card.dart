@@ -93,6 +93,9 @@ class MomentCard extends StatelessWidget {
                 final photo = moment.photos[index];
                 final isLast = index == 5 && moment.photos.length > 6;
 
+                // Hero 태그: photo.id 기준으로 출발지와 도착지를 연결
+                final heroTag = 'photo_hero_${photo.id}';
+
                 return GestureDetector(
                   onTap: () => Get.toNamed(
                     Routes.photoDetail,
@@ -102,57 +105,24 @@ class MomentCard extends StatelessWidget {
                       'album': album,
                     },
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: index == moment.photos.length - 3
-                          ? const Radius.circular(18)
-                          : Radius.zero,
-                      bottomRight: index == moment.photos.length - 1 ||
-                          (isLast && moment.photos.length == 6)
-                          ? const Radius.circular(18)
-                          : Radius.zero,
-                    ),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: photo.imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(
-                            color: AppColors.cardBg,
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.main,
-                                strokeWidth: 2,
-                              ),
-                            ),
-                          ),
-                          errorWidget: (_, __, ___) => Container(
-                            color: AppColors.cardBg,
-                            child: const Icon(
-                              Icons.image_not_supported_outlined,
-                              color: AppColors.inactive,
-                              size: 32,
-                            ),
-                          ),
-                        ),
-
-                        // 더보기 오버레이
-                        if (isLast)
-                          Container(
-                            color: Colors.black45,
-                            child: Center(
-                              child: Text(
-                                '+${moment.photos.length - 6}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
+                  child: Hero(
+                    tag: heroTag,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: index == moment.photos.length - 3 ||
+                            (moment.photos.length < 3 && index == 0)
+                            ? const Radius.circular(18)
+                            : Radius.zero,
+                        bottomRight: index == moment.photos.length - 1 ||
+                            (isLast && moment.photos.length == 6)
+                            ? const Radius.circular(18)
+                            : Radius.zero,
+                      ),
+                      child: _PhotoThumbnail(
+                        imageUrl: photo.imageUrl,
+                        isLast: isLast,
+                        remainCount: moment.photos.length - 6,
+                      ),
                     ),
                   ),
                 );
@@ -164,10 +134,65 @@ class MomentCard extends StatelessWidget {
     );
   }
 
-  String _formatDateOnly(String dateStr) {
-    if (dateStr.contains(' ')) {
-      return dateStr.split(' ')[0];
-    }
-    return dateStr;
+  String _formatDateOnly(String date) {
+    // "2025-04-18" → "2025.04.18"
+    return date.replaceAll('-', '.');
+  }
+}
+
+class _PhotoThumbnail extends StatelessWidget {
+  final String imageUrl;
+  final bool isLast;
+  final int remainCount;
+
+  const _PhotoThumbnail({
+    required this.imageUrl,
+    required this.isLast,
+    required this.remainCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Container(
+            color: AppColors.cardBg,
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.main,
+                strokeWidth: 2,
+              ),
+            ),
+          ),
+          errorWidget: (_, __, ___) => Container(
+            color: AppColors.cardBg,
+            child: const Icon(
+              Icons.broken_image_outlined,
+              color: AppColors.inactive,
+              size: 28,
+            ),
+          ),
+        ),
+        // 마지막 셀 "+N" 오버레이
+        if (isLast)
+          Container(
+            color: Colors.black54,
+            child: Center(
+              child: Text(
+                '+$remainCount',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }

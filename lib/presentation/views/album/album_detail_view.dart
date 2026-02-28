@@ -126,61 +126,95 @@ class _CoverSection extends StatelessWidget {
         Container(
           width: double.infinity,
           height: 240,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: _getCoverGradient(),
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              const SizedBox(height: 40), // AppBar 공간 확보
-
-              // 앨범 아이콘
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.photo_album_rounded,
-                  size: 48,
-                  color: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // 앨범 제목
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  album.title,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+              // 1️⃣ coverImageUrl이 있으면 → 배경 전체를 이미지로
+              if (album.coverImageUrl != null &&
+                  album.coverImageUrl!.trim().isNotEmpty)
+                Image.network(
+                  album.coverImageUrl!.trim(),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: _getCoverGradient(),
+                      ),
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                )
+              else
+              // 2️⃣ 없으면 기존 그라디언트
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: _getCoverGradient(),
+                    ),
+                  ),
                 ),
+
+              Container(
+                color: Colors.black.withOpacity(0.5),
               ),
 
-              const SizedBox(height: 8),
+              // 4️⃣ 텍스트 영역
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 40),
 
-              // 카테고리 & 날짜
-              Text(
-                '${album.categoriesDisplay} · ${album.eventDateDisplay}',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white.withOpacity(0.9),
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
+                  // coverImageUrl 없을 때만 원형 아이콘 표시
+                  if (album.coverImageUrl == null ||
+                      album.coverImageUrl!.trim().isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: Image.asset(
+                          'assets/icons/album_icon.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+
+                  const SizedBox(height: 16),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      album.title,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    '${album.categoriesDisplay} · ${album.eventDateDisplay}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ],
           ),

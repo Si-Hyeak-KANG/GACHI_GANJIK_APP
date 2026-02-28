@@ -67,15 +67,35 @@ class AlbumCard extends StatelessWidget {
                   ),
                 ),
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    // 커버 이미지 placeholder
-                    const Center(
-                      child: Icon(
-                        Icons.photo_album_rounded,
-                        size: 48,
-                        color: AppColors.main,
+                    // coverImageUrl이 있을 경우 → 네트워크 이미지
+                    if (album.coverImageUrl != null &&
+                        album.coverImageUrl!.trim().isNotEmpty)
+                      Image.network(
+                        album.coverImageUrl!.trim(),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: Image.asset(
+                              'assets/icons/album_icon.png',
+                              fit: BoxFit.contain,
+                            ),
+                          );
+                        },
+                      )
+                    else
+                    // 없을 경우 → 나만의 기본 앨범 이미지
+                      SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Image.asset(
+                          'assets/icons/album_icon.png',
+                          fit: BoxFit.contain,
+                        ),
                       ),
-                    ),
                     if (album.categories.isNotEmpty)
                       Positioned(
                         top: 12,

@@ -15,8 +15,8 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       categories: ['결혼'],
       eventStartDate: '2026-10-27',
       eventEndDate: '2026-10-27',
-      coverImageUrl:
-      'https://postfiles.pstatic.net/MjAyNDA3MTdfMjI5/MDAxNzIxMTg5MjM4MTMx.ZuYA34DWP-iUYmaL8s5eocRmMjjDgOMdrmHd0EgtWCAg.fCEHtzdsFJwCU4MdzU3Cl_z0QjtQlnrlglyqMNLAcwsg.JPEG/1cf8ecbe255b47497235b125563bd083.jpg?type=w3840',
+      // 웨딩 이미지
+      coverImageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
       inviteCode: 'WD2025A',
       photoCount: 24,
       memberCount: 15,
@@ -33,8 +33,8 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       categories: ['여행', '친구', '기록'],
       eventStartDate: '2025-01-27',
       eventEndDate: '2025-12-27',
-      coverImageUrl:
-      'https://postfiles.pstatic.net/MjAyMTA4MjFfMTAx/MDAxNjI5NTU3MTUzNzg4.mXEv2psD93O8aqiXm6gQO8Ys4p6r-KuqiDR39QRMqXEg.3cLE2fmn2bAPlgn9qXWdTO6Q6D3apApHVFphbeHYMLUg.JPEG.chooddingg/6EDC7128-CAA9-4EDE-9AE9-71D77D4D300F-16837-0000081DCC181025_file.jpg?type=w773',
+      // 제주 자연 이미지
+      coverImageUrl: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80',
       inviteCode: 'JJ03B2',
       photoCount: 48,
       memberCount: 6,
@@ -51,6 +51,7 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       categories: ['모임', '독서'],
       eventStartDate: '2022-03-27',
       eventEndDate: null,
+      // 커버 없음 (그라디언트 표시)
       coverImageUrl: null,
       inviteCode: 'MT14C3',
       photoCount: 12,
@@ -132,9 +133,7 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
     }
 
     final album = found.first;
-    final alreadyJoined =
-        album.currentUserId == _currentUserId && album.role != 'GUEST';
-    if (alreadyJoined) {
+    if (album.currentUserId == _currentUserId && album.role != 'GUEST') {
       throw NetworkException(
         message: '이미 참여 중인 앨범입니다',
         type: NetworkExceptionType.conflict,
@@ -147,10 +146,7 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
   }
 
   @override
-  Future<AlbumDto> updateAlbum(
-      String albumId,
-      UpdateAlbumRequest request,
-      ) async {
+  Future<AlbumDto> updateAlbum(String albumId, UpdateAlbumRequest request) async {
     await Future.delayed(const Duration(milliseconds: 800));
 
     final index = _albums.indexWhere((a) => a.id == albumId);

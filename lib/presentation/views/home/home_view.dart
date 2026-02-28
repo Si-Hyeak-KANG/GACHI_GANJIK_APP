@@ -47,6 +47,7 @@ class _HomeViewState extends State<HomeView> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         selectedItemColor: AppColors.main,
@@ -162,17 +163,20 @@ class _AlbumListScreen extends GetView<AlbumListController> {
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
             child: Row(
               children: [
-                const Icon(Icons.photo_album, color: AppColors.main, size: 28),
+                Image.asset(
+                  'assets/images/logo2.png',
+                  height: 28,
+                ),
                 const SizedBox(width: 8),
                 const Text(
                   '같이간직',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AppColors.main,
                   ),
                 ),
                 const Spacer(),

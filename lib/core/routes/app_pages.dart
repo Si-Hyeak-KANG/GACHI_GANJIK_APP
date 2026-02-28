@@ -79,8 +79,10 @@ class AppPages {
       name: Routes.photoDetail,
       page: () => const PhotoDetailView(),
       binding: PhotoDetailBinding(),
-      transition: Transition.zoom,
-      transitionDuration: const Duration(milliseconds: 250),
+      // Hero 애니메이션이 주 전환 — 라우트 자체는 fade로 처리해야 자연스러움
+      // zoom을 쓰면 Hero와 충돌하여 어색한 이중 애니메이션 발생
+      transition: Transition.fade,
+      transitionDuration: const Duration(milliseconds: 280),
     ),
 
     GetPage(

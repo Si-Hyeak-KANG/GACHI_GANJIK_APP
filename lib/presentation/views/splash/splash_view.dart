@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/routes/app_pages.dart';
-import '../../controllers/auth/auth_controller.dart';
+import '../../../domain/repositories/auth_repository.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -13,150 +12,104 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnim;
+  late final Animation<double> _scaleAnim;
 
   @override
   void initState() {
     super.initState();
 
-    _animationController = AnimationController(
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
-      duration: const Duration(milliseconds: 800),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    _fadeAnim = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    _scaleAnim = Tween<double>(begin: 0.92, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animController,
+        curve: Curves.easeOutBack,
+      ),
     );
 
-    _animationController.forward();
+    _animController.forward();
     _navigate();
   }
 
-  // 왜 2초 딜레이?
-  // → 스플래시 화면을 보여주면서 토큰 체크 후 자동 이동
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 2500));
 
-    final isLoggedIn = await Get.find<AuthController>()
-        .isLoggedInState();
+    final authRepository = Get.find<AuthRepository>();
+    final isLoggedIn = await authRepository.isLoggedIn();
 
-    if (isLoggedIn) {
-      Get.offAllNamed(Routes.home);
-    } else {
-      Get.offAllNamed(Routes.login);
-    }
+    Get.offAllNamed(isLoggedIn ? Routes.home : Routes.login);
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: Stack(
-        children: [
-          // 배경 웨이브
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 200,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, AppColors.mainLight],
-                ),
-              ),
-            ),
-          ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const Spacer(flex: 3),
 
-          // 메인 컨텐츠
-          Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
+            /// 🔥 로고 + 텍스트 영역
+            FadeTransition(
+              opacity: _fadeAnim,
+              child: ScaleTransition(
+                scale: _scaleAnim,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // 마스코트 이미지 (임시 아이콘)
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: AppColors.mainLight,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.main.withOpacity(0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.photo_album_rounded,
-                        size: 60,
-                        color: AppColors.main,
-                      ),
+                    Image.asset(
+                      'assets/images/logo2.png',
+                      width: double.infinity,
+                      fit: BoxFit.contain, // 비율 유지
                     ),
-                    const SizedBox(height: 24),
+
+                    const SizedBox(height: 12),
+
                     const Text(
                       '같이간직',
                       style: TextStyle(
                         fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      '함께 만드는 우리의 사진첩',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'NotoSansKR',
+                        color: Color(0xFFED634C),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
 
-          // 로딩 인디케이터
-          const Positioned(
-            bottom: 60,
-            left: 0,
-            right: 0,
-            child: Center(
+            const Spacer(flex: 4),
+
+            /// 🔥 하단 로딩 인디케이터 (요즘 스타일)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 40),
               child: SizedBox(
-                width: 20,
-                height: 20,
+                width: 22,
+                height: 22,
                 child: CircularProgressIndicator(
-                  color: AppColors.main,
-                  strokeWidth: 2,
+                  strokeWidth: 2.2,
+                  color: Color(0xFFed634c),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
