@@ -4,25 +4,26 @@ import 'package:get/get.dart';
 import '../../../domain/entities/photo.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/repositories/comment_repository.dart';
-import '../../../data/sources/local/like_local_source.dart';
+import '../../../data/repositories/photo_repository_impl.dart';
 import '../../../core/network/network_exception.dart';
 import '../../../core/utils/gallery_saver.dart';
+import '../auth/auth_controller.dart';
 
 class PhotoDetailController extends GetxController {
   final CommentRepository _commentRepository;
-  final LikeLocalSource _likeLocalSource;
+  final PhotoRepositoryImpl _photoRepository;
   final List<Photo> photos;
   final int initialIndex;
   final Album album;
 
   PhotoDetailController({
     required CommentRepository commentRepository,
-    required LikeLocalSource likeLocalSource,
+    required PhotoRepositoryImpl photoRepository,
     required this.photos,
     required this.initialIndex,
     required this.album,
   })  : _commentRepository = commentRepository,
-        _likeLocalSource = likeLocalSource;
+        _photoRepository = photoRepository;
 
   late final PageController pageController;
   final RxInt currentIndex = 0.obs;
@@ -37,12 +38,27 @@ class PhotoDetailController extends GetxController {
   final commentController = TextEditingController();
 
   Photo get currentPhoto => photos[currentIndex.value];
-  bool get canDownload => album.albumRole.canManage;  // ✅ role → albumRole
+  bool get canDownload => album.albumRole.canManage;
 
-  // ✅ 현재 사용자 정보 (추후 AuthController에서 가져오기)
-  String get _currentUserId => 'user-uuid-1';
-  String get _currentUserNickname => '석스키';
+  String get _currentUserId {
+    try {
+      return Get.find<AuthController>().currentUser.value?.userId ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String get _currentUserNickname {
+    try {
+      return Get.find<AuthController>().currentUser.value?.nickname ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  // View에서 닉네임이 필요한 경우 사용
   String get currentUserNickname => _currentUserNickname;
+
   @override
   void onInit() {
     super.onInit();
@@ -60,9 +76,7 @@ class PhotoDetailController extends GetxController {
 
   void onPageChanged(int index) {
     currentIndex.value = index;
-    if (isModalExpanded.value) {
-      isModalExpanded.value = false;
-    }
+    if (isModalExpanded.value) isModalExpanded.value = false;
     _loadPhotoData();
   }
 
@@ -79,27 +93,18 @@ class PhotoDetailController extends GetxController {
   }
 
   Future<void> _loadPhotoData() async {
-    await _loadLikeStatus();
-  }
-
-  Future<void> _loadLikeStatus() async {
-    try {
-      // ✅ String UUID 사용
-      isLiked.value = await _likeLocalSource.isLiked(
-        currentPhoto.id,
-        _currentUserId,
-      );
-      likeCount.value = currentPhoto.likeCount;
-    } catch (_) {
-      // 오류 무시
-    }
+    likeCount.value = currentPhoto.likeCount;
+    // 좋아요 초기 상태는 서버에서 받아오지 않으므로 false로 초기화
+    // (실제 서버에서 isLiked 필드가 내려오면 photo.isLiked로 처리)
+    isLiked.value = false;
   }
 
   Future<void> _loadComments() async {
     isLoadingComments.value = true;
     try {
-      // ✅ String UUID 사용
-      final result = await _commentRepository.getComments(currentPhoto.id);
+      // CommentRepository는 photoId만 받으므로 albumId::photoId 형태로 전달
+      final compositeId = '${album.id}::${currentPhoto.id}';
+      final result = await _commentRepository.getComments(compositeId);
       comments.assignAll(result);
     } on NetworkException catch (e) {
       Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
@@ -109,16 +114,25 @@ class PhotoDetailController extends GetxController {
   }
 
   Future<void> toggleLike() async {
-    try {
-      // ✅ String UUID 사용
-      await _likeLocalSource.toggleLike(
-        currentPhoto.id,
-        _currentUserId,
-      );
+    // 낙관적 업데이트: 즉시 UI 반영 후 서버 요청
+    final prevLiked = isLiked.value;
+    final prevCount = likeCount.value;
 
-      isLiked.value = !isLiked.value;
-      likeCount.value += isLiked.value ? 1 : -1;
+    isLiked.value = !prevLiked;
+    likeCount.value = isLiked.value ? prevCount + 1 : prevCount - 1;
+
+    try {
+      final result = await _photoRepository.toggleLike(
+        album.id,
+        currentPhoto.id,
+      );
+      // 서버 결과로 덮어씌움 (정확성 보장)
+      isLiked.value = result.isLiked;
+      likeCount.value = result.likeCount;
     } catch (_) {
+      // 서버 실패 시 롤백
+      isLiked.value = prevLiked;
+      likeCount.value = prevCount;
       Get.snackbar(
         '오류',
         '좋아요 처리에 실패했습니다',
@@ -133,12 +147,8 @@ class PhotoDetailController extends GetxController {
 
     isAddingComment.value = true;
     try {
-      // ✅ String UUID 사용
-      final comment = await _commentRepository.addComment(
-        currentPhoto.id,
-        text,
-      );
-
+      final compositeId = '${album.id}::${currentPhoto.id}';
+      final comment = await _commentRepository.addComment(compositeId, text);
       comments.add(comment);
       commentController.clear();
       FocusScope.of(Get.context!).unfocus();
@@ -159,8 +169,8 @@ class PhotoDetailController extends GetxController {
   Future<void> deleteComment(int index) async {
     final comment = comments[index];
 
-    // ✅ nickname 비교
-    if (comment.nickname != _currentUserNickname) {
+    // 본인 댓글 여부 확인 (userId 기준)
+    if (comment.userId != _currentUserId) {
       Get.snackbar(
         '알림',
         '본인의 댓글만 삭제할 수 있습니다',
@@ -191,11 +201,8 @@ class PhotoDetailController extends GetxController {
     if (confirmed != true) return;
 
     try {
-      // ✅ String UUID 사용
-      await _commentRepository.deleteComment(
-        currentPhoto.id,
-        comment.commentId,  // ✅ index → commentId
-      );
+      final compositeId = '${album.id}::${currentPhoto.id}';
+      await _commentRepository.deleteComment(compositeId, comment.commentId);
       comments.removeAt(index);
 
       Get.snackbar(
@@ -220,25 +227,13 @@ class PhotoDetailController extends GetxController {
     }
 
     isSavingImage.value = true;
-
     try {
-      final success = await GallerySaver.saveImageFromUrl(
-        currentPhoto.imageUrl,
+      final success = await GallerySaver.saveImageFromUrl(currentPhoto.imageUrl);
+      Get.snackbar(
+        success ? '완료' : '실패',
+        success ? '갤러리에 저장되었습니다' : '이미지 저장에 실패했습니다',
+        snackPosition: SnackPosition.BOTTOM,
       );
-
-      if (success) {
-        Get.snackbar(
-          '완료',
-          '갤러리에 저장되었습니다',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      } else {
-        Get.snackbar(
-          '실패',
-          '이미지 저장에 실패했습니다',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
     } catch (e) {
       Get.snackbar(
         '오류',

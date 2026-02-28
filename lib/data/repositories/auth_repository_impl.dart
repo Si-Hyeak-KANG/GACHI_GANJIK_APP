@@ -6,8 +6,6 @@ import '../models/auth/login_request.dart';
 import '../models/auth/signup_request.dart';
 import '../sources/remote/auth_remote_source.dart';
 
-// → DataSource(API 통신)와 Domain(비즈니스 로직)을 연결
-// → 토큰 저장, DTO→Entity 변환 등 처리
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteSource _remoteSource;
   final SecureStorage _secureStorage;
@@ -26,66 +24,88 @@ class AuthRepositoryImpl implements AuthRepository {
     final response = await _remoteSource.emailLogin(
       LoginRequest(email: email, password: password),
     );
-
-    // 토큰 저장
-    await _saveTokens(
+    await _secureStorage.saveTokens(
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
-      userId: response.user.userId,
     );
+    await _localStorage.saveUserId(response.userId);
 
-    return response.user.toEntity();
+    return User(
+      userId: response.userId,
+      nickname: response.nickname,
+      email: email,
+      userTag: '',
+      createdAt: DateTime.now(),
+    );
   }
 
   @override
   Future<User> googleLogin() async {
-
-    final response = await _remoteSource.googleLogin('mock_google_token');
-
-    await _saveTokens(
+    final response = await _remoteSource.googleLogin('google_token_placeholder');
+    await _secureStorage.saveTokens(
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
-      userId: response.user.id,
     );
+    await _localStorage.saveUserId(response.userId);
 
-    return response.user.toEntity();
+    return User(
+      userId: response.userId,
+      nickname: response.nickname,
+      email: '',
+      userTag: '',
+      createdAt: DateTime.now(),
+    );
   }
 
   @override
-  Future<User> signup(String email, String password, String nickname) async {
+  Future<User> signup(
+      String email,
+      String password,
+      String nickname, {
+        String? guestKey,
+      }) async {
     final response = await _remoteSource.signup(
-      SignupRequest(email: email, password: password, nickname: nickname),
+      SignupRequest(
+        email: email,
+        password: password,
+        nickname: nickname,
+        guestKey: guestKey,
+      ),
     );
-
-    await _saveTokens(
+    await _secureStorage.saveTokens(
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
-      userId: response.user.id,
     );
+    await _localStorage.saveUserId(response.userId);
 
-    return response.user.toEntity();
+    if (guestKey != null) {
+      await _secureStorage.clearGuestKey();
+    }
+
+    return User(
+      userId: response.userId,
+      nickname: response.nickname,
+      email: email,
+      userTag: '',
+      createdAt: DateTime.now(),
+    );
   }
 
   @override
   Future<void> logout() async {
-    await _secureStorage.clearTokens();
-    await _localStorage.clearAll();
+    try {
+      await _remoteSource.logout();
+    } catch (_) {
+      // 서버 로그아웃 실패해도 로컬은 정리
+    } finally {
+      await _secureStorage.clearAll();
+      await _localStorage.clearAll();
+    }
   }
 
   @override
   Future<bool> isLoggedIn() async {
     final token = await _secureStorage.getAccessToken();
     return token != null && token.isNotEmpty;
-  }
-
-  // 토큰 및 유저 ID 저장 헬퍼
-  Future<void> _saveTokens({
-    required String accessToken,
-    required String refreshToken,
-    required String userId,
-  }) async {
-    await _secureStorage.saveAccessToken(accessToken);
-    await _secureStorage.saveRefreshToken(refreshToken);
-    await _localStorage.saveUserId(userId);
   }
 }

@@ -1,16 +1,14 @@
 import '../photo_remote_source.dart';
 import '../../../models/photo/photo_dto.dart';
 import '../../../models/photo/upload_photo_request.dart';
+import '../../../../../core/network/network_exception.dart';
 
 class MockPhotoRemoteSource implements PhotoRemoteSource {
-
   static const String _currentUserId = 'user-uuid-1';
   static const String _currentUserNickname = '석스키';
 
-  // ✅ UUID 형식 Mock 데이터
   final Map<String, List<PhotoDto>> _photosByAlbum = {
     'album-uuid-1': [
-      // 2025-04-18
       PhotoDto(
         id: 'photo-uuid-1',
         albumId: 'album-uuid-1',
@@ -53,8 +51,6 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
         likeCount: 0,
         commentCount: 1,
       ),
-
-      // 2025-04-17
       PhotoDto(
         id: 'photo-uuid-5',
         albumId: 'album-uuid-1',
@@ -89,7 +85,7 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
   int _nextId = 100;
 
   @override
-  Future<List<PhotoDto>> getAlbumPhotos(String albumId) async {  // ✅ String
+  Future<List<PhotoDto>> getAlbumPhotos(String albumId) async {
     await Future.delayed(const Duration(milliseconds: 800));
     return _photosByAlbum[albumId] ?? [];
   }
@@ -98,7 +94,6 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
   Future<PhotoDto> uploadPhoto(UploadPhotoRequest request) async {
     await Future.delayed(const Duration(seconds: 1));
 
-    final now = DateTime.now();
     final newPhoto = PhotoDto(
       id: 'photo-uuid-$_nextId',
       albumId: request.albumId,
@@ -109,7 +104,7 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
       uploaderId: _currentUserId,
       uploaderNickname: _currentUserNickname,
       uploaderProfileImageUrl: null,
-      createdAt: now.toIso8601String(),
+      createdAt: DateTime.now().toIso8601String(),
       likeCount: 0,
       commentCount: 0,
     );
@@ -117,7 +112,24 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
     _photosByAlbum.putIfAbsent(request.albumId, () => []);
     _photosByAlbum[request.albumId]!.insert(0, newPhoto);
     _nextId++;
-
     return newPhoto;
+  }
+
+  @override
+  Future<void> deletePhoto(String albumId, String photoId) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final photos = _photosByAlbum[albumId];
+    if (photos == null) return;
+
+    final exists = photos.any((p) => p.id == photoId);
+    if (!exists) {
+      throw NetworkException(
+        message: '사진을 찾을 수 없습니다',
+        type: NetworkExceptionType.notFound,
+        statusCode: 404,
+        errorCode: 'PHOTO_NOT_FOUND',
+      );
+    }
+    photos.removeWhere((p) => p.id == photoId);
   }
 }

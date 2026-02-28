@@ -3,7 +3,7 @@ import 'package:gachiganjik_app/presentation/widgets/album/album_menu_sheet.dart
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/album.dart';
-import '../../controllers/photo/album_detail_controller.dart';
+import '../../controllers/album/album_detail_controller.dart';
 import '../../controllers/network/network_controller.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/photo/moment_card.dart';
