@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../controllers/photo/photo_detail_controller.dart';
+import '../../widgets/common/smart_image.dart';
 
 class PhotoDetailView extends GetView<PhotoDetailController> {
   const PhotoDetailView({super.key});
@@ -20,8 +20,6 @@ class PhotoDetailView extends GetView<PhotoDetailController> {
               itemCount: controller.photos.length,
               itemBuilder: (context, index) {
                 final photo = controller.photos[index];
-                // Hero 태그: 첫 진입 사진(initialIndex)에만 적용
-                // 페이지 스와이프 후엔 Hero 없이 일반 표시
                 final isInitial = index == controller.initialIndex;
                 return _PhotoViewer(
                   imageUrl: photo.imageUrl,
@@ -94,29 +92,19 @@ class _PhotoViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final child = CachedNetworkImage(
+    final image = SmartImage(
       imageUrl: imageUrl,
       fit: BoxFit.contain,
-      placeholder: (_, __) => const Center(
-        child: CircularProgressIndicator(color: Colors.white),
-      ),
-      errorWidget: (_, __, ___) => const Center(
-        child: Icon(
-          Icons.broken_image_outlined,
-          color: Colors.white54,
-          size: 64,
-        ),
-      ),
     );
 
     if (heroTag == null) {
-      return Center(child: child);
+      return Center(child: image);
     }
 
     return Center(
       child: Hero(
         tag: heroTag!,
-        child: child,
+        child: image,
       ),
     );
   }
@@ -294,11 +282,8 @@ class _OutlinedIconButton extends StatelessWidget {
                 strokeWidth: 2,
               ),
             )
-                : Icon(
-              icon,
-              size: 18,
-              color: filled ? Colors.red : Colors.white,
-            ),
+                : Icon(icon, size: 18,
+                color: filled ? Colors.red : Colors.white),
             const SizedBox(width: 6),
             Text(
               label,
@@ -384,21 +369,15 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        photo.uploaderNickname,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        photo.uploadedAtDisplay,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
+                      Text(photo.uploaderNickname,
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary)),
+                      Text(photo.uploadedAtDisplay,
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
@@ -431,14 +410,11 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
             ),
             if (photo.message != null && photo.message!.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Text(
-                photo.message!,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textPrimary,
-                  height: 1.4,
-                ),
-              ),
+              Text(photo.message!,
+                  style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textPrimary,
+                      height: 1.4)),
             ],
           ],
         ),
@@ -473,23 +449,19 @@ class _ActionButton extends StatelessWidget {
           children: [
             isLoading
                 ? SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                color: color ?? AppColors.textSecondary,
-                strokeWidth: 2,
-              ),
-            )
-                : Icon(icon, size: 20, color: color ?? AppColors.textSecondary),
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                    color: color ?? AppColors.textSecondary,
+                    strokeWidth: 2))
+                : Icon(icon, size: 20,
+                color: color ?? AppColors.textSecondary),
             const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                color: color ?? AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 13,
+                    color: color ?? AppColors.textSecondary,
+                    fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -499,7 +471,6 @@ class _ActionButton extends StatelessWidget {
 
 class _CommentSection extends GetView<PhotoDetailController> {
   final ScrollController scrollController;
-
   const _CommentSection(this.scrollController);
 
   @override
@@ -510,8 +481,7 @@ class _CommentSection extends GetView<PhotoDetailController> {
           child: Obx(() {
             if (controller.isLoadingComments.value) {
               return const Center(
-                child: CircularProgressIndicator(color: AppColors.main),
-              );
+                  child: CircularProgressIndicator(color: AppColors.main));
             }
             if (controller.comments.isEmpty) {
               return const Center(
@@ -521,11 +491,9 @@ class _CommentSection extends GetView<PhotoDetailController> {
                     Icon(Icons.chat_bubble_outline,
                         size: 48, color: AppColors.inactive),
                     SizedBox(height: 12),
-                    Text(
-                      '첫 댓글을 남겨보세요',
-                      style: TextStyle(
-                          fontSize: 14, color: AppColors.textSecondary),
-                    ),
+                    Text('첫 댓글을 남겨보세요',
+                        style: TextStyle(
+                            fontSize: 14, color: AppColors.textSecondary)),
                   ],
                 ),
               );
@@ -546,16 +514,13 @@ class _CommentSection extends GetView<PhotoDetailController> {
                       radius: 14,
                       backgroundColor:
                       isMine ? AppColors.mainLight : AppColors.cardBg,
-                      child: Text(
-                        comment.nickname[0],
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: isMine
-                              ? AppColors.main
-                              : AppColors.textSecondary,
-                        ),
-                      ),
+                      child: Text(comment.nickname[0],
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: isMine
+                                  ? AppColors.main
+                                  : AppColors.textSecondary)),
                     ),
                     const SizedBox(width: 10),
                     Expanded(

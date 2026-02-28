@@ -10,6 +10,23 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
 
   final List<AlbumDto> _albums = [
     AlbumDto(
+      id: 'album-uuid-4',
+      title: '마크방범대',
+      categories: ['친구','모임'],
+      eventStartDate: '2025-01-27',
+      eventEndDate: null,
+      coverImageUrl: 'https://cdn2.colley.kr/item_340092_1_0_title_0.jpeg',
+      inviteCode: 'TEST123',
+      photoCount: 0,
+      memberCount: 4,
+      createdAt: '2025-01-18T10:00:00Z',
+      updatedAt: null,
+      ownerId: 'user-uuid-1',
+      role: 'OWNER',
+      currentUserId: _currentUserId,
+      isAdmin: false,
+    ),
+    AlbumDto(
       id: 'album-uuid-1',
       title: '우리의 결혼식',
       categories: ['결혼'],
@@ -65,7 +82,7 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
     ),
   ];
 
-  int _nextId = 4;
+  int _nextId = 5;
 
   @override
   Future<List<AlbumDto>> getAlbums() async {

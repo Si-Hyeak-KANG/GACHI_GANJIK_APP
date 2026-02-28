@@ -88,35 +88,34 @@ class AlbumDetailController extends GetxController {
     isUploading.value = true;
 
     try {
-      final networkController = Get.find<NetworkController>();
-      final isOffline = !networkController.isConnected.value;
+      final now = DateTime.now();
+      final photoDate = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      print('🟡 1. uploadPhoto 호출 전 - albumId: $albumId');
+
+      final photo = await _photoRepository.uploadPhoto(
+        albumId: albumId,
+        imageFile: imageFile,
+        message: message,
+        photoDate: photoDate,
+      );
+
+      print('🟡 2. uploadPhoto 완료 - photoId: ${photo.id}, imageUrl: ${photo.imageUrl}');
+      print('🟡 3. fetchMoments 호출 전 - 현재 moments 수: ${moments.length}');
 
       await fetchMoments();
 
-      if (isOffline) {
-        Get.snackbar(
-          '오프라인 업로드',
-          '온라인 복구 시 자동으로 업로드됩니다.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-      } else {
-        Get.snackbar(
-          '업로드 완료',
-          '사진이 추가되었습니다',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+      print('🟡 4. fetchMoments 완료 - moments 수: ${moments.length}');
+      for (final m in moments) {
+        print('   - ${m.date}: ${m.photos.length}장');
       }
-    } on NetworkException catch (e) {
-      Get.snackbar('업로드 실패', e.message, snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      Get.snackbar(
-        '오류',
-        '사진 업로드에 실패했습니다',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+
+      Get.snackbar('업로드 완료', '사진이 추가되었습니다', snackPosition: SnackPosition.BOTTOM);
+
+    } catch (e, stack) {
+      print('🔴 _uploadPhoto 에러: $e');
+      print('🔴 스택: $stack');
+      Get.snackbar('오류', '사진 업로드에 실패했습니다', snackPosition: SnackPosition.BOTTOM);
     } finally {
       isUploading.value = false;
     }

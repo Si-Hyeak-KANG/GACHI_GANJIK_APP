@@ -31,17 +31,17 @@ class PhotoRepositoryImpl implements PhotoRepository {
 
   String get _currentUserId {
     try {
-      return Get.find<AuthController>().currentUser.value?.userId ?? '';
+      return Get.find<AuthController>().currentUser.value?.userId ?? 'user-uuid-1';
     } catch (_) {
-      return '';
+      return 'user-uuid-1';
     }
   }
 
   String get _currentUserNickname {
     try {
-      return Get.find<AuthController>().currentUser.value?.nickname ?? '';
+      return Get.find<AuthController>().currentUser.value?.nickname ?? '석스키';
     } catch (_) {
-      return '';
+      return '석스키';
     }
   }
 
@@ -74,24 +74,26 @@ class PhotoRepositoryImpl implements PhotoRepository {
       return await _addToUploadQueue(albumId, imageFile, message, photoDate);
     }
 
-    try {
-      // 1. Firebase Storage에 이미지 업로드 → URL 획득
-      final imageUrl = await _storageSource.uploadImage(imageFile, albumId);
+    // Mock 환경에서는 Firebase 업로드 없이 로컬 경로 사용
+    const useRealApi = bool.fromEnvironment('USE_REAL_API', defaultValue: false);
 
-      // 2. 서버에 URL + 메타데이터 저장
-      final request = UploadPhotoRequest(
-        albumId: albumId,
-        imageUrl: imageUrl,
-        message: message,
-        photoDate: photoDate,
-      );
-
-      final dto = await _remoteSource.uploadPhoto(request);
-      await _localSource.savePhoto(dto);
-      return dto.toEntity();
-    } catch (e) {
-      return await _addToUploadQueue(albumId, imageFile, message, photoDate);
+    final String imageUrl;
+    if (useRealApi) {
+      imageUrl = await _storageSource.uploadImage(imageFile, albumId);
+    } else {
+      imageUrl = imageFile.path;
     }
+
+    final request = UploadPhotoRequest(
+      albumId: albumId,
+      imageUrl: imageUrl,
+      message: message,
+      photoDate: photoDate,
+    );
+
+    final dto = await _remoteSource.uploadPhoto(request);
+    await _localSource.savePhoto(dto);
+    return dto.toEntity();
   }
 
   @override
@@ -100,13 +102,8 @@ class PhotoRepositoryImpl implements PhotoRepository {
     await DatabaseService.deletePhoto(photoId);
   }
 
-  /// 좋아요 토글 (서버 연동) → (isLiked, likeCount) 반환
-  Future<({bool isLiked, int likeCount})> toggleLike(
-      String albumId,
-      String photoId,
-      ) async {
-    final result = await _reactionRemoteSource.toggleLike(albumId, photoId);
-    return (isLiked: result.isLiked, likeCount: result.likeCount);
+  Future<ReactionResult> toggleLike(String albumId, String photoId) async {
+    return await _reactionRemoteSource.toggleLike(albumId, photoId);
   }
 
   // ========== Private ==========
@@ -116,17 +113,15 @@ class PhotoRepositoryImpl implements PhotoRepository {
     for (final photo in photos) {
       grouped.putIfAbsent(photo.photoDate, () => []).add(photo);
     }
-    // 날짜 내림차순 정렬
+
     final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+
     return sortedKeys.map((date) {
       final datePhotos = grouped[date]!;
       return Moment(
         date: date,
         photos: datePhotos,
-        contributors: datePhotos
-            .map((p) => p.uploaderNickname)
-            .toSet()
-            .toList(),
+        contributors: datePhotos.map((p) => p.uploaderNickname).toSet().toList(),
       );
     }).toList();
   }
@@ -159,13 +154,6 @@ class PhotoRepositoryImpl implements PhotoRepository {
       ..lastSyncAttempt = null;
 
     await _localSource.savePhotoLocal(tempPhoto);
-
-    Get.snackbar(
-      '오프라인',
-      '온라인 연결 시 자동으로 업로드됩니다',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
 
     return Photo(
       id: tempId,
