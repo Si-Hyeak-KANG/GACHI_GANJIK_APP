@@ -18,6 +18,7 @@ import '../../data/sources/remote/mock/mock_reaction_remote_source.dart';
 import '../../data/sources/remote/mock/mock_user_remote_source.dart';
 import '../../data/sources/remote/photo_remote_source.dart';
 import '../../data/sources/remote/reaction_remote_source.dart';
+import '../../data/sources/remote/real/real_auth_remote_source.dart';
 import '../../data/sources/remote/user_remote_source.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -30,7 +31,7 @@ import '../../presentation/controllers/user/user_controller.dart';
 import '../network/dio_client.dart';
 import '../storage/secure_storage.dart';
 
-// flutter run               → Mock 사용
+// flutter run                              → Mock 사용
 // flutter run --dart-define=USE_REAL_API=true → Real API 사용
 const bool _useRealApi = bool.fromEnvironment('USE_REAL_API', defaultValue: false);
 
@@ -67,7 +68,6 @@ class InitialBinding extends Bindings {
     );
 
     // PhotoRepositoryImpl: 인터페이스 타입 + 구체 타입 모두 등록
-    // → AlbumDetailBinding, PhotoDetailBinding에서 Get.find<PhotoRepositoryImpl>() 사용 가능
     final photoRepo = PhotoRepositoryImpl(
       remoteSource: Get.find(),
       reactionRemoteSource: Get.find(),
@@ -113,8 +113,6 @@ class InitialBinding extends Bindings {
   }
 
   void _bindMockSources() {
-    // 싱글톤으로 등록 (permanent: true) → 모든 화면에서 같은 인스턴스 공유
-    // Mock은 메모리 내 데이터이므로 같은 인스턴스를 써야 업로드가 목록에 반영됨
     Get.put<AuthRemoteSource>(MockAuthRemoteSource(), permanent: true);
     Get.put<AlbumRemoteSource>(MockAlbumRemoteSource(), permanent: true);
     Get.put<PhotoRemoteSource>(MockPhotoRemoteSource(), permanent: true);
@@ -124,9 +122,15 @@ class InitialBinding extends Bindings {
   }
 
   void _bindRealSources() {
-    final dio = Get.find<DioClient>();
-    // Real 구현체로 교체 시 여기에 추가
-    // Get.lazyPut<AuthRemoteSource>(() => RealAuthRemoteSource(dioClient: dio));
-    // ...
+    // 인증만 Real, 나머지는 Mock 유지 (서버 Phase 1만 완료된 상태)
+    Get.put<AuthRemoteSource>(
+      RealAuthRemoteSource(dioClient: Get.find()),
+      permanent: true,
+    );
+    Get.put<AlbumRemoteSource>(MockAlbumRemoteSource(), permanent: true);
+    Get.put<PhotoRemoteSource>(MockPhotoRemoteSource(), permanent: true);
+    Get.put<ReactionRemoteSource>(MockReactionRemoteSource(), permanent: true);
+    Get.put<CommentRemoteSource>(MockCommentRemoteSource(), permanent: true);
+    Get.put<UserRemoteSource>(MockUserRemoteSource(), permanent: true);
   }
 }

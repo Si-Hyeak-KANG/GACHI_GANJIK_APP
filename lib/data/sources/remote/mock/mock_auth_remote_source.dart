@@ -5,6 +5,7 @@ import '../../../models/auth/signup_request.dart';
 import '../../../../../core/network/network_exception.dart';
 
 class MockAuthRemoteSource implements AuthRemoteSource {
+
   static const _testEmail = 'test@test.com';
   static const _testPassword = '1234';
 
@@ -13,28 +14,29 @@ class MockAuthRemoteSource implements AuthRemoteSource {
     await Future.delayed(const Duration(seconds: 1));
 
     if (request.email == _testEmail && request.password == _testPassword) {
-      return _buildResponse(
-        userId: 'testUserId1',
-        email: request.email,
+      return AuthResponse(
+        userId: '1',
         nickname: '석스키',
+        accessToken: 'mock_access_token_1',
+        refreshToken: 'mock_refresh_token_1',
       );
     }
 
     throw NetworkException(
-      message: '이메일 또는 비밀번호가 올바르지 않습니다',
+      message: '이메일 또는 비밀번호가 올바르지 않습니다.',
       type: NetworkExceptionType.badRequest,
-      statusCode: 400,
-      errorCode: 'INVALID_CREDENTIALS',
+      statusCode: 401,
     );
   }
 
   @override
-  Future<AuthResponse> googleLogin(String googleToken) async {
+  Future<AuthResponse> googleLogin(String idToken) async {
     await Future.delayed(const Duration(seconds: 1));
-    return _buildResponse(
-      userId: 'testUserIdGoogle',
-      email: 'google@test.com',
+    return AuthResponse(
+      userId: '2',
       nickname: 'Google유저',
+      accessToken: 'mock_access_token_2',
+      refreshToken: 'mock_refresh_token_2',
     );
   }
 
@@ -44,44 +46,22 @@ class MockAuthRemoteSource implements AuthRemoteSource {
 
     if (request.email == _testEmail) {
       throw NetworkException(
-        message: '이미 사용 중인 이메일입니다',
-        type: NetworkExceptionType.conflict,
+        message: '이미 사용 중인 이메일입니다.',
+        type: NetworkExceptionType.badRequest,
         statusCode: 409,
-        errorCode: 'EMAIL_ALREADY_EXISTS',
       );
     }
 
-    return _buildResponse(
-      userId: 'testUserId2',
-      email: request.email,
+    return AuthResponse(
+      userId: '3',
       nickname: request.nickname,
+      accessToken: 'mock_access_token_3',
+      refreshToken: 'mock_refresh_token_3',
     );
   }
 
   @override
   Future<void> logout() async {
     await Future.delayed(const Duration(milliseconds: 300));
-  }
-
-  @override
-  Future<TokenRefreshResponse> refreshToken(String refreshToken) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    return TokenRefreshResponse(
-      accessToken: 'mock_new_access_token',
-      refreshToken: 'mock_new_refresh_token',
-    );
-  }
-
-  AuthResponse _buildResponse({
-    required String userId,
-    required String email,
-    required String nickname,
-  }) {
-    return AuthResponse(
-      userId: userId,
-      nickname: nickname,
-      accessToken: 'mock_access_token_$userId',
-      refreshToken: 'mock_refresh_token_$userId',
-    );
   }
 }

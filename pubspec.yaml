@@ -51,6 +51,9 @@ dependencies:
   qr_flutter: ^4.1.0
   uuid: ^4.5.1
 
+  # OAuth
+  google_sign_in: ^6.2.2
+
 dev_dependencies:
   google_fonts: ^6.2.1
   flutter_launcher_icons: ^0.13.1

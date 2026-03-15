@@ -14,8 +14,8 @@ class LocalStorage extends GetxService {
     await _prefs.setString('user_id', userId);
   }
 
-  int? getUserId() {
-    return _prefs.getInt('user_id');
+  String? getUserId() {
+    return _prefs.getString('user_id');
   }
 
   Future<void> setString(String key, String value) async {
