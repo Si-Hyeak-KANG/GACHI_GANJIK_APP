@@ -6,8 +6,27 @@ import '../../controllers/auth/login_controller.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_button.dart';
 
-class LoginView extends GetView<LoginController> {
+class LoginView extends StatefulWidget {
   const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  // TextEditingController를 View에서 직접 관리 → Controller lifecycle과 분리
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  LoginController get _controller => Get.find<LoginController>();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +36,7 @@ class LoginView extends GetView<LoginController> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Form(
-            key: controller.formKey,
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -58,14 +77,13 @@ class LoginView extends GetView<LoginController> {
                 Obx(() => _SocialLoginButton(
                   icon: Icons.g_mobiledata_rounded,
                   label: 'Google로 계속하기',
-                  onTap: controller.isLoading.value
+                  onTap: _controller.isLoading.value
                       ? null
-                      : controller.googleLogin,
+                      : _controller.googleLogin,
                   iconColor: Colors.red,
                 )),
                 const SizedBox(height: 12),
 
-                // 비활성 소셜 버튼들
                 _SocialLoginButton(
                   label: 'Kakao로 계속하기',
                   onTap: null,
@@ -107,8 +125,8 @@ class LoginView extends GetView<LoginController> {
                 CustomTextField(
                   label: '이메일',
                   hint: 'email@example.com',
-                  controller: controller.emailController,
-                  validator: controller.validateEmail,
+                  controller: _emailController,
+                  validator: _controller.validateEmail,
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
@@ -117,18 +135,18 @@ class LoginView extends GetView<LoginController> {
                 Obx(() => CustomTextField(
                   label: '비밀번호',
                   hint: '비밀번호를 입력해주세요',
-                  controller: controller.passwordController,
-                  validator: controller.validatePassword,
-                  obscureText: controller.obscurePassword.value,
+                  controller: _passwordController,
+                  validator: _controller.validatePassword,
+                  obscureText: _controller.obscurePassword.value,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      controller.obscurePassword.value
+                      _controller.obscurePassword.value
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
                       color: AppColors.inactive,
                       size: 20,
                     ),
-                    onPressed: controller.togglePasswordVisibility,
+                    onPressed: _controller.togglePasswordVisibility,
                   ),
                 )),
                 const SizedBox(height: 32),
@@ -136,8 +154,12 @@ class LoginView extends GetView<LoginController> {
                 // 로그인 버튼
                 Obx(() => CustomButton(
                   text: '로그인',
-                  isLoading: controller.isLoading.value,
-                  onTap: controller.emailLogin,
+                  isLoading: _controller.isLoading.value,
+                  onTap: () => _controller.emailLogin(
+                    formKey: _formKey,
+                    email: _emailController.text.trim(),
+                    password: _passwordController.text,
+                  ),
                 )),
                 const SizedBox(height: 16),
 
@@ -175,7 +197,6 @@ class LoginView extends GetView<LoginController> {
   }
 }
 
-// 소셜 로그인 버튼 위젯
 class _SocialLoginButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;

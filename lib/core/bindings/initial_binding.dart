@@ -26,6 +26,8 @@ import '../../domain/repositories/comment_repository.dart';
 import '../../domain/repositories/photo_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../presentation/controllers/auth/auth_controller.dart';
+import '../../presentation/controllers/auth/login_controller.dart';
+import '../../presentation/controllers/auth/signup_controller.dart';
 import '../../presentation/controllers/network/network_controller.dart';
 import '../../presentation/controllers/user/user_controller.dart';
 import '../network/dio_client.dart';
@@ -104,6 +106,18 @@ class InitialBinding extends Bindings {
     Get.put(
       AuthController(authRepository: Get.find()),
       permanent: true,
+    );
+
+    // fenix: true → 화면 이동 후 dispose되어도 재생성 가능
+    // TextEditingController disposed 에러 방지
+    Get.lazyPut<LoginController>(
+          () => LoginController(authRepository: Get.find()),
+      fenix: true,
+    );
+
+    Get.lazyPut<SignupController>(
+          () => SignupController(authRepository: Get.find()),
+      fenix: true,
     );
 
     Get.lazyPut(
