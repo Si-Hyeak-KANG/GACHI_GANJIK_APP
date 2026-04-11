@@ -17,15 +17,24 @@ class RealUserRemoteSource implements UserRemoteSource {
 
   @override
   Future<UserDto> updateProfile(UpdateProfileRequest request) async {
-    final response = await _dioClient.patch(
-      '/users/me',
-      data: request.toJson(),
+    // PATCH 응답: { userId, nickname, updatedAt } — UserDto 전체 필드 부족
+    // → PATCH 후 GET으로 최신 전체 프로필 재조회
+    await _dioClient.patch('/users/me', data: request.toJson());
+    return await getCurrentUser();
+  }
+
+  @override
+  Future<String> updateProfileImage(String profileImageUrl) async {
+    final response = await _dioClient.post(
+      '/users/me/profile-image',
+      data: {'profileImageUrl': profileImageUrl},
     );
-    return UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
+    final data = response.data['data'] as Map<String, dynamic>;
+    return data['profileImageUrl'] as String;
   }
 
   @override
   Future<void> deleteAccount() async {
-    await _dioClient.delete('/users/me');
+    await _dioClient.delete('/auth/withdraw');
   }
 }

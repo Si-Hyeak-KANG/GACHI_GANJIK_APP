@@ -22,22 +22,35 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<User> updateProfile({String? nickname, File? profileImage}) async {
-    String? imageUrl;
-
-    // 프로필 이미지가 있으면 Firebase Storage에 업로드
+  Future<User> updateProfile({
+    String? nickname,
+    File? profileImage,
+    String? currentPassword,
+    String? newPassword,
+    String? passwordConfirm,
+  }) async {
+    // 프로필 이미지: Firebase 업로드 후 URL만 서버에 저장
     if (profileImage != null) {
-      imageUrl = await _storageSource.uploadProfileImage(profileImage);
+      final imageUrl = await _storageSource.uploadProfileImage(profileImage);
+      await _remoteSource.updateProfileImage(imageUrl);
     }
 
-    final dto = await _remoteSource.updateProfile(
-      UpdateProfileRequest(
-        nickname: nickname,
-        profileImageUrl: imageUrl,
-      ),
-    );
+    // 닉네임 또는 비밀번호 변경이 있는 경우에만 PATCH 호출
+    final hasProfileUpdate = nickname != null || newPassword != null;
+    if (hasProfileUpdate) {
+      final dto = await _remoteSource.updateProfile(
+        UpdateProfileRequest(
+          nickname: nickname,
+          currentPassword: currentPassword,
+          newPassword: newPassword,
+          passwordConfirm: passwordConfirm,
+        ),
+      );
+      return dto.toEntity();
+    }
 
-    return dto.toEntity();
+    // 이미지만 변경한 경우 최신 프로필 재조회
+    return await getCurrentUser();
   }
 
   @override

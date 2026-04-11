@@ -26,12 +26,28 @@ class MockUserRemoteSource implements UserRemoteSource {
       userId: _currentUser.userId,
       email: _currentUser.email,
       nickname: request.nickname ?? _currentUser.nickname,
-      profileImageUrl: request.profileImageUrl ?? _currentUser.profileImageUrl,
+      profileImageUrl: _currentUser.profileImageUrl,
       userTag: _currentUser.userTag,
       createdAt: _currentUser.createdAt,
     );
 
     return _currentUser;
+  }
+
+  @override
+  Future<String> updateProfileImage(String profileImageUrl) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    _currentUser = UserDto(
+      userId: _currentUser.userId,
+      email: _currentUser.email,
+      nickname: _currentUser.nickname,
+      profileImageUrl: profileImageUrl,
+      userTag: _currentUser.userTag,
+      createdAt: _currentUser.createdAt,
+    );
+
+    return profileImageUrl;
   }
 
   @override

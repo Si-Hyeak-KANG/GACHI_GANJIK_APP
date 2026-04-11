@@ -35,52 +35,31 @@ class MyPageView extends GetView<UserController> {
                   child: Column(
                     children: [
                       // 프로필 사진
-                      Stack(
-                        children: [
-                          Container(
-                            width: 88,
-                            height: 88,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.main,
-                                width: 3,
-                              ),
-                            ),
-                            child: ClipOval(
-                              child: user.profileImage != null
-                                  ? CachedNetworkImage(
-                                imageUrl: user.profileImage!,
-                                fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
-                                  color: AppColors.mainLight,
-                                  child: const Center(
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.main,
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (_, __, ___) => Container(
-                                  color: AppColors.mainLight,
-                                  child: const Icon(
-                                    Icons.person,
-                                    size: 40,
-                                    color: AppColors.main,
-                                  ),
-                                ),
-                              )
-                                  : Container(
-                                color: AppColors.mainLight,
-                                child: const Icon(
-                                  Icons.person,
-                                  size: 40,
+                      Container(
+                        width: 88,
+                        height: 88,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.main, width: 3),
+                        ),
+                        child: ClipOval(
+                          child: user.profileImageUrl != null
+                              ? CachedNetworkImage(
+                            imageUrl: user.profileImageUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: AppColors.mainLight,
+                              child: const Center(
+                                child: CircularProgressIndicator(
                                   color: AppColors.main,
+                                  strokeWidth: 2,
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            errorWidget: (_, __, ___) => _defaultAvatar(),
+                          )
+                              : _defaultAvatar(),
+                        ),
                       ),
                       const SizedBox(height: 14),
 
@@ -114,9 +93,19 @@ class MyPageView extends GetView<UserController> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
+                      // userTag — 비어있으면 표시 안 함
+                      if (user.userTag.isNotEmpty) ...[
+                        _InfoItem(label: '관리자 ID', value: user.userTag),
+                        const Divider(height: 1),
+                      ],
+                      _InfoItem(
+                        label: '가입일',
+                        value: _formatDate(user.createdAt),
+                      ),
+                      const Divider(height: 1),
                       _InfoItem(
                         label: '내 앨범',
-                        value: '3개', // TODO: 실제 앨범 수
+                        value: '3개', // TODO: 실제 앨범 수 (Albums API 연동 후)
                       ),
                       const Divider(height: 1),
                     ],
@@ -130,7 +119,6 @@ class MyPageView extends GetView<UserController> {
                   padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
                   child: Column(
                     children: [
-                      // 프로필 편집
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -155,8 +143,6 @@ class MyPageView extends GetView<UserController> {
                         ),
                       ),
                       const SizedBox(height: 10),
-
-                      // 로그아웃
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -189,9 +175,16 @@ class MyPageView extends GetView<UserController> {
       ),
     );
   }
+
+  Widget _defaultAvatar() => Container(
+    color: AppColors.mainLight,
+    child: const Icon(Icons.person, size: 40, color: AppColors.main),
+  );
+
+  String _formatDate(DateTime dt) =>
+      '${dt.year}.${dt.month.toString().padLeft(2, '0')}.${dt.day.toString().padLeft(2, '0')}';
 }
 
-// 정보 아이템
 class _InfoItem extends StatelessWidget {
   final String label;
   final String value;

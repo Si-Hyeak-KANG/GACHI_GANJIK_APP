@@ -19,6 +19,7 @@ import '../../data/sources/remote/mock/mock_user_remote_source.dart';
 import '../../data/sources/remote/photo_remote_source.dart';
 import '../../data/sources/remote/reaction_remote_source.dart';
 import '../../data/sources/remote/real/real_auth_remote_source.dart';
+import '../../data/sources/remote/real/real_user_remote_source.dart';
 import '../../data/sources/remote/user_remote_source.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -69,7 +70,6 @@ class InitialBinding extends Bindings {
       fenix: true,
     );
 
-    // PhotoRepositoryImpl: 인터페이스 타입 + 구체 타입 모두 등록
     final photoRepo = PhotoRepositoryImpl(
       remoteSource: Get.find(),
       reactionRemoteSource: Get.find(),
@@ -108,8 +108,6 @@ class InitialBinding extends Bindings {
       permanent: true,
     );
 
-    // fenix: true → 화면 이동 후 dispose되어도 재생성 가능
-    // TextEditingController disposed 에러 방지
     Get.lazyPut<LoginController>(
           () => LoginController(authRepository: Get.find()),
       fenix: true,
@@ -136,15 +134,20 @@ class InitialBinding extends Bindings {
   }
 
   void _bindRealSources() {
-    // 인증만 Real, 나머지는 Mock 유지 (서버 Phase 1만 완료된 상태)
+    // Phase 1 완료: Auth Real
     Get.put<AuthRemoteSource>(
       RealAuthRemoteSource(dioClient: Get.find()),
       permanent: true,
     );
+    // Phase 2 완료: User Real
+    Get.put<UserRemoteSource>(
+      RealUserRemoteSource(dioClient: Get.find()),
+      permanent: true,
+    );
+    // Phase 3~5 대기: Mock 유지
     Get.put<AlbumRemoteSource>(MockAlbumRemoteSource(), permanent: true);
     Get.put<PhotoRemoteSource>(MockPhotoRemoteSource(), permanent: true);
     Get.put<ReactionRemoteSource>(MockReactionRemoteSource(), permanent: true);
     Get.put<CommentRemoteSource>(MockCommentRemoteSource(), permanent: true);
-    Get.put<UserRemoteSource>(MockUserRemoteSource(), permanent: true);
   }
 }

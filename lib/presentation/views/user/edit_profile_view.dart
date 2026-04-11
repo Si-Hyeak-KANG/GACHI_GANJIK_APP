@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
@@ -23,6 +22,7 @@ class EditProfileView extends GetView<EditProfileController> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 프로필 사진
             Center(
@@ -30,23 +30,16 @@ class EditProfileView extends GetView<EditProfileController> {
                 children: [
                   Obx(() {
                     final selectedImage = controller.selectedImage.value;
-
                     return Container(
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.main,
-                          width: 3,
-                        ),
+                        border: Border.all(color: AppColors.main, width: 3),
                       ),
                       child: ClipOval(
                         child: selectedImage != null
-                            ? Image.file(
-                          selectedImage,
-                          fit: BoxFit.cover,
-                        )
+                            ? Image.file(selectedImage, fit: BoxFit.cover)
                             : Container(
                           color: AppColors.mainLight,
                           child: const Icon(
@@ -69,10 +62,7 @@ class EditProfileView extends GetView<EditProfileController> {
                         decoration: BoxDecoration(
                           color: AppColors.main,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 2,
-                          ),
+                          border: Border.all(color: Colors.white, width: 2),
                         ),
                         child: const Icon(
                           Icons.camera_alt,
@@ -94,7 +84,103 @@ class EditProfileView extends GetView<EditProfileController> {
               hint: '닉네임을 입력해주세요',
               validator: controller.validateNickname,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
+
+            // 비밀번호 변경 토글 버튼
+            Obx(() => GestureDetector(
+              onTap: () => controller.isChangingPassword.value =
+              !controller.isChangingPassword.value,
+              child: Row(
+                children: [
+                  const Text(
+                    '비밀번호 변경',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    controller.isChangingPassword.value
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: AppColors.textSecondary,
+                  ),
+                ],
+              ),
+            )),
+
+            // 비밀번호 변경 섹션
+            Obx(() => controller.isChangingPassword.value
+                ? Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Column(
+                children: [
+                  // 현재 비밀번호
+                  Obx(() => CustomTextField(
+                    controller: controller.currentPasswordController,
+                    label: '현재 비밀번호',
+                    hint: '현재 비밀번호를 입력해주세요',
+                    obscureText: controller.obscureCurrentPassword.value,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        controller.obscureCurrentPassword.value
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: AppColors.inactive,
+                        size: 20,
+                      ),
+                      onPressed: () => controller.obscureCurrentPassword
+                          .value = !controller.obscureCurrentPassword.value,
+                    ),
+                  )),
+                  const SizedBox(height: 16),
+
+                  // 새 비밀번호
+                  Obx(() => CustomTextField(
+                    controller: controller.newPasswordController,
+                    label: '새 비밀번호',
+                    hint: '영문+숫자+특수문자 8~20자',
+                    obscureText: controller.obscureNewPassword.value,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        controller.obscureNewPassword.value
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: AppColors.inactive,
+                        size: 20,
+                      ),
+                      onPressed: () => controller.obscureNewPassword
+                          .value = !controller.obscureNewPassword.value,
+                    ),
+                  )),
+                  const SizedBox(height: 16),
+
+                  // 새 비밀번호 확인
+                  Obx(() => CustomTextField(
+                    controller: controller.passwordConfirmController,
+                    label: '새 비밀번호 확인',
+                    hint: '새 비밀번호를 다시 입력해주세요',
+                    obscureText: controller.obscurePasswordConfirm.value,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        controller.obscurePasswordConfirm.value
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: AppColors.inactive,
+                        size: 20,
+                      ),
+                      onPressed: () => controller.obscurePasswordConfirm
+                          .value = !controller.obscurePasswordConfirm.value,
+                    ),
+                  )),
+                ],
+              ),
+            )
+                : const SizedBox.shrink()),
+
+            const SizedBox(height: 40),
 
             // 저장 버튼
             Obx(() => CustomButton(

@@ -17,11 +17,13 @@ class ApiConstants {
   static const String logout = '/auth/logout';
   static const String tokenRefresh = '/auth/token/refresh';
   static const String googleLogin = '/auth/social/google';
+  static const String withdraw = '/auth/withdraw';
 
   // ─────────────────────────────────────────
   // User 엔드포인트
   // ─────────────────────────────────────────
   static const String me = '/users/me';
+  static const String profileImage = '/users/me/profile-image';
 
   // ─────────────────────────────────────────
   // Album 엔드포인트

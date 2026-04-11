@@ -13,15 +13,22 @@ class EditProfileController extends GetxController {
       : _userRepository = userRepository;
 
   final nicknameController = TextEditingController();
+  final currentPasswordController = TextEditingController();
+  final newPasswordController = TextEditingController();
+  final passwordConfirmController = TextEditingController();
+
   final Rxn<File> selectedImage = Rxn<File>();
   final RxBool isLoading = false.obs;
+  final RxBool isChangingPassword = false.obs; // 비밀번호 변경 섹션 토글
+  final RxBool obscureCurrentPassword = true.obs;
+  final RxBool obscureNewPassword = true.obs;
+  final RxBool obscurePasswordConfirm = true.obs;
 
   final _picker = ImagePicker();
 
   @override
   void onInit() {
     super.onInit();
-    // 현재 닉네임으로 초기화
     final userController = Get.find<UserController>();
     nicknameController.text = userController.user.value?.nickname ?? '';
   }
@@ -29,10 +36,12 @@ class EditProfileController extends GetxController {
   @override
   void onClose() {
     nicknameController.dispose();
+    currentPasswordController.dispose();
+    newPasswordController.dispose();
+    passwordConfirmController.dispose();
     super.onClose();
   }
 
-  // 프로필 사진 선택
   Future<void> pickProfileImage() async {
     final image = await _picker.pickImage(
       source: ImageSource.gallery,
@@ -40,26 +49,41 @@ class EditProfileController extends GetxController {
       maxHeight: 512,
       imageQuality: 85,
     );
-
     if (image != null) {
       selectedImage.value = File(image.path);
     }
   }
 
-  // 저장
   Future<void> saveProfile() async {
     final nickname = nicknameController.text.trim();
 
-    if (nickname.isEmpty) {
-      Get.snackbar('알림', '닉네임을 입력해주세요',
+    if (nickname.isEmpty || nickname.length < 2) {
+      Get.snackbar('알림', '닉네임은 2자 이상이어야 합니다',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
-    if (nickname.length < 2) {
-      Get.snackbar('알림', '닉네임은 2자 이상이어야 합니다',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
+    // 비밀번호 변경 섹션이 열려 있으면 유효성 검사
+    if (isChangingPassword.value) {
+      final currentPw = currentPasswordController.text;
+      final newPw = newPasswordController.text;
+      final confirmPw = passwordConfirmController.text;
+
+      if (currentPw.isEmpty) {
+        Get.snackbar('알림', '현재 비밀번호를 입력해주세요',
+            snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+      if (newPw.length < 8) {
+        Get.snackbar('알림', '새 비밀번호는 8자 이상이어야 합니다',
+            snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+      if (newPw != confirmPw) {
+        Get.snackbar('알림', '새 비밀번호가 일치하지 않습니다',
+            snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
     }
 
     isLoading.value = true;
@@ -67,17 +91,21 @@ class EditProfileController extends GetxController {
       final updatedUser = await _userRepository.updateProfile(
         nickname: nickname,
         profileImage: selectedImage.value,
+        currentPassword: isChangingPassword.value
+            ? currentPasswordController.text
+            : null,
+        newPassword: isChangingPassword.value
+            ? newPasswordController.text
+            : null,
+        passwordConfirm: isChangingPassword.value
+            ? passwordConfirmController.text
+            : null,
       );
 
-      // UserController 업데이트
       Get.find<UserController>().updateUser(updatedUser);
-
       Get.back();
-      Get.snackbar(
-        '완료',
-        '프로필이 업데이트되었습니다',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('완료', '프로필이 업데이트되었습니다',
+          snackPosition: SnackPosition.BOTTOM);
     } on NetworkException catch (e) {
       Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
     } finally {
