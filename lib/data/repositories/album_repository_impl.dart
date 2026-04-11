@@ -43,12 +43,14 @@ class AlbumRepositoryImpl implements AlbumRepository {
     required List<String> categories,
     required String eventStartDate,
     String? eventEndDate,
+    String? coverImageUrl,
   }) async {
     final request = CreateAlbumRequest(
       title: title,
       categories: categories,
       eventStartDate: eventStartDate,
       eventEndDate: eventEndDate,
+      coverImageUrl: coverImageUrl,
     );
     final dto = await _remoteSource.createAlbum(request);
     final album = dto.toEntity();
@@ -72,12 +74,14 @@ class AlbumRepositoryImpl implements AlbumRepository {
     required List<String> categories,
     required String eventStartDate,
     String? eventEndDate,
+    String? coverImageUrl,
   }) async {
     final request = UpdateAlbumRequest(
       title: title,
       categories: categories,
       eventStartDate: eventStartDate,
       eventEndDate: eventEndDate,
+      coverImageUrl: coverImageUrl,
     );
     final dto = await _remoteSource.updateAlbum(albumId, request);
     final album = dto.toEntity();
@@ -97,7 +101,7 @@ class AlbumRepositoryImpl implements AlbumRepository {
     await DatabaseService.deleteAlbum(albumId);
   }
 
-  // ========== Private ==========
+  // ── Private ────────────────────────────────────
 
   Future<void> _saveAlbumsToLocal(List<Album> albums) async {
     for (final album in albums) {

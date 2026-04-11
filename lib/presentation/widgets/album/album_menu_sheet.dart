@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:gachiganjik_app/domain/enum/album_role.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/album.dart';
-
+import '../../../domain/enum/album_role.dart';
+import '../../../core/routes/app_pages.dart';
+import '../../controllers/album/album_detail_controller.dart';
 import 'album_share_dialog.dart';
 
 class AlbumMenuSheet extends StatelessWidget {
   final Album album;
 
-  const AlbumMenuSheet({
-    super.key,
-    required this.album,
-  });
+  const AlbumMenuSheet({super.key, required this.album});
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +33,7 @@ class AlbumMenuSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
+          // 앨범 제목 + 권한 뱃지
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
@@ -51,18 +50,17 @@ class AlbumMenuSheet extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (album.albumRole.canManage)
+                // OWNER / ADMIN 모두 뱃지 표시
+                if (album.albumRole == AlbumRole.owner ||
+                    album.albumRole == AlbumRole.admin)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.mainLight,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      album.albumRole.displayName,
+                      album.albumRole == AlbumRole.owner ? 'OWNER' : 'ADMIN',
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -77,58 +75,72 @@ class AlbumMenuSheet extends StatelessWidget {
           const SizedBox(height: 8),
           const Divider(height: 1, color: AppColors.divider),
 
-          if (album.albumRole.canManage)
+          // 공유하기 (OWNER/ADMIN)
+          if (album.albumRole.canManage) ...[
             _MenuItem(
               icon: Icons.share,
               title: '앨범 공유하기',
               onTap: () {
-                Navigator.pop(context);
-                _showShareDialog(context);
+                Get.back();
+                showDialog(
+                  context: context,
+                  builder: (_) => AlbumShareDialog(album: album),
+                );
               },
             ),
-
-          if (album.albumRole.canManage)
             const Divider(height: 1, color: AppColors.divider),
+          ],
 
+          // 커버 사진 등록 (OWNER/ADMIN)
+          if (album.albumRole.canManage) ...[
+            _MenuItem(
+              icon: Icons.image_outlined,
+              title: '커버 사진 등록',
+              onTap: () {
+                Get.back();
+                Get.find<AlbumDetailController>().pickCoverImage();
+              },
+            ),
+            const Divider(height: 1, color: AppColors.divider),
+          ],
+
+          // 앨범 정보 수정 (OWNER/ADMIN)
+          if (album.albumRole.canManage) ...[
+            _MenuItem(
+              icon: Icons.edit_outlined,
+              title: '앨범 정보 수정',
+              onTap: () {
+                Get.back();
+                Get.toNamed(Routes.editAlbum, arguments: {'album': album});
+              },
+            ),
+            const Divider(height: 1, color: AppColors.divider),
+          ],
+
+          // 사진 전체 다운로드
           _MenuItem(
             icon: Icons.download,
             title: '사진 전체 다운로드',
             subtitle: '준비 중',
             onTap: () {
-              Navigator.pop(context);
-              Get.snackbar(
-                '준비 중',
-                '사진 전체 다운로드 기능은 곧 제공될 예정입니다',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              Get.back();
+              Get.snackbar('준비 중', '사진 전체 다운로드 기능은 곧 제공될 예정입니다',
+                  snackPosition: SnackPosition.BOTTOM);
             },
           ),
 
-          if (album.albumRole.canManage) ...[
-            _MenuItem(
-              icon: Icons.settings,
-              title: '앨범 정보 관리',
-              subtitle: '준비 중',
-              onTap: () {
-                Navigator.pop(context);
-                Get.snackbar(
-                  '준비 중',
-                  '앨범 정보 관리 기능은 곧 제공될 예정입니다',
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-              },
-            ),
-          ],
-
           const Divider(height: 1, color: AppColors.divider),
 
+          // 삭제 / 나가기
           _MenuItem(
-            icon: album.albumRole.canDelete ? Icons.delete_outline : Icons.logout,
+            icon: album.albumRole.canDelete
+                ? Icons.delete_outline
+                : Icons.logout,
             title: album.albumRole.canDelete ? '앨범 삭제' : '앨범 나가기',
             isDestructive: true,
             onTap: () {
-              Navigator.pop(context);
-              _showDeleteConfirmDialog(context);
+              Get.back(); // 바텀시트 닫기
+              _showDeleteConfirmDialog();
             },
           ),
 
@@ -138,30 +150,20 @@ class AlbumMenuSheet extends StatelessWidget {
     );
   }
 
-  void _showShareDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlbumShareDialog(album: album),
-    );
-  }
+  // ── context 없이 Get.dialog 사용 → deactivated 오류 해결 ──
+  void _showDeleteConfirmDialog() {
+    final isDelete = album.albumRole.canDelete;
 
-  void _showDeleteConfirmDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          album.albumRole.canDelete ? '앨범을 삭제할까요?' : '앨범에서 나갈까요?',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
+          isDelete ? '앨범을 삭제할까요?' : '앨범에서 나갈까요?',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         content: Text(
-          album.albumRole.canDelete
-              ? '앨범을 삭제하면 모든 사진과 댓글이 영구적으로 삭제됩니다.\n정말 삭제하시겠습니까?'
+          isDelete
+              ? '앨범을 삭제하면 모든 사진과 댓글을 더 이상 볼 수 없습니다.\n정말 삭제하시겠습니까?'
               : '앨범에서 나가면 더 이상 사진을 볼 수 없습니다.\n정말 나가시겠습니까?',
           style: const TextStyle(
             fontSize: 14,
@@ -171,7 +173,7 @@ class AlbumMenuSheet extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: Get.back,
             child: const Text(
               '취소',
               style: TextStyle(
@@ -182,17 +184,16 @@ class AlbumMenuSheet extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Get.snackbar(
-                '준비 중',
-                album.albumRole.canDelete
-                    ? '앨범 삭제 기능은 곧 제공될 예정입니다'
-                    : '앨범 나가기 기능은 곧 제공될 예정입니다',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              Get.back(); // 다이얼로그 닫기
+              final controller = Get.find<AlbumDetailController>();
+              if (isDelete) {
+                controller.deleteAlbum();
+              } else {
+                controller.leaveAlbum();
+              }
             },
             child: Text(
-              album.albumRole.canDelete ? '삭제' : '나가기',
+              isDelete ? '삭제' : '나가기',
               style: const TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.w600,
@@ -239,15 +240,9 @@ class _MenuItem extends StatelessWidget {
       trailing: subtitle != null
           ? Text(
         subtitle!,
-        style: const TextStyle(
-          fontSize: 12,
-          color: AppColors.textSecondary,
-        ),
+        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
       )
-          : const Icon(
-        Icons.chevron_right,
-        color: AppColors.inactive,
-      ),
+          : const Icon(Icons.chevron_right, color: AppColors.inactive),
       onTap: onTap,
     );
   }

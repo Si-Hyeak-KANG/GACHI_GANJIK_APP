@@ -2,30 +2,32 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../domain/entities/album.dart';
 import '../../../domain/repositories/album_repository.dart';
 import '../../../core/network/network_exception.dart';
 import '../../../data/sources/firebase/firebase_storage_source.dart';
 import '../album/album_list_controller.dart';
 
-class CreateAlbumController extends GetxController {
+class EditAlbumController extends GetxController {
   final AlbumRepository _albumRepository;
   final FirebaseStorageSource _storageSource;
+  final Album album;
 
-  CreateAlbumController({
+  EditAlbumController({
     required AlbumRepository albumRepository,
     required FirebaseStorageSource storageSource,
+    required this.album,
   })  : _albumRepository = albumRepository,
         _storageSource = storageSource;
 
-  final formKey = GlobalKey<FormState>();
-  final titleController = TextEditingController();
-
+  late final TextEditingController titleController;
   final RxList<String> selectedCategories = <String>[].obs;
   final RxString selectedStartDate = ''.obs;
   final RxString selectedEndDate = ''.obs;
   final RxBool isLoading = false.obs;
-  final RxString titleText = ''.obs;
-  final Rxn<File> selectedCoverImage = Rxn<File>(); // 커버 사진
+  final Rxn<File> selectedCoverImage = Rxn<File>(); // 새로 선택한 커버 사진
+  // 기존 커버 URL (새 사진 선택 전까지 유지)
+  late final RxnString existingCoverImageUrl;
 
   final _picker = ImagePicker();
 
@@ -37,9 +39,11 @@ class CreateAlbumController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    titleController.addListener(() {
-      titleText.value = titleController.text;
-    });
+    titleController = TextEditingController(text: album.title);
+    selectedCategories.assignAll(album.categories);
+    selectedStartDate.value = album.eventStartDate;
+    selectedEndDate.value = album.eventEndDate ?? '';
+    existingCoverImageUrl = RxnString(album.coverImageUrl);
   }
 
   @override
@@ -58,14 +62,16 @@ class CreateAlbumController extends GetxController {
     );
     if (image != null) {
       selectedCoverImage.value = File(image.path);
+      existingCoverImageUrl.value = null; // 기존 URL 무효화
     }
   }
 
   void removeCoverImage() {
     selectedCoverImage.value = null;
+    existingCoverImageUrl.value = null;
   }
 
-  void selectCategory(String category) {
+  void toggleCategory(String category) {
     if (selectedCategories.contains(category)) {
       selectedCategories.remove(category);
     } else {
@@ -73,8 +79,7 @@ class CreateAlbumController extends GetxController {
         selectedCategories.add(category);
       } else {
         Get.snackbar('알림', '카테고리는 최대 3개까지 선택할 수 있습니다',
-            snackPosition: SnackPosition.BOTTOM,
-            duration: const Duration(seconds: 2));
+            snackPosition: SnackPosition.BOTTOM);
       }
     }
   }
@@ -82,7 +87,7 @@ class CreateAlbumController extends GetxController {
   Future<void> pickStartDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _parseDate(selectedStartDate.value) ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
       builder: (context, child) => Theme(
@@ -93,15 +98,11 @@ class CreateAlbumController extends GetxController {
       ),
     );
     if (picked != null) {
-      final formatted = _formatDate(picked);
-      selectedStartDate.value = formatted;
+      selectedStartDate.value = _formatDate(picked);
       if (selectedEndDate.value.isNotEmpty) {
         final end = _parseDate(selectedEndDate.value);
         if (end != null && end.isBefore(picked)) {
           selectedEndDate.value = '';
-          Get.snackbar('알림', '종료 날짜가 시작 날짜보다 이전이어서 초기화되었습니다',
-              snackPosition: SnackPosition.BOTTOM,
-              duration: const Duration(seconds: 2));
         }
       }
     }
@@ -110,8 +111,7 @@ class CreateAlbumController extends GetxController {
   Future<void> pickEndDate(BuildContext context) async {
     if (selectedStartDate.value.isEmpty) {
       Get.snackbar('알림', '시작 날짜를 먼저 선택해주세요',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2));
+          snackPosition: SnackPosition.BOTTOM);
       return;
     }
     final startDate = _parseDate(selectedStartDate.value) ?? DateTime.now();
@@ -132,32 +132,38 @@ class CreateAlbumController extends GetxController {
     }
   }
 
-  Future<void> createAlbum() async {
-    if (!formKey.currentState!.validate()) return;
+  Future<void> saveAlbum() async {
+    final title = titleController.text.trim();
+    if (title.length < 2) {
+      Get.snackbar('알림', '앨범 이름은 2자 이상이어야 합니다',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
     if (selectedCategories.isEmpty) {
       Get.snackbar('알림', '카테고리를 최소 1개 선택해주세요',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
     if (selectedStartDate.value.isEmpty) {
-      Get.snackbar('알림', '이벤트 시작 날짜를 선택해주세요',
+      Get.snackbar('알림', '시작 날짜를 선택해주세요',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
     isLoading.value = true;
     try {
-      // 커버 사진 Firebase 업로드
-      String? coverImageUrl;
+      // 새 커버 사진 선택 시 Firebase 업로드
+      String? coverImageUrl = existingCoverImageUrl.value;
       if (selectedCoverImage.value != null) {
         coverImageUrl = await _storageSource.uploadImage(
           selectedCoverImage.value!,
-          'covers', // albumId 대신 임시 경로, 생성 후 albumId로 이동 불필요
+          'covers',
         );
       }
 
-      final album = await _albumRepository.createAlbum(
-        title: titleController.text.trim(),
+      final updatedAlbum = await _albumRepository.updateAlbum(
+        albumId: album.id,
+        title: title,
         categories: selectedCategories.toList(),
         eventStartDate: selectedStartDate.value,
         eventEndDate: selectedEndDate.value.isEmpty ? null : selectedEndDate.value,
@@ -165,18 +171,16 @@ class CreateAlbumController extends GetxController {
       );
 
       if (Get.isRegistered<AlbumListController>()) {
-        Get.find<AlbumListController>().addAlbum(album);
+        final listController = Get.find<AlbumListController>();
+        final index = listController.albums.indexWhere((a) => a.id == album.id);
+        if (index != -1) listController.albums[index] = updatedAlbum;
       }
 
-      Get.back();
-      Get.snackbar('생성 완료', '${album.title} 사진첩이 만들어졌습니다',
+      Get.back(result: updatedAlbum);
+      Get.snackbar('완료', '앨범 정보가 수정되었습니다',
           snackPosition: SnackPosition.BOTTOM);
     } on NetworkException catch (e) {
-      Get.snackbar('실패', e.message, snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      Get.snackbar('오류', '사진첩 생성에 실패했습니다',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 4));
+      Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
     }
@@ -196,11 +200,5 @@ class CreateAlbumController extends GetxController {
     } catch (_) {
       return null;
     }
-  }
-
-  String? validateTitle(String? value) {
-    if (value == null || value.trim().isEmpty) return '사진첩 이름을 입력해주세요';
-    if (value.trim().length < 2) return '2자 이상 입력해주세요';
-    return null;
   }
 }

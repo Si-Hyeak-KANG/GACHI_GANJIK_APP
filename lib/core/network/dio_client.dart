@@ -79,6 +79,7 @@ class DioClient {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
+        _showNoConnectionSnackbar();
         return NetworkException(
           message: '연결 시간 초과. 네트워크를 확인해주세요.',
           type: NetworkExceptionType.connectionTimeout,
@@ -88,9 +89,16 @@ class DioClient {
           message: '응답 시간 초과. 잠시 후 다시 시도해주세요.',
           type: NetworkExceptionType.receiveTimeout,
         );
+      case DioExceptionType.connectionError:
+        _showNoConnectionSnackbar();
+        return NetworkException(
+          message: '서버에 연결할 수 없습니다. 네트워크를 확인해주세요.',
+          type: NetworkExceptionType.noInternet,
+        );
       case DioExceptionType.badResponse:
         return _handleBadResponse(error);
       default:
+        _showNoConnectionSnackbar();
         return NetworkException(
           message: '네트워크 연결을 확인해주세요.',
           type: NetworkExceptionType.noInternet,
@@ -100,11 +108,19 @@ class DioClient {
 
   NetworkException _handleBadResponse(DioException error) {
     final statusCode = error.response?.statusCode;
-    final data = error.response?.data;
 
-    // 서버 에러코드 추출 { "success": false, "error": { "code": "...", "message": "..." } }
-    final errorCode = data?['error']?['code'] as String?;
-    final errorMessage = data?['error']?['message'] as String?;
+    String? errorCode;
+    String? errorMessage;
+    try {
+      final data = error.response?.data;
+      if (data is Map<String, dynamic>) {
+        final errorObj = data['error'];
+        if (errorObj is Map<String, dynamic>) {
+          errorCode = errorObj['code'] as String?;
+          errorMessage = errorObj['message'] as String?;
+        }
+      }
+    } catch (_) {}
 
     switch (errorCode) {
       case 'EMAIL_ALREADY_EXISTS':
@@ -112,42 +128,75 @@ class DioClient {
           message: '이미 사용 중인 이메일입니다.',
           type: NetworkExceptionType.badRequest,
           statusCode: statusCode,
+          errorCode: errorCode,
         );
       case 'INVALID_CREDENTIALS':
+      // 잘못된 비밀번호 — 401이지만 토큰 에러 아님, 인터셉터에서 갱신 시도 제외
         return NetworkException(
           message: '이메일 또는 비밀번호가 올바르지 않습니다.',
           type: NetworkExceptionType.unauthorized,
           statusCode: statusCode,
+          errorCode: errorCode,
         );
       case 'WEAK_PASSWORD':
         return NetworkException(
           message: '비밀번호는 영문+숫자+특수문자 조합 8~20자여야 합니다.',
           type: NetworkExceptionType.badRequest,
           statusCode: statusCode,
+          errorCode: errorCode,
         );
-      case 'INVALID_REFRESH_TOKEN':
       case 'TOKEN_EXPIRED':
+      case 'INVALID_REFRESH_TOKEN':
         return NetworkException(
           message: '로그인이 만료되었습니다. 다시 로그인해주세요.',
           type: NetworkExceptionType.unauthorized,
           statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'ALBUM_LIMIT_EXCEEDED':
+        return NetworkException(
+          message: '앨범은 최대 8개까지 생성할 수 있습니다.',
+          type: NetworkExceptionType.forbidden,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'INVALID_INVITE_CODE':
+        return NetworkException(
+          message: '유효하지 않은 초대 코드입니다.',
+          type: NetworkExceptionType.notFound,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'ALREADY_JOINED':
+        return NetworkException(
+          message: '이미 참여 중인 앨범입니다.',
+          type: NetworkExceptionType.conflict,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'PERMISSION_DENIED':
+        return NetworkException(
+          message: '권한이 없습니다.',
+          type: NetworkExceptionType.forbidden,
+          statusCode: statusCode,
+          errorCode: errorCode,
         );
       default:
         if (statusCode == 401) {
           return NetworkException(
-            message: '인증이 필요합니다.',
+            message: '인증이 필요합니다. 다시 로그인해주세요.',
             type: NetworkExceptionType.unauthorized,
             statusCode: statusCode,
           );
         } else if (statusCode == 403) {
           return NetworkException(
-            message: '접근 권한이 없습니다.',
+            message: errorMessage ?? '접근 권한이 없습니다.',
             type: NetworkExceptionType.forbidden,
             statusCode: statusCode,
           );
         } else if (statusCode == 404) {
           return NetworkException(
-            message: '요청한 리소스를 찾을 수 없습니다.',
+            message: errorMessage ?? '요청한 리소스를 찾을 수 없습니다.',
             type: NetworkExceptionType.notFound,
             statusCode: statusCode,
           );
@@ -159,13 +208,22 @@ class DioClient {
         );
     }
   }
+
+  void _showNoConnectionSnackbar() {
+    if (Get.isSnackbarOpen) return;
+    Get.snackbar(
+      '네트워크 오류',
+      '서버에 연결할 수 없습니다. 네트워크를 확인해주세요.',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 3),
+    );
+  }
 }
 
 class _JwtInterceptor extends Interceptor {
   final SecureStorage _secureStorage;
   final Dio _dio;
 
-  // 토큰 갱신 중 중복 요청 방지
   bool _isRefreshing = false;
   final List<_PendingRequest> _pendingRequests = [];
 
@@ -188,18 +246,37 @@ class _JwtInterceptor extends Interceptor {
       DioException err,
       ErrorInterceptorHandler handler,
       ) async {
-    // 401이 아니거나 토큰 갱신 요청 자체가 실패한 경우 → 그냥 통과
-    if (err.response?.statusCode != 401 ||
-        err.requestOptions.path == ApiConstants.tokenRefresh) {
+    final statusCode = err.response?.statusCode;
+
+    // 토큰 갱신 요청 자체 실패 → 그냥 통과
+    if (err.requestOptions.path == ApiConstants.tokenRefresh) {
       handler.next(err);
       return;
     }
 
-    // 서버 에러코드 확인
-    final errorCode = err.response?.data?['error']?['code'] as String?;
-    final isTokenError = errorCode == 'TOKEN_EXPIRED' ||
-        errorCode == 'INVALID_REFRESH_TOKEN' ||
-        err.response?.statusCode == 401;
+    // 에러코드 안전 추출
+    String? errorCode;
+    try {
+      final data = err.response?.data;
+      if (data is Map<String, dynamic>) {
+        final errorObj = data['error'];
+        if (errorObj is Map<String, dynamic>) {
+          errorCode = errorObj['code'] as String?;
+        }
+      }
+    } catch (_) {}
+
+    // INVALID_CREDENTIALS(잘못된 비밀번호)는 401이지만 토큰 에러가 아님
+    // → 갱신 시도 없이 그냥 통과시켜 Controller에서 처리
+    final isCredentialError = errorCode == 'INVALID_CREDENTIALS' ||
+        errorCode == 'EMAIL_ALREADY_EXISTS';
+
+    // 토큰 만료 에러 판별: 에러코드 우선, 없으면 401로 판별
+    // 단, 비밀번호 오류(INVALID_CREDENTIALS)는 제외
+    final isTokenError = !isCredentialError &&
+        (errorCode == 'TOKEN_EXPIRED' ||
+            errorCode == 'INVALID_REFRESH_TOKEN' ||
+            statusCode == 401);
 
     if (!isTokenError) {
       handler.next(err);
@@ -207,9 +284,7 @@ class _JwtInterceptor extends Interceptor {
     }
 
     if (_isRefreshing) {
-      // 이미 갱신 중이면 대기열에 추가
-      final pendingRequest = _PendingRequest(err.requestOptions, handler);
-      _pendingRequests.add(pendingRequest);
+      _pendingRequests.add(_PendingRequest(err.requestOptions, handler));
       return;
     }
 
@@ -224,7 +299,6 @@ class _JwtInterceptor extends Interceptor {
         return;
       }
 
-      // 토큰 갱신 요청 (인터셉터 우회를 위해 새 Dio 인스턴스 사용)
       final refreshDio = Dio(BaseOptions(baseUrl: ApiConstants.baseUrl));
       final response = await refreshDio.post(
         ApiConstants.tokenRefresh,
@@ -237,11 +311,9 @@ class _JwtInterceptor extends Interceptor {
       await _secureStorage.saveAccessToken(newAccessToken);
       await _secureStorage.saveRefreshToken(newRefreshToken);
 
-      // 원래 요청 재시도
       final retryResponse = await _retry(err.requestOptions, newAccessToken);
       handler.resolve(retryResponse);
 
-      // 대기 중인 요청들도 재시도
       for (final pending in _pendingRequests) {
         try {
           final r = await _retry(pending.options, newAccessToken);
@@ -251,7 +323,6 @@ class _JwtInterceptor extends Interceptor {
         }
       }
     } catch (e) {
-      // 갱신 실패 → 강제 로그아웃
       await _forceLogout();
       handler.reject(err);
       for (final pending in _pendingRequests) {
@@ -280,6 +351,11 @@ class _JwtInterceptor extends Interceptor {
 
   Future<void> _forceLogout() async {
     await _secureStorage.clearTokens();
+    Get.snackbar(
+      '로그인 만료',
+      '다시 로그인해주세요.',
+      snackPosition: SnackPosition.BOTTOM,
+    );
     Get.offAllNamed(Routes.login);
   }
 }

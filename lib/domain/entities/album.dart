@@ -1,23 +1,22 @@
 import '../enum/album_role.dart';
 
 class Album {
-  final String id;                  // ✅ String (UUID)
+  final String id;
   final String title;
   final List<String> categories;
-  final String eventStartDate;      // ✅ YYYY-MM-DD 형식
+  final String eventStartDate;
   final String? eventEndDate;
-  final String? coverImageUrl;      // ✅ coverImage → coverImageUrl
+  final String? coverImageUrl;
   final String inviteCode;
   final int photoCount;
   final int memberCount;
-  final DateTime createdAt;         // ✅ DateTime
-  final DateTime? updatedAt;        // ✅ 추가
+  final DateTime createdAt;
+  final DateTime? updatedAt;
 
-  // 권한 관련
-  final String ownerId;             // ✅ String (UUID)
-  final String currentUserId;       // ✅ String (UUID)
-  final String role;                // ✅ "OWNER" | "MEMBER"
-  final bool isAdmin;               // ✅ 로컬 전용 (API 없음)
+  final String ownerId;
+  final String currentUserId;
+  final String role;       // 서버 응답: "OWNER" | "ADMIN" | "MEMBER" | "GUEST"
+  final bool isAdmin;      // 로컬 전용 (하위 호환용)
 
   Album({
     required this.id,
@@ -38,23 +37,28 @@ class Album {
   });
 
   AlbumRole get albumRole {
-    if (role == 'OWNER') return AlbumRole.owner;
-    if (isAdmin) return AlbumRole.admin;  // 로컬 전용
-    if (currentUserId.isNotEmpty) return AlbumRole.member;
-    return AlbumRole.guest;
+    switch (role) {
+      case 'OWNER':
+        return AlbumRole.owner;
+      case 'ADMIN':
+        return AlbumRole.admin;
+      case 'GUEST':
+        return AlbumRole.guest;
+      default:
+        if (isAdmin) return AlbumRole.admin;
+        return AlbumRole.member;
+    }
   }
 
   bool get isOwner => role == 'OWNER';
-  bool get canManage => isOwner || isAdmin;
+  bool get canManage => albumRole.canManage;  // OWNER + ADMIN
   bool get canShare => canManage;
 
-  // 카테고리 문자열
   String get categoriesDisplay {
     if (categories.isEmpty) return '';
     return categories.join(' · ');
   }
 
-  // 날짜 기간 문자열
   String get eventDateDisplay {
     if (eventEndDate == null || eventEndDate == eventStartDate) {
       return _formatDate(eventStartDate);
@@ -62,10 +66,7 @@ class Album {
     return '${_formatDate(eventStartDate)} ~ ${_formatDate(eventEndDate!)}';
   }
 
-  // YYYY-MM-DD → YYYY.MM.DD 변환 (UI 표시용)
-  String _formatDate(String isoDate) {
-    return isoDate.replaceAll('-', '.');
-  }
+  String _formatDate(String isoDate) => isoDate.replaceAll('-', '.');
 
   String get qrCodeData => 'gachiganjik://join?code=$inviteCode';
   String get shareLink => 'https://gachiganjik.app/join?code=$inviteCode';

@@ -18,6 +18,7 @@ import '../../data/sources/remote/mock/mock_reaction_remote_source.dart';
 import '../../data/sources/remote/mock/mock_user_remote_source.dart';
 import '../../data/sources/remote/photo_remote_source.dart';
 import '../../data/sources/remote/reaction_remote_source.dart';
+import '../../data/sources/remote/real/real_album_remote_source.dart';
 import '../../data/sources/remote/real/real_auth_remote_source.dart';
 import '../../data/sources/remote/real/real_user_remote_source.dart';
 import '../../data/sources/remote/user_remote_source.dart';
@@ -32,6 +33,7 @@ import '../../presentation/controllers/auth/signup_controller.dart';
 import '../../presentation/controllers/network/network_controller.dart';
 import '../../presentation/controllers/user/user_controller.dart';
 import '../network/dio_client.dart';
+import '../storage/local_storage.dart';
 import '../storage/secure_storage.dart';
 
 // flutter run                              → Mock 사용
@@ -144,8 +146,15 @@ class InitialBinding extends Bindings {
       RealUserRemoteSource(dioClient: Get.find()),
       permanent: true,
     );
-    // Phase 3~5 대기: Mock 유지
-    Get.put<AlbumRemoteSource>(MockAlbumRemoteSource(), permanent: true);
+    // Phase 3 완료: Album Real
+    Get.put<AlbumRemoteSource>(
+      RealAlbumRemoteSource(
+        dioClient: Get.find(),
+        localStorage: Get.find<LocalStorage>(),
+      ),
+      permanent: true,
+    );
+    // Phase 4~5 대기: Mock 유지
     Get.put<PhotoRemoteSource>(MockPhotoRemoteSource(), permanent: true);
     Get.put<ReactionRemoteSource>(MockReactionRemoteSource(), permanent: true);
     Get.put<CommentRemoteSource>(MockCommentRemoteSource(), permanent: true);

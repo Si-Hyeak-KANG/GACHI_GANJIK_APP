@@ -1,5 +1,6 @@
 import '../album_remote_source.dart';
 import '../../../models/album/album_dto.dart';
+import '../../../models/album/album_member_dto.dart';
 import '../../../models/album/create_album_request.dart';
 import '../../../models/album/join_album_request.dart';
 import '../../../models/album/update_album_request.dart';
@@ -12,7 +13,7 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
     AlbumDto(
       id: 'album-uuid-4',
       title: '마크방범대',
-      categories: ['친구','모임'],
+      categories: ['친구', '모임'],
       eventStartDate: '2025-01-27',
       eventEndDate: null,
       coverImageUrl: 'https://cdn2.colley.kr/item_340092_1_0_title_0.jpeg',
@@ -32,8 +33,8 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       categories: ['결혼'],
       eventStartDate: '2026-10-27',
       eventEndDate: '2026-10-27',
-      // 웨딩 이미지
-      coverImageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
+      coverImageUrl:
+      'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
       inviteCode: 'WD2025A',
       photoCount: 24,
       memberCount: 15,
@@ -50,8 +51,8 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       categories: ['여행', '친구', '기록'],
       eventStartDate: '2025-01-27',
       eventEndDate: '2025-12-27',
-      // 제주 자연 이미지
-      coverImageUrl: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80',
+      coverImageUrl:
+      'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80',
       inviteCode: 'JJ03B2',
       photoCount: 48,
       memberCount: 6,
@@ -68,7 +69,6 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       categories: ['모임', '독서'],
       eventStartDate: '2022-03-27',
       eventEndDate: null,
-      // 커버 없음 (그라디언트 표시)
       coverImageUrl: null,
       inviteCode: 'MT14C3',
       photoCount: 12,
@@ -163,7 +163,8 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
   }
 
   @override
-  Future<AlbumDto> updateAlbum(String albumId, UpdateAlbumRequest request) async {
+  Future<AlbumDto> updateAlbum(
+      String albumId, UpdateAlbumRequest request) async {
     await Future.delayed(const Duration(milliseconds: 800));
 
     final index = _albums.indexWhere((a) => a.id == albumId);
@@ -209,6 +210,21 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
   Future<void> leaveAlbum(String albumId) async {
     await Future.delayed(const Duration(milliseconds: 800));
     _albums.removeWhere((a) => a.id == albumId);
+  }
+
+  @override
+  Future<List<AlbumMemberDto>> getMembers(String albumId) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return [
+      AlbumMemberDto(
+        userId: 'user-uuid-1',
+        nickname: '셕스키',
+        userTag: '#AB1C23',
+        profileImageUrl: null,
+        role: 'OWNER',
+        joinedAt: '2025-01-18T10:00:00Z',
+      ),
+    ];
   }
 
   String _generateInviteCode() {

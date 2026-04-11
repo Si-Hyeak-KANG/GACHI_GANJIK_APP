@@ -1,7 +1,7 @@
 import '../../../domain/entities/album.dart';
 
 class AlbumDto {
-  final String id;                  // String (UUID)
+  final String id;
   final String title;
   final List<String> categories;
   final String eventStartDate;
@@ -14,9 +14,8 @@ class AlbumDto {
   final String? updatedAt;
 
   // 권한
-  final String ownerId;
+  final String ownerId;  // 목록 응답에 없으면 currentUserId로 대체
   final String role;
-
   final String? currentUserId;
   final bool isAdmin;
 
@@ -39,35 +38,31 @@ class AlbumDto {
   });
 
   factory AlbumDto.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
+    final role = json['role'] as String? ?? 'MEMBER';
+    // 서버가 ownerId를 내려주지 않는 경우: OWNER면 currentUserId가 ownerId
+    final ownerId = json['ownerId'] as String?
+        ?? (role == 'OWNER' ? (currentUserId ?? '') : '');
+
     return AlbumDto(
       id: json['albumId'] as String,
       title: json['title'] as String,
       categories: (json['categories'] as List<dynamic>?)
           ?.map((e) => e as String)
-          .toList() ?? [],
-      eventStartDate: json['eventStartDate'] as String,
+          .toList() ??
+          [],
+      eventStartDate: json['eventStartDate'] as String? ?? '',
       eventEndDate: json['eventEndDate'] as String?,
       coverImageUrl: json['coverImageUrl'] as String?,
-      inviteCode: json['inviteCode'] as String,
+      inviteCode: json['inviteCode'] as String? ?? '',
       photoCount: json['photoCount'] as int? ?? 0,
       memberCount: json['memberCount'] as int? ?? 0,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String?,
-      ownerId: json['ownerId'] as String,
-      role: json['role'] as String,
+      ownerId: ownerId,
+      role: role,
       currentUserId: currentUserId,
-      isAdmin: false,
+      isAdmin: role == 'ADMIN',
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'categories': categories,
-      'eventStartDate': eventStartDate,
-      'eventEndDate': eventEndDate,
-      'coverImageUrl': coverImageUrl,
-    };
   }
 
   Album toEntity() {
