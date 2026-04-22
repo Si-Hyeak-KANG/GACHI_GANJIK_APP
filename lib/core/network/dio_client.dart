@@ -131,7 +131,6 @@ class DioClient {
           errorCode: errorCode,
         );
       case 'INVALID_CREDENTIALS':
-      // 잘못된 비밀번호 — 401이지만 토큰 에러 아님, 인터셉터에서 갱신 시도 제외
         return NetworkException(
           message: '이메일 또는 비밀번호가 올바르지 않습니다.',
           type: NetworkExceptionType.unauthorized,
@@ -181,6 +180,29 @@ class DioClient {
           statusCode: statusCode,
           errorCode: errorCode,
         );
+    // ── Phase 12: Photos ──────────────────────────────
+      case 'NOT_PHOTO_OWNER':
+        return NetworkException(
+          message: '본인이 업로드한 사진만 수정할 수 있습니다.',
+          type: NetworkExceptionType.forbidden,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'PHOTO_NOT_FOUND':
+        return NetworkException(
+          message: '사진을 찾을 수 없습니다.',
+          type: NetworkExceptionType.notFound,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'TOO_MANY_FILES':
+        return NetworkException(
+          message: '한 번에 최대 10장까지 업로드할 수 있습니다.',
+          type: NetworkExceptionType.badRequest,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+    // ─────────────────────────────────────────────────
       default:
         if (statusCode == 401) {
           return NetworkException(
@@ -248,13 +270,11 @@ class _JwtInterceptor extends Interceptor {
       ) async {
     final statusCode = err.response?.statusCode;
 
-    // 토큰 갱신 요청 자체 실패 → 그냥 통과
     if (err.requestOptions.path == ApiConstants.tokenRefresh) {
       handler.next(err);
       return;
     }
 
-    // 에러코드 안전 추출
     String? errorCode;
     try {
       final data = err.response?.data;
@@ -266,13 +286,9 @@ class _JwtInterceptor extends Interceptor {
       }
     } catch (_) {}
 
-    // INVALID_CREDENTIALS(잘못된 비밀번호)는 401이지만 토큰 에러가 아님
-    // → 갱신 시도 없이 그냥 통과시켜 Controller에서 처리
     final isCredentialError = errorCode == 'INVALID_CREDENTIALS' ||
         errorCode == 'EMAIL_ALREADY_EXISTS';
 
-    // 토큰 만료 에러 판별: 에러코드 우선, 없으면 401로 판별
-    // 단, 비밀번호 오류(INVALID_CREDENTIALS)는 제외
     final isTokenError = !isCredentialError &&
         (errorCode == 'TOKEN_EXPIRED' ||
             errorCode == 'INVALID_REFRESH_TOKEN' ||

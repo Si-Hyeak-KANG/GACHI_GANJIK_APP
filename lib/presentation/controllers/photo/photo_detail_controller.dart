@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:gachiganjik_app/domain/enum/album_role.dart';
 import 'package:get/get.dart';
+import '../../../core/storage/local_storage.dart';
 import '../../../domain/entities/photo.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/repositories/comment_repository.dart';
 import '../../../data/repositories/photo_repository_impl.dart';
 import '../../../core/network/network_exception.dart';
 import '../../../core/utils/gallery_saver.dart';
+import '../album/album_detail_controller.dart';
 import '../auth/auth_controller.dart';
 
 class PhotoDetailController extends GetxController {
@@ -40,9 +42,18 @@ class PhotoDetailController extends GetxController {
   Photo get currentPhoto => photos[currentIndex.value];
   bool get canDownload => album.albumRole.canManage;
 
+  bool get isPhotoOwner {
+    return currentPhoto.uploaderId == _currentUserId;
+  }
+
+  bool get canDeletePhoto =>
+      isPhotoOwner || album.albumRole.canManage;
+
   String get _currentUserId {
     try {
-      return Get.find<AuthController>().currentUser.value?.userId ?? '';
+      final fromAuth = Get.find<AuthController>().currentUser.value?.userId;
+      if (fromAuth != null && fromAuth.isNotEmpty) return fromAuth;
+      return Get.find<LocalStorage>().getUserId() ?? '';
     } catch (_) {
       return '';
     }
@@ -56,7 +67,6 @@ class PhotoDetailController extends GetxController {
     }
   }
 
-  // View에서 닉네임이 필요한 경우 사용
   String get currentUserNickname => _currentUserNickname;
 
   @override
@@ -94,15 +104,12 @@ class PhotoDetailController extends GetxController {
 
   Future<void> _loadPhotoData() async {
     likeCount.value = currentPhoto.likeCount;
-    // 좋아요 초기 상태는 서버에서 받아오지 않으므로 false로 초기화
-    // (실제 서버에서 isLiked 필드가 내려오면 photo.isLiked로 처리)
     isLiked.value = false;
   }
 
   Future<void> _loadComments() async {
     isLoadingComments.value = true;
     try {
-      // CommentRepository는 photoId만 받으므로 albumId::photoId 형태로 전달
       final compositeId = '${album.id}::${currentPhoto.id}';
       final result = await _commentRepository.getComments(compositeId);
       comments.assignAll(result);
@@ -114,7 +121,6 @@ class PhotoDetailController extends GetxController {
   }
 
   Future<void> toggleLike() async {
-    // 낙관적 업데이트: 즉시 UI 반영 후 서버 요청
     final prevLiked = isLiked.value;
     final prevCount = likeCount.value;
 
@@ -126,18 +132,127 @@ class PhotoDetailController extends GetxController {
         album.id,
         currentPhoto.id,
       );
-      // 서버 결과로 덮어씌움 (정확성 보장)
       isLiked.value = result.isLiked;
       likeCount.value = result.likeCount;
     } catch (_) {
-      // 서버 실패 시 롤백
       isLiked.value = prevLiked;
       likeCount.value = prevCount;
-      Get.snackbar(
-        '오류',
-        '좋아요 처리에 실패했습니다',
-        snackPosition: SnackPosition.BOTTOM,
+      Get.snackbar('오류', '좋아요 처리에 실패했습니다',
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  // ── 사진 삭제 ─────────────────────────────────────
+  Future<void> deletePhoto() async {
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('사진 삭제'),
+        content: const Text('이 사진을 삭제하시겠어요?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await _photoRepository.deletePhoto(
+        currentPhoto.id,
+        albumId: album.id,
       );
+      // AlbumDetailController moments 즉시 갱신
+      if (Get.isRegistered<AlbumDetailController>()) {
+        await Get.find<AlbumDetailController>().fetchMoments();
+      }
+      Get.back();
+      Get.snackbar('완료', '사진이 삭제되었습니다',
+          snackPosition: SnackPosition.BOTTOM);
+    } on NetworkException catch (e) {
+      Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
+    } catch (_) {
+      Get.snackbar('오류', '사진 삭제에 실패했습니다',
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  // ── 메시지 수정 ───────────────────────────────────
+  Future<void> updateMessage() async {
+    final textController =
+    TextEditingController(text: currentPhoto.message ?? '');
+
+    final newMessage = await Get.dialog<String>(
+      AlertDialog(
+        title: const Text('메시지 수정'),
+        content: TextField(
+          controller: textController,
+          decoration: const InputDecoration(
+            hintText: '메시지를 입력하세요',
+            border: OutlineInputBorder(),
+          ),
+          maxLines: 3,
+          maxLength: 100,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('취소'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final text = textController.text.trim();
+              Get.back(result: text);
+            },
+            child: const Text('저장'),
+          ),
+        ],
+      ),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      textController.dispose();
+    });
+    if (newMessage == null) return;
+
+    try {
+      await _photoRepository.updatePhotoMessage(
+        albumId: album.id,
+        photoId: currentPhoto.id,
+        message: newMessage,
+      );
+      // 로컬 photos 리스트 업데이트
+      final idx = currentIndex.value;
+      photos[idx] = Photo(
+        id: currentPhoto.id,
+        albumId: currentPhoto.albumId,
+        imageUrl: currentPhoto.imageUrl,
+        thumbnailUrl: currentPhoto.thumbnailUrl,
+        message: newMessage.isEmpty ? null : newMessage,
+        photoDate: currentPhoto.photoDate,
+        uploaderId: currentPhoto.uploaderId,
+        uploaderNickname: currentPhoto.uploaderNickname,
+        uploaderProfileImageUrl: currentPhoto.uploaderProfileImageUrl,
+        createdAt: currentPhoto.createdAt,
+        likeCount: currentPhoto.likeCount,
+        commentCount: currentPhoto.commentCount,
+      );
+      currentIndex.refresh();
+      Get.snackbar('완료', '메시지가 수정되었습니다',
+          snackPosition: SnackPosition.BOTTOM);
+    } on NetworkException catch (e) {
+      Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
+    } catch (_) {
+      Get.snackbar('오류', '메시지 수정에 실패했습니다',
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
 
@@ -152,13 +267,9 @@ class PhotoDetailController extends GetxController {
       comments.add(comment);
       commentController.clear();
       FocusScope.of(Get.context!).unfocus();
-
-      Get.snackbar(
-        '완료',
-        '댓글이 추가되었습니다',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 1),
-      );
+      Get.snackbar('완료', '댓글이 추가되었습니다',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 1));
     } on NetworkException catch (e) {
       Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
     } finally {
@@ -169,13 +280,9 @@ class PhotoDetailController extends GetxController {
   Future<void> deleteComment(int index) async {
     final comment = comments[index];
 
-    // 본인 댓글 여부 확인 (userId 기준)
     if (comment.userId != _currentUserId) {
-      Get.snackbar(
-        '알림',
-        '본인의 댓글만 삭제할 수 있습니다',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('알림', '본인의 댓글만 삭제할 수 있습니다',
+          snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
@@ -197,20 +304,15 @@ class PhotoDetailController extends GetxController {
         ],
       ),
     );
-
     if (confirmed != true) return;
 
     try {
       final compositeId = '${album.id}::${currentPhoto.id}';
       await _commentRepository.deleteComment(compositeId, comment.commentId);
       comments.removeAt(index);
-
-      Get.snackbar(
-        '완료',
-        '댓글이 삭제되었습니다',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 1),
-      );
+      Get.snackbar('완료', '댓글이 삭제되었습니다',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 1));
     } on NetworkException catch (e) {
       Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
     }
@@ -218,17 +320,15 @@ class PhotoDetailController extends GetxController {
 
   Future<void> saveImage() async {
     if (!canDownload) {
-      Get.snackbar(
-        '권한 없음',
-        '관리자만 사진을 다운로드할 수 있습니다',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('권한 없음', '관리자만 사진을 다운로드할 수 있습니다',
+          snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
     isSavingImage.value = true;
     try {
-      final success = await GallerySaver.saveImageFromUrl(currentPhoto.imageUrl);
+      final success =
+      await GallerySaver.saveImageFromUrl(currentPhoto.imageUrl);
       Get.snackbar(
         success ? '완료' : '실패',
         success ? '갤러리에 저장되었습니다' : '이미지 저장에 실패했습니다',
@@ -237,9 +337,7 @@ class PhotoDetailController extends GetxController {
     } catch (e) {
       Get.snackbar(
         '오류',
-        e.toString().contains('권한')
-            ? '갤러리 접근 권한이 필요합니다'
-            : '이미지 저장에 실패했습니다',
+        e.toString().contains('권한') ? '갤러리 접근 권한이 필요합니다' : '이미지 저장에 실패했습니다',
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {

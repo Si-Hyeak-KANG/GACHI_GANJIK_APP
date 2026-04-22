@@ -20,6 +20,7 @@ import '../../data/sources/remote/photo_remote_source.dart';
 import '../../data/sources/remote/reaction_remote_source.dart';
 import '../../data/sources/remote/real/real_album_remote_source.dart';
 import '../../data/sources/remote/real/real_auth_remote_source.dart';
+import '../../data/sources/remote/real/real_photo_remote_source.dart';
 import '../../data/sources/remote/real/real_user_remote_source.dart';
 import '../../data/sources/remote/user_remote_source.dart';
 import '../../domain/repositories/album_repository.dart';
@@ -36,8 +37,6 @@ import '../network/dio_client.dart';
 import '../storage/local_storage.dart';
 import '../storage/secure_storage.dart';
 
-// flutter run                              → Mock 사용
-// flutter run --dart-define=USE_REAL_API=true → Real API 사용
 const bool _useRealApi = bool.fromEnvironment('USE_REAL_API', defaultValue: false);
 
 class InitialBinding extends Bindings {
@@ -154,8 +153,12 @@ class InitialBinding extends Bindings {
       ),
       permanent: true,
     );
-    // Phase 4~5 대기: Mock 유지
-    Get.put<PhotoRemoteSource>(MockPhotoRemoteSource(), permanent: true);
+    // Phase 4 완료: Photo Real
+    Get.put<PhotoRemoteSource>(
+      RealPhotoRemoteSource(dioClient: Get.find()),
+      permanent: true,
+    );
+    // Phase 5 대기: Mock 유지
     Get.put<ReactionRemoteSource>(MockReactionRemoteSource(), permanent: true);
     Get.put<CommentRemoteSource>(MockCommentRemoteSource(), permanent: true);
   }

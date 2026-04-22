@@ -11,12 +11,23 @@ class RealPhotoRemoteSource implements PhotoRemoteSource {
 
   @override
   Future<List<PhotoDto>> getAlbumPhotos(String albumId) async {
-    final response = await _dioClient.get('/albums/$albumId/photos');
+    final response = await _dioClient.get(
+      '/albums/$albumId/photos',
+      queryParameters: {'page': 0, 'size': 50},
+    );
     final data = response.data['data'] as Map<String, dynamic>;
-    final list = data['photos'] as List<dynamic>;
-    return list
-        .map((e) => PhotoDto.fromJson(e as Map<String, dynamic>))
-        .toList();
+    final moments = data['moments'] as List<dynamic>? ?? [];
+
+    final photos = <PhotoDto>[];
+    for (final moment in moments) {
+      final photoList =
+          (moment as Map<String, dynamic>)['photos'] as List<dynamic>? ?? [];
+      for (final photo in photoList) {
+        final photoMap = photo as Map<String, dynamic>;
+        photos.add(PhotoDto.fromJson({...photoMap, 'albumId': albumId}));
+      }
+    }
+    return photos;
   }
 
   @override
@@ -25,13 +36,24 @@ class RealPhotoRemoteSource implements PhotoRemoteSource {
       '/albums/${request.albumId}/photos',
       data: request.toJson(),
     );
-    return PhotoDto.fromJson(
-      response.data['data'] as Map<String, dynamic>,
-    );
+    final data = response.data['data'] as Map<String, dynamic>;
+    final photoList = data['photos'] as List<dynamic>;
+    return PhotoDto.fromJson({
+      ...(photoList.first as Map<String, dynamic>),
+      'albumId': request.albumId,
+    });
   }
 
   @override
   Future<void> deletePhoto(String albumId, String photoId) async {
     await _dioClient.delete('/albums/$albumId/photos/$photoId');
+  }
+
+  @override
+  Future<void> updatePhotoMessage(String albumId, String photoId, String message) async {
+    await _dioClient.patch(
+      '/albums/$albumId/photos/$photoId',
+      data: {'message': message},
+    );
   }
 }

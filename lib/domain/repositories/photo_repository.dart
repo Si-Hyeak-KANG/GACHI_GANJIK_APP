@@ -16,4 +16,10 @@ abstract class PhotoRepository {
 
   /// 사진 삭제
   Future<void> deletePhoto(String photoId, {required String albumId});
+
+  Future<void> updatePhotoMessage({
+    required String albumId,
+    required String photoId,
+    required String message,
+  });
 }

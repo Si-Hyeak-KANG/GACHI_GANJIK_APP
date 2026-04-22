@@ -54,7 +54,7 @@ class PhotoRepositoryImpl implements PhotoRepository {
       }
       final photos = dtos.map((dto) => dto.toEntity()).toList();
       return _groupPhotosByDate(photos);
-    } catch (e) {
+    } catch (e, st) {
       final dtos = await _localSource.getLocalPhotos(albumId);
       final photos = dtos.map((dto) => dto.toEntity()).toList();
       return _groupPhotosByDate(photos);
@@ -74,7 +74,6 @@ class PhotoRepositoryImpl implements PhotoRepository {
       return await _addToUploadQueue(albumId, imageFile, message, photoDate);
     }
 
-    // Mock 환경에서는 Firebase 업로드 없이 로컬 경로 사용
     const useRealApi = bool.fromEnvironment('USE_REAL_API', defaultValue: false);
 
     final String imageUrl;
@@ -83,10 +82,12 @@ class PhotoRepositoryImpl implements PhotoRepository {
     } else {
       imageUrl = imageFile.path;
     }
+    const String? thumbnailUrl = null;
 
     final request = UploadPhotoRequest(
       albumId: albumId,
       imageUrl: imageUrl,
+      thumbnailUrl: thumbnailUrl,
       message: message,
       photoDate: photoDate,
     );
@@ -100,6 +101,15 @@ class PhotoRepositoryImpl implements PhotoRepository {
   Future<void> deletePhoto(String photoId, {required String albumId}) async {
     await _remoteSource.deletePhoto(albumId, photoId);
     await DatabaseService.deletePhoto(photoId);
+  }
+
+  @override
+  Future<void> updatePhotoMessage({
+    required String albumId,
+    required String photoId,
+    required String message,
+  }) async {
+    await _remoteSource.updatePhotoMessage(albumId, photoId, message);
   }
 
   Future<ReactionResult> toggleLike(String albumId, String photoId) async {

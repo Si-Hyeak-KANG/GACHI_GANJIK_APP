@@ -10,4 +10,6 @@ abstract class PhotoRemoteSource {
 
   /// 사진 삭제 (6.4) - 업로더만
   Future<void> deletePhoto(String albumId, String photoId);
+
+  Future<void> updatePhotoMessage(String albumId, String photoId, String message);
 }

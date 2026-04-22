@@ -176,4 +176,28 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
     }
     photos.removeWhere((p) => p.id == photoId);
   }
+
+  @override
+  Future<void> updatePhotoMessage(String albumId, String photoId, String message) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final photos = _photosByAlbum[albumId];
+    if (photos == null) return;
+    final index = photos.indexWhere((p) => p.id == photoId);
+    if (index == -1) return;
+    final photo = photos[index];
+    photos[index] = PhotoDto(
+      id: photo.id,
+      albumId: photo.albumId,
+      imageUrl: photo.imageUrl,
+      thumbnailUrl: photo.thumbnailUrl,
+      message: message.isEmpty ? null : message,
+      photoDate: photo.photoDate,
+      uploaderId: photo.uploaderId,
+      uploaderNickname: photo.uploaderNickname,
+      uploaderProfileImageUrl: photo.uploaderProfileImageUrl,
+      createdAt: photo.createdAt,
+      likeCount: photo.likeCount,
+      commentCount: photo.commentCount,
+    );
+  }
 }

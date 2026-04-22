@@ -77,8 +77,55 @@ class _AppBar extends GetView<PhotoDetailController> {
               fontWeight: FontWeight.w600,
             ),
           )),
-          const SizedBox(width: 48),
+          // 본인 사진이거나 OWNER/ADMIN이면 더보기 메뉴 표시
+          Obx(() => controller.canDeletePhoto
+              ? IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onPressed: () => _showPhotoMenu(context),
+          )
+              : const SizedBox(width: 48)),
         ],
+      ),
+    );
+  }
+
+  void _showPhotoMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 메시지 수정 — 본인만
+            if (controller.isPhotoOwner)
+              ListTile(
+                leading: const Icon(Icons.edit_outlined,
+                    color: AppColors.textPrimary),
+                title: const Text('메시지 수정'),
+                onTap: () {
+                  Get.back();
+                  controller.updateMessage();
+                },
+              ),
+            // 삭제 — 본인 또는 OWNER/ADMIN
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text('사진 삭제',
+                  style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Get.back();
+                controller.deletePhoto();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }

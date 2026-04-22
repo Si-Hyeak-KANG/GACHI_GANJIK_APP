@@ -1,14 +1,15 @@
 import '../../../domain/entities/photo.dart';
 
 class PhotoDto {
-  final String id;                  // String (UUID)
-  final String albumId;             // String (UUID)
+  final String id;
+  final String albumId;
   final String imageUrl;
   final String? thumbnailUrl;
   final String? message;
   final String photoDate;
+  final String? colorCode;
 
-  final String uploaderId;          // String (UUID)
+  final String uploaderId;
   final String uploaderNickname;
   final String? uploaderProfileImageUrl;
 
@@ -23,6 +24,7 @@ class PhotoDto {
     this.thumbnailUrl,
     this.message,
     required this.photoDate,
+    this.colorCode,
     required this.uploaderId,
     required this.uploaderNickname,
     this.uploaderProfileImageUrl,
@@ -31,19 +33,19 @@ class PhotoDto {
     this.commentCount = 0,
   });
 
-  // ✅ API 응답 파싱
   factory PhotoDto.fromJson(Map<String, dynamic> json) {
     return PhotoDto(
-      id: json['photoId'] as String,
-      albumId: json['albumId'] as String,
+      id: json['photoId']?.toString() ?? '',
+      albumId: json['albumId']?.toString() ?? '',
       imageUrl: json['imageUrl'] as String,
       thumbnailUrl: json['thumbnailUrl'] as String?,
       message: json['message'] as String?,
       photoDate: json['photoDate'] as String,
-      uploaderId: json['uploaderId'] as String,
-      uploaderNickname: json['uploaderNickname'] as String,
+      colorCode: json['colorCode'] as String?,
+      uploaderId: json['uploaderId']?.toString() ?? '',
+      uploaderNickname: json['uploaderNickname'] as String? ?? '',
       uploaderProfileImageUrl: json['uploaderProfileImageUrl'] as String?,
-      createdAt: json['createdAt'] as String,
+      createdAt: json['uploadDt'] as String? ?? json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
       likeCount: json['likeCount'] as int? ?? 0,
       commentCount: json['commentCount'] as int? ?? 0,
     );
