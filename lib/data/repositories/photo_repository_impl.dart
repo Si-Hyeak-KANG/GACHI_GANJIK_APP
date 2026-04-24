@@ -98,8 +98,9 @@ class PhotoRepositoryImpl implements PhotoRepository {
   }
 
   @override
-  Future<void> deletePhoto(String photoId, {required String albumId}) async {
+  Future<void> deletePhoto(String photoId, {required String albumId, required String imageUrl}) async {
     await _remoteSource.deletePhoto(albumId, photoId);
+    await _storageSource.deleteImage(imageUrl);
     await DatabaseService.deletePhoto(photoId);
   }
 

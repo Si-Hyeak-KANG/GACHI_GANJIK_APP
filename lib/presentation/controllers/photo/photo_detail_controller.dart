@@ -9,6 +9,7 @@ import '../../../data/repositories/photo_repository_impl.dart';
 import '../../../core/network/network_exception.dart';
 import '../../../core/utils/gallery_saver.dart';
 import '../album/album_detail_controller.dart';
+import '../album/album_list_controller.dart';
 import '../auth/auth_controller.dart';
 
 class PhotoDetailController extends GetxController {
@@ -42,12 +43,8 @@ class PhotoDetailController extends GetxController {
   Photo get currentPhoto => photos[currentIndex.value];
   bool get canDownload => album.albumRole.canManage;
 
-  bool get isPhotoOwner {
-    return currentPhoto.uploaderId == _currentUserId;
-  }
-
-  bool get canDeletePhoto =>
-      isPhotoOwner || album.albumRole.canManage;
+  bool get isPhotoOwner => currentPhoto.uploaderId == _currentUserId;
+  bool get canDeletePhoto => isPhotoOwner || album.albumRole.canManage;
 
   String get _currentUserId {
     try {
@@ -168,11 +165,12 @@ class PhotoDetailController extends GetxController {
       await _photoRepository.deletePhoto(
         currentPhoto.id,
         albumId: album.id,
+        imageUrl: currentPhoto.imageUrl,
       );
-      // AlbumDetailController moments 즉시 갱신
       if (Get.isRegistered<AlbumDetailController>()) {
         await Get.find<AlbumDetailController>().fetchMoments();
       }
+      _refreshAlbumList();
       Get.back();
       Get.snackbar('완료', '사진이 삭제되었습니다',
           snackPosition: SnackPosition.BOTTOM);
@@ -229,7 +227,6 @@ class PhotoDetailController extends GetxController {
         photoId: currentPhoto.id,
         message: newMessage,
       );
-      // 로컬 photos 리스트 업데이트
       final idx = currentIndex.value;
       photos[idx] = Photo(
         id: currentPhoto.id,
@@ -342,6 +339,13 @@ class PhotoDetailController extends GetxController {
       );
     } finally {
       isSavingImage.value = false;
+    }
+  }
+
+  // ── Private ──────────────────────────────────────
+  void _refreshAlbumList() {
+    if (Get.isRegistered<AlbumListController>()) {
+      Get.find<AlbumListController>().fetchAlbums();
     }
   }
 }

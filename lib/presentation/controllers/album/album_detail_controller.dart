@@ -60,9 +60,6 @@ class AlbumDetailController extends GetxController {
 
     isUploading.value = true;
     try {
-      // TODO: Firebase Storage 업로드 후 URL 획득
-      // 현재는 로컬 경로를 임시 URL로 사용
-      // Photos API 연동 후 FirebaseStorageSource.uploadImage() 호출로 교체
       Get.snackbar('준비 중', '커버 사진 등록은 앨범 수정 API 연동 후 지원됩니다',
           snackPosition: SnackPosition.BOTTOM);
     } finally {
@@ -74,7 +71,6 @@ class AlbumDetailController extends GetxController {
   Future<void> deleteAlbum() async {
     try {
       await _albumRepository.deleteAlbum(albumId);
-      // 앨범 목록에서 제거
       if (Get.isRegistered<AlbumListController>()) {
         Get.find<AlbumListController>().albums.removeWhere((a) => a.id == albumId);
       }
@@ -143,11 +139,18 @@ class AlbumDetailController extends GetxController {
       );
 
       await fetchMoments();
+      _refreshAlbumList();
       Get.snackbar('업로드 완료', '사진이 추가되었습니다', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       Get.snackbar('오류', '사진 업로드에 실패했습니다', snackPosition: SnackPosition.BOTTOM);
     } finally {
       isUploading.value = false;
+    }
+  }
+
+  void _refreshAlbumList() {
+    if (Get.isRegistered<AlbumListController>()) {
+      Get.find<AlbumListController>().fetchAlbums();
     }
   }
 }
