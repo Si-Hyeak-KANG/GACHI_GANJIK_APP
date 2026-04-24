@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/routes/app_pages.dart';
+import '../../controllers/album/album_list_controller.dart';
 import '../../controllers/auth/auth_controller.dart';
 import '../../controllers/user/user_controller.dart';
 
@@ -105,7 +106,9 @@ class MyPageView extends GetView<UserController> {
                       const Divider(height: 1),
                       _InfoItem(
                         label: '내 앨범',
-                        value: '3개', // TODO: 실제 앨범 수 (Albums API 연동 후)
+                        value: Get.isRegistered<AlbumListController>()
+                            ? '${Get.find<AlbumListController>().albums.length} 개'
+                            : '0 개',
                       ),
                       const Divider(height: 1),
                     ],
