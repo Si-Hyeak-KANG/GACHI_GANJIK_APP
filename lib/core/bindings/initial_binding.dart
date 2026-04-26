@@ -20,7 +20,9 @@ import '../../data/sources/remote/photo_remote_source.dart';
 import '../../data/sources/remote/reaction_remote_source.dart';
 import '../../data/sources/remote/real/real_album_remote_source.dart';
 import '../../data/sources/remote/real/real_auth_remote_source.dart';
+import '../../data/sources/remote/real/real_comment_remote_source.dart';
 import '../../data/sources/remote/real/real_photo_remote_source.dart';
+import '../../data/sources/remote/real/real_reaction_remote_source.dart';
 import '../../data/sources/remote/real/real_user_remote_source.dart';
 import '../../data/sources/remote/user_remote_source.dart';
 import '../../domain/repositories/album_repository.dart';
@@ -159,7 +161,14 @@ class InitialBinding extends Bindings {
       permanent: true,
     );
     // Phase 5 대기: Mock 유지
-    Get.put<ReactionRemoteSource>(MockReactionRemoteSource(), permanent: true);
-    Get.put<CommentRemoteSource>(MockCommentRemoteSource(), permanent: true);
+    Get.put<CommentRemoteSource>(
+      RealCommentRemoteSource(dioClient: Get.find()),
+      permanent: true,
+    );
+
+    Get.put<ReactionRemoteSource>(
+      RealReactionRemoteSource(dioClient: Get.find()),
+      permanent: true,
+    );
   }
 }

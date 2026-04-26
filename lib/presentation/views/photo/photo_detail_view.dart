@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
@@ -268,7 +269,9 @@ class _CompactInfoOverlay extends GetView<PhotoDetailController> {
                 const SizedBox(width: 16),
                 _OutlinedIconButton(
                   icon: Icons.chat_bubble_outline,
-                  label: controller.currentPhoto.commentCount.toString(),
+                  label: controller.comments.isNotEmpty
+                      ? controller.comments.length.toString()
+                      : controller.currentPhoto.commentCount.toString(),
                   onTap: controller.expandModal,
                 ),
                 const SizedBox(width: 16),
@@ -559,15 +562,18 @@ class _CommentSection extends GetView<PhotoDetailController> {
                   children: [
                     CircleAvatar(
                       radius: 14,
-                      backgroundColor:
-                      isMine ? AppColors.mainLight : AppColors.cardBg,
-                      child: Text(comment.nickname[0],
+                      backgroundColor: comment.isMine ? AppColors.mainLight : AppColors.cardBg,
+                      backgroundImage: comment.profileImageUrl != null
+                          ? CachedNetworkImageProvider(comment.profileImageUrl!)
+                          : null,
+                      child: comment.profileImageUrl == null
+                          ? Text(comment.nickname.isNotEmpty ? comment.nickname[0] : '?',
                           style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: isMine
-                                  ? AppColors.main
-                                  : AppColors.textSecondary)),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: comment.isMine ? AppColors.main : AppColors.textSecondary,
+                          ))
+                          : null,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -588,7 +594,7 @@ class _CommentSection extends GetView<PhotoDetailController> {
                         ],
                       ),
                     ),
-                    if (isMine)
+                    if (comment.isMine)
                       IconButton(
                         icon: const Icon(Icons.close,
                             size: 18, color: AppColors.textSecondary),
@@ -640,7 +646,7 @@ class _CommentSection extends GetView<PhotoDetailController> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: controller.commentController.text.isEmpty
+                    color: controller.commentTextLength.value == 0
                         ? AppColors.inactive
                         : AppColors.main,
                     shape: BoxShape.circle,

@@ -9,19 +9,19 @@ class CommentRepositoryImpl implements CommentRepository {
       : _remoteSource = remoteSource;
 
   @override
-  Future<List<Comment>> getComments(String photoId) async {  // ✅ String
+  Future<List<Comment>> getComments(String photoId) async {
     final dtos = await _remoteSource.getComments(photoId);
     return dtos.map((dto) => dto.toEntity()).toList();
   }
 
   @override
-  Future<Comment> addComment(String photoId, String content) async {  // ✅ String, text → content
+  Future<Comment> addComment(String photoId, String content) async {
     final dto = await _remoteSource.addComment(photoId, content);
     return dto.toEntity();
   }
 
   @override
-  Future<void> deleteComment(String photoId, String commentId) async {  // ✅ String (index → commentId)
+  Future<void> deleteComment(String photoId, String commentId) async {
     await _remoteSource.deleteComment(photoId, commentId);
   }
 }

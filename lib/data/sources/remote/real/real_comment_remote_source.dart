@@ -13,6 +13,7 @@ class RealCommentRemoteSource implements CommentRemoteSource {
     final parts = _splitPhotoId(photoId);
     final response = await _dioClient.get(
       '/albums/${parts.$1}/photos/${parts.$2}/comments',
+      queryParameters: {'size': 50},
     );
     final data = response.data['data'] as Map<String, dynamic>;
     final list = data['comments'] as List<dynamic>;

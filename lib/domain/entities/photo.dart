@@ -51,6 +51,7 @@ class Comment {
   final String? profileImageUrl;
   final String content;
   final DateTime createdAt;
+  final bool isMine;
 
   Comment({
     required this.commentId,
@@ -60,6 +61,7 @@ class Comment {
     this.profileImageUrl,
     required this.content,
     required this.createdAt,
+    this.isMine = false,
   });
 
   String get createdAtDisplay {

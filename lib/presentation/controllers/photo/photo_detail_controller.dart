@@ -31,6 +31,7 @@ class PhotoDetailController extends GetxController {
   late final PageController pageController;
   final RxInt currentIndex = 0.obs;
   final RxBool isLiked = false.obs;
+  static final Map<String, bool> _likeCache = {};
   final RxInt likeCount = 0.obs;
   final RxList<Comment> comments = <Comment>[].obs;
   final RxBool isLoadingComments = false.obs;
@@ -39,6 +40,7 @@ class PhotoDetailController extends GetxController {
   final RxBool isModalExpanded = false.obs;
 
   final commentController = TextEditingController();
+  final RxInt commentTextLength = 0.obs;
 
   Photo get currentPhoto => photos[currentIndex.value];
   bool get canDownload => album.albumRole.canManage;
@@ -72,6 +74,9 @@ class PhotoDetailController extends GetxController {
     currentIndex.value = initialIndex;
     pageController = PageController(initialPage: initialIndex);
     _loadPhotoData();
+    commentController.addListener(() {
+      commentTextLength.value = commentController.text.length;
+    });
   }
 
   @override
@@ -101,7 +106,7 @@ class PhotoDetailController extends GetxController {
 
   Future<void> _loadPhotoData() async {
     likeCount.value = currentPhoto.likeCount;
-    isLiked.value = false;
+    isLiked.value = _likeCache[currentPhoto.id] ?? false;
   }
 
   Future<void> _loadComments() async {
@@ -131,6 +136,8 @@ class PhotoDetailController extends GetxController {
       );
       isLiked.value = result.isLiked;
       likeCount.value = result.likeCount;
+      _likeCache[currentPhoto.id] = result.isLiked;
+      _updateCurrentPhoto(likeCount: result.likeCount);
     } catch (_) {
       isLiked.value = prevLiked;
       likeCount.value = prevCount;
@@ -227,21 +234,7 @@ class PhotoDetailController extends GetxController {
         photoId: currentPhoto.id,
         message: newMessage,
       );
-      final idx = currentIndex.value;
-      photos[idx] = Photo(
-        id: currentPhoto.id,
-        albumId: currentPhoto.albumId,
-        imageUrl: currentPhoto.imageUrl,
-        thumbnailUrl: currentPhoto.thumbnailUrl,
-        message: newMessage.isEmpty ? null : newMessage,
-        photoDate: currentPhoto.photoDate,
-        uploaderId: currentPhoto.uploaderId,
-        uploaderNickname: currentPhoto.uploaderNickname,
-        uploaderProfileImageUrl: currentPhoto.uploaderProfileImageUrl,
-        createdAt: currentPhoto.createdAt,
-        likeCount: currentPhoto.likeCount,
-        commentCount: currentPhoto.commentCount,
-      );
+      _updateCurrentPhoto(message: newMessage.isEmpty ? null : newMessage);
       currentIndex.refresh();
       Get.snackbar('완료', '메시지가 수정되었습니다',
           snackPosition: SnackPosition.BOTTOM);
@@ -260,8 +253,10 @@ class PhotoDetailController extends GetxController {
     isAddingComment.value = true;
     try {
       final compositeId = '${album.id}::${currentPhoto.id}';
-      final comment = await _commentRepository.addComment(compositeId, text);
-      comments.add(comment);
+      await _commentRepository.addComment(compositeId, text);
+      final updated = await _commentRepository.getComments(compositeId);
+      comments.assignAll(updated);
+      _updateCurrentPhoto(commentCount: updated.length);
       commentController.clear();
       FocusScope.of(Get.context!).unfocus();
       Get.snackbar('완료', '댓글이 추가되었습니다',
@@ -277,7 +272,7 @@ class PhotoDetailController extends GetxController {
   Future<void> deleteComment(int index) async {
     final comment = comments[index];
 
-    if (comment.userId != _currentUserId) {
+    if (!comment.isMine) {
       Get.snackbar('알림', '본인의 댓글만 삭제할 수 있습니다',
           snackPosition: SnackPosition.BOTTOM);
       return;
@@ -307,6 +302,7 @@ class PhotoDetailController extends GetxController {
       final compositeId = '${album.id}::${currentPhoto.id}';
       await _commentRepository.deleteComment(compositeId, comment.commentId);
       comments.removeAt(index);
+      _updateCurrentPhoto(commentCount: comments.length);
       Get.snackbar('완료', '댓글이 삭제되었습니다',
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 1));
@@ -347,5 +343,29 @@ class PhotoDetailController extends GetxController {
     if (Get.isRegistered<AlbumListController>()) {
       Get.find<AlbumListController>().fetchAlbums();
     }
+  }
+
+  /// 현재 사진의 특정 필드만 업데이트 (photos 리스트 캐시 유지)
+  void _updateCurrentPhoto({
+    int? likeCount,
+    int? commentCount,
+    String? message,
+  }) {
+    final idx = currentIndex.value;
+    final p = photos[idx];
+    photos[idx] = Photo(
+      id: p.id,
+      albumId: p.albumId,
+      imageUrl: p.imageUrl,
+      thumbnailUrl: p.thumbnailUrl,
+      message: message ?? p.message,
+      photoDate: p.photoDate,
+      uploaderId: p.uploaderId,
+      uploaderNickname: p.uploaderNickname,
+      uploaderProfileImageUrl: p.uploaderProfileImageUrl,
+      createdAt: p.createdAt,
+      likeCount: likeCount ?? p.likeCount,
+      commentCount: commentCount ?? p.commentCount,
+    );
   }
 }

@@ -77,6 +77,7 @@ class CommentDto {
   final String? profileImageUrl;
   final String content;
   final String createdAt;
+  final bool isMine;
 
   CommentDto({
     required this.commentId,
@@ -86,17 +87,19 @@ class CommentDto {
     this.profileImageUrl,
     required this.content,
     required this.createdAt,
+    this.isMine = false,
   });
 
   factory CommentDto.fromJson(Map<String, dynamic> json) {
     return CommentDto(
-      commentId: json['commentId'] as String,
-      photoId: json['photoId'] as String,
-      userId: json['userId'] as String,
-      nickname: json['nickname'] as String,
+      commentId: json['commentId']?.toString() ?? '',
+      photoId: json['photoId']?.toString() ?? '',
+      userId: json['authorId']?.toString() ?? '',
+      nickname: json['nickname'] as String? ?? '',
       profileImageUrl: json['profileImageUrl'] as String?,
       content: json['content'] as String,
       createdAt: json['createdAt'] as String,
+      isMine: json['isMine'] as bool? ?? false,
     );
   }
 
@@ -115,6 +118,7 @@ class CommentDto {
       profileImageUrl: profileImageUrl,
       content: content,
       createdAt: DateTime.parse(createdAt),
+      isMine: isMine,
     );
   }
 }

@@ -202,7 +202,30 @@ class DioClient {
           statusCode: statusCode,
           errorCode: errorCode,
         );
-    // ─────────────────────────────────────────────────
+
+    // ── Phase 13: Comments ────────────────────────────
+      case 'NOT_COMMENT_OWNER':
+        return NetworkException(
+          message: '본인의 댓글만 삭제할 수 있습니다.',
+          type: NetworkExceptionType.forbidden,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'COMMENT_NOT_FOUND':
+        return NetworkException(
+          message: '댓글을 찾을 수 없습니다.',
+          type: NetworkExceptionType.notFound,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'NOT_ALBUM_MEMBER':
+        return NetworkException(
+          message: '앨범 멤버만 이용할 수 있습니다.',
+          type: NetworkExceptionType.forbidden,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+// ─────────────────────────────────────────────────
       default:
         if (statusCode == 401) {
           return NetworkException(
