@@ -6,8 +6,8 @@ class ApiConstants {
   // iOS 시뮬레이터:     http://localhost:8080
   // 실제 기기(Mac IP):  http://192.168.x.x:8080
   // 운영 서버:          https://api.gachiganjik.com
-  static const String _host = 'http://localhost:8080';
-  //static const String _host = 'http://172.29.32.80:8080';
+  // static const String _host = 'http://localhost:8080';
+  static const String _host = 'http://172.30.1.28:8080';
   static const String baseUrl = '$_host/api/v1';
 
   // ─────────────────────────────────────────

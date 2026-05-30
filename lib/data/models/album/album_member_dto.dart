@@ -1,4 +1,5 @@
 class AlbumMemberDto {
+  final String memberId;
   final String userId;
   final String nickname;
   final String userTag;
@@ -7,6 +8,7 @@ class AlbumMemberDto {
   final String joinedAt;
 
   AlbumMemberDto({
+    required this.memberId,
     required this.userId,
     required this.nickname,
     required this.userTag,
@@ -17,12 +19,13 @@ class AlbumMemberDto {
 
   factory AlbumMemberDto.fromJson(Map<String, dynamic> json) {
     return AlbumMemberDto(
-      userId: json['userId'] as String,
-      nickname: json['nickname'] as String,
+      memberId: json['memberId']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
+      nickname: json['nickname'] as String? ?? '',
       userTag: json['userTag'] as String? ?? '',
       profileImageUrl: json['profileImageUrl'] as String?,
-      role: json['role'] as String,
-      joinedAt: json['joinedAt'] as String,
+      role: json['role'] as String? ?? 'MEMBER',
+      joinedAt: json['joinedAt'] as String? ?? '',
     );
   }
 }

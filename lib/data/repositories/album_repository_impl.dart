@@ -1,5 +1,6 @@
 import '../../core/storage/database/album_local.dart';
 import '../../core/storage/database/database_service.dart';
+import '../../domain/entities/album_member.dart';
 import '../../domain/entities/album.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../models/album/create_album_request.dart';
@@ -99,6 +100,31 @@ class AlbumRepositoryImpl implements AlbumRepository {
   Future<void> leaveAlbum(String albumId) async {
     await _remoteSource.leaveAlbum(albumId);
     await DatabaseService.deleteAlbum(albumId);
+  }
+
+  @override
+  Future<List<AlbumMember>> getMembers(String albumId) async {
+    final dtos = await _remoteSource.getMembers(albumId);
+    return dtos.map((dto) => AlbumMember(
+      memberId: dto.memberId,
+      userId: dto.userId,
+      nickname: dto.nickname,
+      userTag: dto.userTag,
+      profileImageUrl: dto.profileImageUrl,
+      role: dto.role,
+      joinedAt: dto.joinedAt,
+    )).toList();
+  }
+
+  @override
+  Future<void> updateMemberRole(
+      String albumId, String memberId, String role) async {
+    await _remoteSource.updateMemberRole(albumId, memberId, role);
+  }
+
+  @override
+  Future<void> kickMember(String albumId, String memberId) async {
+    await _remoteSource.kickMember(albumId, memberId);
   }
 
   // ── Private ────────────────────────────────────

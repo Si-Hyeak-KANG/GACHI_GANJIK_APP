@@ -13,4 +13,6 @@ abstract class AlbumRemoteSource {
   Future<void> deleteAlbum(String albumId);
   Future<void> leaveAlbum(String albumId);
   Future<List<AlbumMemberDto>> getMembers(String albumId);
+  Future<void> updateMemberRole(String albumId, String memberId, String role);
+  Future<void> kickMember(String albumId, String memberId);
 }

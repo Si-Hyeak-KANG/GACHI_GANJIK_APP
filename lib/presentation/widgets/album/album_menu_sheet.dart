@@ -1,8 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/album.dart';
+import '../../../domain/entities/album_member.dart';
 import '../../../domain/enum/album_role.dart';
+import '../../../domain/repositories/album_repository.dart';
+import '../../../core/network/network_exception.dart';
 import '../../../core/routes/app_pages.dart';
 import '../../controllers/album/album_detail_controller.dart';
 import 'album_share_dialog.dart';
@@ -33,7 +37,6 @@ class AlbumMenuSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // 앨범 제목 + 권한 뱃지
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
@@ -50,11 +53,11 @@ class AlbumMenuSheet extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                // OWNER / ADMIN 모두 뱃지 표시
                 if (album.albumRole == AlbumRole.owner ||
                     album.albumRole == AlbumRole.admin)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.mainLight,
                       borderRadius: BorderRadius.circular(6),
@@ -117,6 +120,19 @@ class AlbumMenuSheet extends StatelessWidget {
             const Divider(height: 1, color: AppColors.divider),
           ],
 
+          // 멤버 관리 (OWNER/ADMIN)
+          if (album.albumRole.canManage) ...[
+            _MenuItem(
+              icon: Icons.people_outline,
+              title: '멤버 관리',
+              onTap: () {
+                Get.back();
+                _showMemberSheet(context);
+              },
+            ),
+            const Divider(height: 1, color: AppColors.divider),
+          ],
+
           // 사진 전체 다운로드
           _MenuItem(
             icon: Icons.download,
@@ -139,7 +155,7 @@ class AlbumMenuSheet extends StatelessWidget {
             title: album.albumRole.canDelete ? '앨범 삭제' : '앨범 나가기',
             isDestructive: true,
             onTap: () {
-              Get.back(); // 바텀시트 닫기
+              Get.back();
               _showDeleteConfirmDialog();
             },
           ),
@@ -150,7 +166,15 @@ class AlbumMenuSheet extends StatelessWidget {
     );
   }
 
-  // ── context 없이 Get.dialog 사용 → deactivated 오류 해결 ──
+  void _showMemberSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _MemberManagementSheet(album: album),
+    );
+  }
+
   void _showDeleteConfirmDialog() {
     final isDelete = album.albumRole.canDelete;
 
@@ -174,17 +198,14 @@ class AlbumMenuSheet extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: Get.back,
-            child: const Text(
-              '취소',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: const Text('취소',
+                style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () {
-              Get.back(); // 다이얼로그 닫기
+              Get.back();
               final controller = Get.find<AlbumDetailController>();
               if (isDelete) {
                 controller.deleteAlbum();
@@ -195,11 +216,297 @@ class AlbumMenuSheet extends StatelessWidget {
             child: Text(
               isDelete ? '삭제' : '나가기',
               style: const TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-              ),
+                  color: Colors.red, fontWeight: FontWeight.w600),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── 멤버 관리 바텀시트 ─────────────────────────────────
+class _MemberManagementSheet extends StatefulWidget {
+  final Album album;
+
+  const _MemberManagementSheet({required this.album});
+
+  @override
+  State<_MemberManagementSheet> createState() => _MemberManagementSheetState();
+}
+
+class _MemberManagementSheetState extends State<_MemberManagementSheet> {
+  List<AlbumMember> _members = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMembers();
+  }
+
+  Future<void> _loadMembers() async {
+    try {
+      final repo = Get.find<AlbumRepository>();
+      final members = await repo.getMembers(widget.album.id);
+      if (mounted) setState(() => _members = members);
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('오류', '멤버 목록을 불러오지 못했습니다',
+            snackPosition: SnackPosition.BOTTOM);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _updateRole(AlbumMember member, String newRole) async {
+    try {
+      final repo = Get.find<AlbumRepository>();
+      await repo.updateMemberRole(widget.album.id, member.memberId, newRole);
+      await _loadMembers();
+      Get.snackbar('완료',
+          newRole == 'ADMIN' ? '${member.nickname}님을 ADMIN으로 지정했습니다' : '${member.nickname}님의 ADMIN을 해제했습니다',
+          snackPosition: SnackPosition.BOTTOM);
+    } on NetworkException catch (e) {
+      Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<void> _kickMember(AlbumMember member) async {
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('멤버 퇴장'),
+        content: Text('${member.nickname}님을 앨범에서 내보내시겠어요?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('내보내기'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final repo = Get.find<AlbumRepository>();
+      await repo.kickMember(widget.album.id, member.memberId);
+      await _loadMembers();
+      Get.snackbar('완료', '${member.nickname}님을 내보냈습니다',
+          snackPosition: SnackPosition.BOTTOM);
+    } on NetworkException catch (e) {
+      Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  bool _canKick(AlbumMember member) {
+    if (member.isOwner) return false;
+    if (widget.album.albumRole == AlbumRole.owner) return true;
+    if (widget.album.albumRole == AlbumRole.admin && member.isMember) {
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      builder: (_, scrollController) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.inactive,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  const Text(
+                    '멤버 관리',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (!_isLoading)
+                    Text(
+                      '${_members.length}명',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            Expanded(
+              child: _isLoading
+                  ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.main))
+                  : ListView.separated(
+                controller: scrollController,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: _members.length,
+                separatorBuilder: (_, __) =>
+                const Divider(height: 1, indent: 72),
+                itemBuilder: (_, index) {
+                  final member = _members[index];
+                  return _MemberTile(
+                    member: member,
+                    albumRole: widget.album.albumRole,
+                    canKick: _canKick(member),
+                    onToggleAdmin: widget.album.albumRole == AlbumRole.owner &&
+                        !member.isOwner
+                        ? () => _updateRole(
+                      member,
+                      member.isAdmin ? 'MEMBER' : 'ADMIN',
+                    )
+                        : null,
+                    onKick: _canKick(member)
+                        ? () => _kickMember(member)
+                        : null,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MemberTile extends StatelessWidget {
+  final AlbumMember member;
+  final AlbumRole albumRole;
+  final bool canKick;
+  final VoidCallback? onToggleAdmin;
+  final VoidCallback? onKick;
+
+  const _MemberTile({
+    required this.member,
+    required this.albumRole,
+    required this.canKick,
+    this.onToggleAdmin,
+    this.onKick,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      leading: CircleAvatar(
+        radius: 22,
+        backgroundColor: AppColors.mainLight,
+        backgroundImage: member.profileImageUrl != null
+            ? CachedNetworkImageProvider(member.profileImageUrl!)
+            : null,
+        child: member.profileImageUrl == null
+            ? Text(
+          member.nickname.isNotEmpty ? member.nickname[0] : '?',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppColors.main,
+          ),
+        )
+            : null,
+      ),
+      title: Row(
+        children: [
+          Text(
+            member.nickname,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(width: 6),
+          if (!member.isMember)
+            Container(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: member.isOwner
+                    ? AppColors.main
+                    : AppColors.mainLight,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                member.roleDisplay,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color:
+                  member.isOwner ? Colors.white : AppColors.main,
+                ),
+              ),
+            ),
+        ],
+      ),
+      subtitle: Text(
+        member.userTag,
+        style: const TextStyle(
+            fontSize: 12, color: AppColors.textSecondary),
+      ),
+      trailing: member.isOwner
+          ? null
+          : Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ADMIN 지정/해제 — OWNER만
+          if (onToggleAdmin != null)
+            TextButton(
+              onPressed: onToggleAdmin,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                member.isAdmin ? 'ADMIN 해제' : 'ADMIN 지정',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.main,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          // 강제 퇴장
+          if (onKick != null)
+            IconButton(
+              icon: const Icon(Icons.logout,
+                  size: 18, color: Colors.red),
+              onPressed: onKick,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
         ],
       ),
     );
@@ -238,10 +545,9 @@ class _MenuItem extends StatelessWidget {
         ),
       ),
       trailing: subtitle != null
-          ? Text(
-        subtitle!,
-        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-      )
+          ? Text(subtitle!,
+          style: const TextStyle(
+              fontSize: 12, color: AppColors.textSecondary))
           : const Icon(Icons.chevron_right, color: AppColors.inactive),
       onTap: onTap,
     );

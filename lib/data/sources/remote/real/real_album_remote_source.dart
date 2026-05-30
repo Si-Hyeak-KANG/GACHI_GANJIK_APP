@@ -44,23 +44,22 @@ class RealAlbumRemoteSource implements AlbumRemoteSource {
   @override
   Future<AlbumDto> createAlbum(CreateAlbumRequest request) async {
     final response = await _dioClient.post('/albums', data: request.toJson());
-    // 생성 응답: albumId, title, inviteCode, role만 반환 → GET으로 전체 조회
     final albumId = response.data['data']['albumId'] as String;
     return await getAlbum(albumId);
   }
 
   @override
   Future<AlbumDto> joinAlbum(JoinAlbumRequest request) async {
-    final response = await _dioClient.post('/albums/join', data: request.toJson());
-    // 참여 응답: albumId, title, role만 반환 → GET으로 전체 조회
+    final response =
+    await _dioClient.post('/albums/join', data: request.toJson());
     final albumId = response.data['data']['albumId'] as String;
     return await getAlbum(albumId);
   }
 
   @override
-  Future<AlbumDto> updateAlbum(String albumId, UpdateAlbumRequest request) async {
+  Future<AlbumDto> updateAlbum(
+      String albumId, UpdateAlbumRequest request) async {
     await _dioClient.patch('/albums/$albumId', data: request.toJson());
-    // 수정 응답이 요약만 반환 → GET으로 전체 재조회
     return await getAlbum(albumId);
   }
 
@@ -81,5 +80,22 @@ class RealAlbumRemoteSource implements AlbumRemoteSource {
     return members
         .map((e) => AlbumMemberDto.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  /// PATCH /albums/{albumId}/members/{memberId}/role
+  /// role: "ADMIN" | "MEMBER"
+  @override
+  Future<void> updateMemberRole(
+      String albumId, String memberId, String role) async {
+    await _dioClient.patch(
+      '/albums/$albumId/members/$memberId/role',
+      data: {'role': role},
+    );
+  }
+
+  /// DELETE /albums/{albumId}/members/{memberId}
+  @override
+  Future<void> kickMember(String albumId, String memberId) async {
+    await _dioClient.delete('/albums/$albumId/members/$memberId');
   }
 }

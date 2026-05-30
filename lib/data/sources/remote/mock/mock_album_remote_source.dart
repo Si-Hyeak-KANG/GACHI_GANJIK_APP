@@ -82,6 +82,29 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
     ),
   ];
 
+  final Map<String, List<AlbumMemberDto>> _membersByAlbum = {
+    'album-uuid-1': [
+      AlbumMemberDto(
+        memberId: 'member-uuid-1',
+        userId: 'user-uuid-1',
+        nickname: '석스키',
+        userTag: '#AB1C23',
+        profileImageUrl: null,
+        role: 'OWNER',
+        joinedAt: '2025-01-18T10:00:00Z',
+      ),
+      AlbumMemberDto(
+        memberId: 'member-uuid-2',
+        userId: 'user-uuid-2',
+        nickname: '민지',
+        userTag: '#CD4E56',
+        profileImageUrl: null,
+        role: 'MEMBER',
+        joinedAt: '2025-01-20T10:00:00Z',
+      ),
+    ],
+  };
+
   int _nextId = 5;
 
   @override
@@ -108,7 +131,6 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
   @override
   Future<AlbumDto> createAlbum(CreateAlbumRequest request) async {
     await Future.delayed(const Duration(seconds: 1));
-
     final newAlbum = AlbumDto(
       id: 'album-uuid-$_nextId',
       title: request.title,
@@ -126,7 +148,6 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       currentUserId: _currentUserId,
       isAdmin: false,
     );
-
     _albums.insert(0, newAlbum);
     _nextId++;
     return newAlbum;
@@ -135,11 +156,9 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
   @override
   Future<AlbumDto> joinAlbum(JoinAlbumRequest request) async {
     await Future.delayed(const Duration(seconds: 1));
-
     final found = _albums.where(
           (a) => a.inviteCode.toUpperCase() == request.inviteCode.toUpperCase(),
     );
-
     if (found.isEmpty) {
       throw NetworkException(
         message: '유효하지 않은 초대 코드입니다',
@@ -148,7 +167,6 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
         errorCode: 'INVALID_INVITE_CODE',
       );
     }
-
     final album = found.first;
     if (album.currentUserId == _currentUserId && album.role != 'GUEST') {
       throw NetworkException(
@@ -158,7 +176,6 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
         errorCode: 'ALREADY_JOINED',
       );
     }
-
     return album;
   }
 
@@ -166,7 +183,6 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
   Future<AlbumDto> updateAlbum(
       String albumId, UpdateAlbumRequest request) async {
     await Future.delayed(const Duration(milliseconds: 800));
-
     final index = _albums.indexWhere((a) => a.id == albumId);
     if (index == -1) {
       throw NetworkException(
@@ -176,7 +192,6 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
         errorCode: 'ALBUM_NOT_FOUND',
       );
     }
-
     final existing = _albums[index];
     final updated = AlbumDto(
       id: existing.id,
@@ -195,7 +210,6 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
       currentUserId: existing.currentUserId,
       isAdmin: existing.isAdmin,
     );
-
     _albums[index] = updated;
     return updated;
   }
@@ -215,8 +229,9 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
   @override
   Future<List<AlbumMemberDto>> getMembers(String albumId) async {
     await Future.delayed(const Duration(milliseconds: 400));
-    return [
+    return _membersByAlbum[albumId] ?? [
       AlbumMemberDto(
+        memberId: 'member-uuid-1',
         userId: 'user-uuid-1',
         nickname: '셕스키',
         userTag: '#AB1C23',
@@ -225,6 +240,50 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
         joinedAt: '2025-01-18T10:00:00Z',
       ),
     ];
+  }
+
+  @override
+  Future<void> updateMemberRole(
+      String albumId, String memberId, String role) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    final members = _membersByAlbum[albumId];
+    if (members == null) return;
+    final index = members.indexWhere((m) => m.memberId == memberId);
+    if (index == -1) {
+      throw NetworkException(
+        message: '멤버를 찾을 수 없습니다',
+        type: NetworkExceptionType.notFound,
+        statusCode: 404,
+        errorCode: 'MEMBER_NOT_FOUND',
+      );
+    }
+    final m = members[index];
+    members[index] = AlbumMemberDto(
+      memberId: m.memberId,
+      userId: m.userId,
+      nickname: m.nickname,
+      userTag: m.userTag,
+      profileImageUrl: m.profileImageUrl,
+      role: role,
+      joinedAt: m.joinedAt,
+    );
+  }
+
+  @override
+  Future<void> kickMember(String albumId, String memberId) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    final members = _membersByAlbum[albumId];
+    if (members == null) return;
+    final exists = members.any((m) => m.memberId == memberId);
+    if (!exists) {
+      throw NetworkException(
+        message: '멤버를 찾을 수 없습니다',
+        type: NetworkExceptionType.notFound,
+        statusCode: 404,
+        errorCode: 'MEMBER_NOT_FOUND',
+      );
+    }
+    members.removeWhere((m) => m.memberId == memberId);
   }
 
   String _generateInviteCode() {

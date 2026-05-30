@@ -1,3 +1,4 @@
+import '../entities/album_member.dart';
 import '../entities/album.dart';
 
 abstract class AlbumRepository {
@@ -27,4 +28,8 @@ abstract class AlbumRepository {
   Future<void> deleteAlbum(String albumId);
 
   Future<void> leaveAlbum(String albumId);
+
+  Future<List<AlbumMember>> getMembers(String albumId);
+  Future<void> updateMemberRole(String albumId, String memberId, String role);
+  Future<void> kickMember(String albumId, String memberId);
 }
