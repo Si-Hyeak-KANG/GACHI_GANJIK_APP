@@ -25,6 +25,11 @@ import '../../data/sources/remote/real/real_photo_remote_source.dart';
 import '../../data/sources/remote/real/real_reaction_remote_source.dart';
 import '../../data/sources/remote/real/real_user_remote_source.dart';
 import '../../data/sources/remote/user_remote_source.dart';
+import '../../data/repositories/guest_repository_impl.dart';
+import '../../data/sources/remote/guest_remote_source.dart';
+import '../../data/sources/remote/mock/mock_guest_remote_source.dart';
+import '../../data/sources/remote/real/real_guest_remote_source.dart';
+import '../../domain/repositories/guest_repository.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/comment_repository.dart';
@@ -95,6 +100,14 @@ class InitialBinding extends Bindings {
       fenix: true,
     );
 
+    Get.lazyPut<GuestRepository>(
+          () => GuestRepositoryImpl(
+        remoteSource: Get.find(),
+        secureStorage: Get.find(),
+      ),
+      fenix: true,
+    );
+
     // ── Services ─────────────────────────────────────
     Get.put(
       SyncService(
@@ -134,6 +147,7 @@ class InitialBinding extends Bindings {
     Get.put<ReactionRemoteSource>(MockReactionRemoteSource(), permanent: true);
     Get.put<CommentRemoteSource>(MockCommentRemoteSource(), permanent: true);
     Get.put<UserRemoteSource>(MockUserRemoteSource(), permanent: true);
+    Get.put<GuestRemoteSource>(MockGuestRemoteSource(), permanent: true);
   }
 
   void _bindRealSources() {
@@ -168,6 +182,11 @@ class InitialBinding extends Bindings {
 
     Get.put<ReactionRemoteSource>(
       RealReactionRemoteSource(dioClient: Get.find()),
+      permanent: true,
+    );
+
+    Get.put<GuestRemoteSource>(
+      RealGuestRemoteSource(dioClient: Get.find()),
       permanent: true,
     );
   }

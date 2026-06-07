@@ -9,6 +9,7 @@ class StorageKeys {
 
   // 비회원(GUEST) 키 ← 추가
   static const String guestKey = 'guest_key';
+  static const String guestId  = 'guest_id';
 
   // SharedPreferences
   static const String userId = 'user_id';

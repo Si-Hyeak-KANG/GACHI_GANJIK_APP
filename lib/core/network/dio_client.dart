@@ -225,6 +225,29 @@ class DioClient {
           statusCode: statusCode,
           errorCode: errorCode,
         );
+
+    // ── Phase 15: Guest ───────────────────────────────
+      case 'GUEST_KEY_ALREADY_EXISTS':
+        return NetworkException(
+          message: '이미 사용 중인 GUEST ID입니다.',
+          type: NetworkExceptionType.conflict,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'GUEST_NOT_FOUND':
+        return NetworkException(
+          message: 'GUEST 정보를 찾을 수 없습니다.',
+          type: NetworkExceptionType.notFound,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'GUEST_ALREADY_CONVERTED':
+        return NetworkException(
+          message: '이미 회원 전환된 GUEST ID입니다.',
+          type: NetworkExceptionType.gone,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
 // ─────────────────────────────────────────────────
       default:
         if (statusCode == 401) {
@@ -282,6 +305,11 @@ class _JwtInterceptor extends Interceptor {
     final token = await _secureStorage.getAccessToken();
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
+    } else {
+      final guestKey = await _secureStorage.getGuestKey();
+      if (guestKey != null && guestKey.isNotEmpty) {
+        options.headers['X-Guest-Key'] = guestKey;
+      }
     }
     handler.next(options);
   }
@@ -312,7 +340,11 @@ class _JwtInterceptor extends Interceptor {
     final isCredentialError = errorCode == 'INVALID_CREDENTIALS' ||
         errorCode == 'EMAIL_ALREADY_EXISTS';
 
+    final guestKey = await _secureStorage.getGuestKey();
+    final isGuestSession = guestKey != null && guestKey.isNotEmpty;
+
     final isTokenError = !isCredentialError &&
+        !isGuestSession &&
         (errorCode == 'TOKEN_EXPIRED' ||
             errorCode == 'INVALID_REFRESH_TOKEN' ||
             statusCode == 401);
