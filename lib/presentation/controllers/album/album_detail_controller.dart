@@ -51,10 +51,7 @@ class AlbumDetailController extends GetxController {
   // ── 커버 사진 등록 ──────────────────────────────
   Future<void> pickCoverImage() async {
     final image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1920,
-      maxHeight: 1080,
-      imageQuality: 85,
+      source: ImageSource.gallery, // 또는 camera
     );
     if (image == null) return;
 
@@ -98,20 +95,14 @@ class AlbumDetailController extends GetxController {
   // ── 사진 업로드 ──────────────────────────────────
   Future<void> pickFromCamera() async {
     final image = await _picker.pickImage(
-      source: ImageSource.camera,
-      maxWidth: 1920,
-      maxHeight: 1080,
-      imageQuality: 85,
+      source: ImageSource.camera, // 또는 camera
     );
     if (image != null) _showMessageDialog(File(image.path));
   }
 
   Future<void> pickFromGallery() async {
     final image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1920,
-      maxHeight: 1080,
-      imageQuality: 85,
+      source: ImageSource.gallery, // 또는 camera
     );
     if (image != null) _showMessageDialog(File(image.path));
   }

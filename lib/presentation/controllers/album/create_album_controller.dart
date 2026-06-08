@@ -52,9 +52,6 @@ class CreateAlbumController extends GetxController {
   Future<void> pickCoverImage() async {
     final image = await _picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 1920,
-      maxHeight: 1080,
-      imageQuality: 85,
     );
     if (image != null) {
       selectedCoverImage.value = File(image.path);
@@ -150,9 +147,9 @@ class CreateAlbumController extends GetxController {
       // 커버 사진 Firebase 업로드
       String? coverImageUrl;
       if (selectedCoverImage.value != null) {
-        coverImageUrl = await _storageSource.uploadImage(
+        coverImageUrl = await _storageSource.uploadCoverImage(
           selectedCoverImage.value!,
-          'covers', // albumId 대신 임시 경로, 생성 후 albumId로 이동 불필요
+          'covers',
         );
       }
 

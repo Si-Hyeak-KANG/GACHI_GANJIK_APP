@@ -56,9 +56,6 @@ class EditAlbumController extends GetxController {
   Future<void> pickCoverImage() async {
     final image = await _picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 1920,
-      maxHeight: 1080,
-      imageQuality: 85,
     );
     if (image != null) {
       selectedCoverImage.value = File(image.path);
@@ -155,7 +152,7 @@ class EditAlbumController extends GetxController {
       // 새 커버 사진 선택 시 Firebase 업로드
       String? coverImageUrl = existingCoverImageUrl.value;
       if (selectedCoverImage.value != null) {
-        coverImageUrl = await _storageSource.uploadImage(
+        coverImageUrl = await _storageSource.uploadCoverImage(
           selectedCoverImage.value!,
           'covers',
         );
