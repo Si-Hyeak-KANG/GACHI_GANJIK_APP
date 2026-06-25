@@ -120,7 +120,11 @@ class InitialBinding extends Bindings {
 
     // ── Controllers ──────────────────────────────────
     Get.put(
-      AuthController(authRepository: Get.find()),
+      AuthController(
+        authRepository: Get.find(),
+        guestRepository: Get.find(),
+        secureStorage: Get.find(),
+      ),
       permanent: true,
     );
 

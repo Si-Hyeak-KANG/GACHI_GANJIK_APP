@@ -21,18 +21,14 @@ class _LoginViewState extends State<LoginView> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => FractionallySizedBox(
-        heightFactor: 0.55,
-        child: _EmailLoginSheet(
-          controller: _controller,
-        ),
-      ),
+      builder: (_) => _EmailLoginSheet(controller: _controller),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -55,7 +51,25 @@ class _LoginViewState extends State<LoginView> {
                     children: [
                       Image.asset(
                         'assets/images/logo.png',
-                        width: 300,
+                        width: 220,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        '같이간직',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -1,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        '소중한 순간을 함께 간직하세요',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -69,13 +83,13 @@ class _LoginViewState extends State<LoginView> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Obx(() => _SocialLoginButton(
-                      icon: Icons.g_mobiledata_rounded,
-                      label: 'Google로 계속하기',
-                      onTap: _controller.isLoading.value
-                          ? null
-                          : _controller.googleLogin,
-                      iconColor: Colors.red,
-                    )),
+                          icon: Icons.g_mobiledata_rounded,
+                          label: 'Google로 계속하기',
+                          onTap: _controller.isLoading.value
+                              ? null
+                              : _controller.googleLogin,
+                          iconColor: Colors.red,
+                        )),
                     const SizedBox(height: 14),
                     _SocialLoginButton(
                       label: 'Kakao로 계속하기',
@@ -92,8 +106,30 @@ class _LoginViewState extends State<LoginView> {
                       iconColor: Colors.black,
                       icon: Icons.apple,
                     ),
+                    const SizedBox(height: 14),
+                    // 회원가입 없이 시작하기
+                    GestureDetector(
+                      onTap: () => Get.toNamed(Routes.guestEntry),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFE8E8E8)),
+                        ),
+                        child: const Text(
+                          '회원가입 없이 시작하기',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 16),
-
                     GestureDetector(
                       onTap: _showEmailLoginSheet,
                       child: Container(
@@ -179,7 +215,6 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -197,137 +232,137 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
       padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + bottomInset),
       child: Form(
         key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 핸들바
-            Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.inactive,
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 24,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            Center(
-              child: Column(
-                children: const [
-                  Text(
-                    '이메일 로그인',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '이메일과 비밀번호를 입력해주세요',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FB),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                children: [
-                  CustomTextField(
-                    label: '이메일',
-                    hint: 'email@example.com',
-                    controller: _emailController,
-                    validator: widget.controller.validateEmail,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  Obx(
-                        () => CustomTextField(
-                      label: '비밀번호',
-                      hint: '비밀번호를 입력해주세요',
-                      controller: _passwordController,
-                      validator: widget.controller.validatePassword,
-                      obscureText: widget.controller.obscurePassword.value,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          widget.controller.obscurePassword.value
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: AppColors.inactive,
-                          size: 20,
-                        ),
-                        onPressed:
-                        widget.controller.togglePasswordVisibility,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            Obx(() => CustomButton(
-              text: '로그인',
-              isLoading: widget.controller.isLoading.value,
-              onTap: () => widget.controller.emailLogin(
-                formKey: _formKey,
-                email: _emailController.text.trim(),
-                password: _passwordController.text,
-              ),
-            )),
-            const SizedBox(height: 16),
-
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  Get.back();
-                  Get.toNamed(Routes.signup);
-                },
-                child: const Text.rich(
-                  TextSpan(
-                    text: '계정이 없으신가요? ',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: '회원가입',
-                        style: TextStyle(
-                          color: AppColors.main,
-                          fontWeight: FontWeight.w600,
-                        ),
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 핸들바
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.inactive,
+                    borderRadius: BorderRadius.circular(2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 24,
+                        spreadRadius: 0,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
+
+              Center(
+                child: Column(
+                  children: const [
+                    Text(
+                      '이메일 로그인',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      '이메일과 비밀번호를 입력해주세요',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                      label: '이메일',
+                      hint: 'email@example.com',
+                      controller: _emailController,
+                      validator: widget.controller.validateEmail,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 16),
+                    Obx(
+                      () => CustomTextField(
+                        label: '비밀번호',
+                        hint: '비밀번호를 입력해주세요',
+                        controller: _passwordController,
+                        validator: widget.controller.validatePassword,
+                        obscureText: widget.controller.obscurePassword.value,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            widget.controller.obscurePassword.value
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: AppColors.inactive,
+                            size: 20,
+                          ),
+                          onPressed: widget.controller.togglePasswordVisibility,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              Obx(() => CustomButton(
+                    text: '로그인',
+                    isLoading: widget.controller.isLoading.value,
+                    onTap: () => widget.controller.emailLogin(
+                      formKey: _formKey,
+                      email: _emailController.text.trim(),
+                      password: _passwordController.text,
+                    ),
+                  )),
+              const SizedBox(height: 16),
+
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    Get.back();
+                    Get.toNamed(Routes.signup);
+                  },
+                  child: const Text.rich(
+                    TextSpan(
+                      text: '계정이 없으신가요? ',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: '회원가입',
+                          style: TextStyle(
+                            color: AppColors.main,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -389,9 +424,7 @@ class _SocialLoginButton extends StatelessWidget {
                     size: 24,
                     color: iconColor,
                   ),
-
                   const SizedBox(width: 16),
-
                   Expanded(
                     child: Text(
                       label,
@@ -405,7 +438,6 @@ class _SocialLoginButton extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   const SizedBox(width: 24),
                 ],
               ),

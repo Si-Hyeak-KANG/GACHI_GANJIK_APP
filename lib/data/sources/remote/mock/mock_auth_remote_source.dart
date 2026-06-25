@@ -64,4 +64,24 @@ class MockAuthRemoteSource implements AuthRemoteSource {
   Future<void> logout() async {
     await Future.delayed(const Duration(milliseconds: 300));
   }
+
+  @override
+  Future<void> sendVerificationCode(String email) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    // Mock: 항상 성공
+  }
+
+  @override
+  Future<void> verifyEmailCode(String email, String code) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    // Mock: 코드가 '123456'이면 성공, 그 외 실패
+    if (code != '123456') {
+      throw NetworkException(
+        message: '인증 코드가 올바르지 않습니다.',
+        type: NetworkExceptionType.badRequest,
+        statusCode: 400,
+        errorCode: 'EMAIL_VERIFICATION_INVALID',
+      );
+    }
+  }
 }

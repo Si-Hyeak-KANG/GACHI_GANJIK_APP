@@ -7,4 +7,6 @@ abstract class AuthRemoteSource {
   Future<AuthResponse> googleLogin(String idToken);
   Future<AuthResponse> signup(SignupRequest request);
   Future<void> logout();
+  Future<void> sendVerificationCode(String email);
+  Future<void> verifyEmailCode(String email, String code);
 }

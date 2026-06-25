@@ -91,6 +91,16 @@ class AuthRepositoryImpl implements AuthRepository {
     return token != null && token.isNotEmpty;
   }
 
+  @override
+  Future<void> sendVerificationCode(String email) async {
+    await _remoteSource.sendVerificationCode(email);
+  }
+
+  @override
+  Future<void> verifyEmailCode(String email, String code) async {
+    await _remoteSource.verifyEmailCode(email, code);
+  }
+
   // AuthResponse → User 엔티티 변환
   // userTag, createdAt은 인증 응답에 없으므로 빈 값 처리
   // → Users API (GET /users/me) 연동 시 실제 값으로 교체

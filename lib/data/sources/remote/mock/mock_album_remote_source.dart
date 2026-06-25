@@ -286,6 +286,22 @@ class MockAlbumRemoteSource implements AlbumRemoteSource {
     members.removeWhere((m) => m.memberId == memberId);
   }
 
+  @override
+  Future<void> verifyInviteCode(String inviteCode) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    final found = _albums.any(
+          (a) => a.inviteCode.toUpperCase() == inviteCode.toUpperCase(),
+    );
+    if (!found) {
+      throw NetworkException(
+        message: '유효하지 않은 초대 코드입니다.',
+        type: NetworkExceptionType.notFound,
+        statusCode: 404,
+        errorCode: 'INVALID_INVITE_CODE',
+      );
+    }
+  }
+
   String _generateInviteCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final now = DateTime.now();

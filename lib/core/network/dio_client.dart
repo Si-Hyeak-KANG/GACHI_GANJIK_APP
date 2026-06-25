@@ -159,6 +159,20 @@ class DioClient {
           statusCode: statusCode,
           errorCode: errorCode,
         );
+      case 'EMAIL_VERIFICATION_NOT_FOUND':
+        return NetworkException(
+          message: '인증 코드가 만료되었습니다. 다시 요청해주세요.',
+          type: NetworkExceptionType.notFound,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
+      case 'EMAIL_VERIFICATION_INVALID':
+        return NetworkException(
+          message: '인증 코드가 올바르지 않습니다.',
+          type: NetworkExceptionType.badRequest,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
       case 'INVALID_INVITE_CODE':
         return NetworkException(
           message: '유효하지 않은 초대 코드입니다.',

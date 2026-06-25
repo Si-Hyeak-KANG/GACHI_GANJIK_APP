@@ -14,4 +14,6 @@ class StorageKeys {
   // SharedPreferences
   static const String userId = 'user_id';
   static const String isFirstLaunch = 'is_first_launch';
+
+  static const String deviceId = 'device_id';
 }

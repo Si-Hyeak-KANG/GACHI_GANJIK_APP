@@ -61,4 +61,21 @@ class RealAuthRemoteSource implements AuthRemoteSource {
   Future<void> logout() async {
     await _dioClient.post(ApiConstants.logout);
   }
+
+  @override
+  Future<void> sendVerificationCode(String email) async {
+    await _dioClient.post(
+      '/auth/email/send',
+      data: {'email': email},
+    );
+  }
+
+  @override
+  Future<void> verifyEmailCode(String email, String code) async {
+    await _dioClient.post(
+      '/auth/email/verify',
+      data: {'email': email, 'code': code},
+    );
+  }
+
 }

@@ -98,4 +98,13 @@ class RealAlbumRemoteSource implements AlbumRemoteSource {
   Future<void> kickMember(String albumId, String memberId) async {
     await _dioClient.delete('/albums/$albumId/members/$memberId');
   }
+
+  /// GET /albums/verify
+  @override
+  Future<void> verifyInviteCode(String inviteCode) async {
+    await _dioClient.get(
+      '/albums/verify',
+      queryParameters: {'inviteCode': inviteCode},
+    );
+  }
 }

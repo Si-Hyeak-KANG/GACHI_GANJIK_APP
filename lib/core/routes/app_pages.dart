@@ -14,6 +14,8 @@ import '../../presentation/views/album/create_album_view.dart';
 import '../../presentation/views/album/edit_album_view.dart';
 import '../../presentation/views/auth/login_view.dart';
 import '../../presentation/views/auth/signup_view.dart';
+import '../../presentation/views/auth/guest_entry_view.dart';
+import '../../core/bindings/guest_entry_binding.dart';
 import '../../presentation/views/home/home_view.dart';
 import '../../presentation/views/photo/photo_detail_view.dart';
 import '../../presentation/views/settings/settings_view.dart';
@@ -46,6 +48,13 @@ class AppPages {
       name: Routes.signup,
       page: () => const SignupView(),
       binding: SignupBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
+    ),
+    GetPage(
+      name: Routes.guestEntry,
+      page: () => const GuestEntryView(),
+      binding: GuestEntryBinding(),
       transition: defaultTransition,
       transitionDuration: transitionDuration,
     ),
@@ -105,6 +114,7 @@ class Routes {
   static const splash = '/splash';
   static const login = '/login';
   static const signup = '/signup';
+  static const guestEntry = '/guest-entry';
   static const home = '/home';
   static const createAlbum = '/create-album';
   static const editAlbum = '/edit-album';

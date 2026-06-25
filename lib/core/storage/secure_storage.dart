@@ -69,6 +69,16 @@ class SecureStorage {
     await _storage.delete(key: StorageKeys.guestId);
   }
 
+  // ===================== Device ID =====================
+
+  Future<void> saveDeviceId(String deviceId) async {
+    await _storage.write(key: StorageKeys.deviceId, value: deviceId);
+  }
+
+  Future<String?> getDeviceId() async {
+    return await _storage.read(key: StorageKeys.deviceId);
+  }
+
   // ===================== 전체 초기화 =====================
 
   Future<void> clearAll() async {
