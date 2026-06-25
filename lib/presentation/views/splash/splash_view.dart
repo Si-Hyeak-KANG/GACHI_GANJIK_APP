@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../core/routes/app_pages.dart';
 import '../../../domain/repositories/auth_repository.dart';
 
@@ -12,32 +14,12 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _animController;
-  late final Animation<double> _fadeAnim;
-  late final Animation<double> _scaleAnim;
+  AnimationController? _lottieController;
 
   @override
   void initState() {
     super.initState();
-
-    _animController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-
-    _fadeAnim = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOut,
-    );
-
-    _scaleAnim = Tween<double>(begin: 0.92, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animController,
-        curve: Curves.easeOutBack,
-      ),
-    );
-
-    _animController.forward();
+    _lottieController = AnimationController(vsync: this);
     _navigate();
   }
 
@@ -52,63 +34,54 @@ class _SplashViewState extends State<SplashView>
 
   @override
   void dispose() {
-    _animController.dispose();
+    _lottieController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const Spacer(flex: 3),
-
-            /// 🔥 로고 + 텍스트 영역
-            FadeTransition(
-              opacity: _fadeAnim,
-              child: ScaleTransition(
-                scale: _scaleAnim,
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/logo2.png',
-                      width: double.infinity,
-                      fit: BoxFit.contain, // 비율 유지
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    const Text(
-                      '같이간직',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'NotoSansKR',
-                        color: Color(0xFFED634C),
-                      ),
-                    ),
-                  ],
+      backgroundColor: AppColors.bg,
+      body: Container(
+        color: AppColors.bg,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'assets/lottie/move_logo.json',
+                width: 220,
+                height: 220,
+                fit: BoxFit.contain,
+                controller: _lottieController,
+                onLoaded: (composition) {
+                  _lottieController!
+                    ..duration = composition.duration * 1
+                    ..repeat();
+                },
+              ),
+              const SizedBox(height: 30),
+              const Text(
+                '같이간직',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.main,
+                  fontFamily: 'NotoSansKR',
                 ),
               ),
-            ),
-
-            const Spacer(flex: 4),
-
-            /// 🔥 하단 로딩 인디케이터 (요즘 스타일)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 40),
-              child: SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  color: Color(0xFFed634c),
+              const SizedBox(height: 8),
+              const Text(
+                '소중한 순간을 함께 간직하세요.',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.main,
+                  fontFamily: 'NotoSansKR',
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -167,7 +167,7 @@ class _AlbumListScreen extends GetView<AlbumListController> {
             child: Row(
               children: [
                 Image.asset(
-                  'assets/images/logo2.png',
+                  'assets/images/logo.png',
                   height: 28,
                 ),
                 const SizedBox(width: 8),

@@ -44,6 +44,7 @@ dependencies:
   flutter_svg: ^2.0.10
   google_fonts: ^6.2.1
   shimmer: ^3.0.0
+  lottie: ^3.3.1
 
   # Utils
   intl: ^0.18.1
@@ -68,7 +69,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"
+  image_path: "assets/images/logo2.png"
 
   # Android 13 이상 (Adaptive Icon)
   adaptive_icon_background: "#FFFFFF"
@@ -77,8 +78,8 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
   assets:
-     - assets/images/logo2.png
      - assets/images/logo.png
+     - assets/lottie/move_logo.json
      - assets/icons/album_icon.png
   fonts:
     - family: NotoSansKR
