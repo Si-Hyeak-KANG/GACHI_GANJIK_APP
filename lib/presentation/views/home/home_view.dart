@@ -59,7 +59,7 @@ class _HomeViewState extends State<HomeView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.photo_album_outlined),
             activeIcon: Icon(Icons.photo_album),
-            label: '사진첩',
+            label: '앨범',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

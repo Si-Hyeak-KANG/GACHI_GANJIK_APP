@@ -159,10 +159,12 @@ class GuestEntryController extends GetxController {
         inviteCode: inviteCodeController.text.trim(),
       );
 
-      // albumId를 arguments로 전달하여 앨범 상세로 이동
       Get.offAllNamed(
         Routes.albumDetail,
-        arguments: {'albumId': response.albumId},
+        arguments: {
+          'albumId': response.albumId,
+          'album': null, // AlbumDetailController.onInit()에서 로드
+        },
       );
     } on NetworkException catch (e) {
       errorMessage.value = e.message;
