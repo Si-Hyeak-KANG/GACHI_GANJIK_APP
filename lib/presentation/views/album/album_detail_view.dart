@@ -206,7 +206,7 @@ class _CoverSection extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   Text(
-                    '${album.categoriesDisplay} · ${album.eventDateDisplay}',
+                    album.eventDateDisplay,
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.white.withOpacity(0.9),

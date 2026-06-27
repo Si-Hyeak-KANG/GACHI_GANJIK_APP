@@ -66,13 +66,9 @@ class CreateAlbumController extends GetxController {
     if (selectedCategories.contains(category)) {
       selectedCategories.remove(category);
     } else {
-      if (selectedCategories.length < 3) {
-        selectedCategories.add(category);
-      } else {
-        Get.snackbar('알림', '카테고리는 최대 3개까지 선택할 수 있습니다',
-            snackPosition: SnackPosition.BOTTOM,
-            duration: const Duration(seconds: 2));
-      }
+      selectedCategories
+        ..clear()
+        ..add(category);
     }
   }
 
@@ -132,7 +128,7 @@ class CreateAlbumController extends GetxController {
   Future<void> createAlbum() async {
     if (!formKey.currentState!.validate()) return;
     if (selectedCategories.isEmpty) {
-      Get.snackbar('알림', '카테고리를 최소 1개 선택해주세요',
+      Get.snackbar('알림', '카테고리를 선택해주세요',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }

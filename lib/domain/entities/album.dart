@@ -12,6 +12,7 @@ class Album {
   final int memberCount;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final DateTime? lastPhotoUploadedAt;
 
   final String ownerId;
   final String currentUserId;
@@ -30,6 +31,7 @@ class Album {
     required this.memberCount,
     required this.createdAt,
     this.updatedAt,
+    this.lastPhotoUploadedAt,
     required this.ownerId,
     required this.currentUserId,
     required this.role,

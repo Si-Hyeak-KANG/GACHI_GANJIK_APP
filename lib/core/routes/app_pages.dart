@@ -21,6 +21,8 @@ import '../../presentation/views/photo/photo_detail_view.dart';
 import '../../presentation/views/settings/settings_view.dart';
 import '../../presentation/views/splash/splash_view.dart';
 import '../../presentation/views/user/edit_profile_view.dart';
+import '../../presentation/views/album/category_album_list_view.dart';
+import '../../core/bindings/category_album_list_binding.dart';
 
 class AppPages {
   static const initial = Routes.splash;
@@ -29,6 +31,7 @@ class AppPages {
   static const transitionDuration = Duration(milliseconds: 300);
   static const modalTransition = Transition.downToUp;
   static const fadeTransition = Transition.fade;
+
 
   static final routes = [
     GetPage(
@@ -80,6 +83,13 @@ class AppPages {
       transitionDuration: transitionDuration,
     ),
     GetPage(
+      name: Routes.categoryAlbumList,
+      page: () => const CategoryAlbumListView(),
+      binding: CategoryAlbumListBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
+    ),
+    GetPage(
       name: Routes.albumDetail,
       page: () => const AlbumDetailView(),
       binding: AlbumDetailBinding(),
@@ -117,6 +127,7 @@ class Routes {
   static const guestEntry = '/guest-entry';
   static const home = '/home';
   static const createAlbum = '/create-album';
+  static const categoryAlbumList = '/category-album-list';
   static const editAlbum = '/edit-album';
   static const albumDetail = '/album-detail';
   static const photoDetail = '/photo-detail';

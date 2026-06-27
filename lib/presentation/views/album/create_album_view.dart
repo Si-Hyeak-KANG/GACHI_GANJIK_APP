@@ -54,7 +54,7 @@ class CreateAlbumView extends GetView<CreateAlbumController> {
                 const SizedBox(height: 24),
 
                 // 카테고리
-                const _SectionLabel(label: '카테고리', isRequired: true, subLabel: '최대 3개'),
+                const _SectionLabel(label: '카테고리', isRequired: true),
                 const SizedBox(height: 10),
                 Obx(() => Wrap(
                   spacing: 8,
@@ -82,16 +82,6 @@ class CreateAlbumView extends GetView<CreateAlbumController> {
                     );
                   }).toList(),
                 )),
-                Obx(() {
-                  if (controller.selectedCategories.isEmpty) return const SizedBox.shrink();
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      '선택됨: ${controller.selectedCategories.join(', ')} (${controller.selectedCategories.length}/3)',
-                      style: const TextStyle(fontSize: 12, color: AppColors.main, fontWeight: FontWeight.w500),
-                    ),
-                  );
-                }),
                 const SizedBox(height: 24),
 
                 // 시작 날짜

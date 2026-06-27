@@ -31,19 +31,11 @@ class _LoginViewState extends State<LoginView> {
       resizeToAvoidBottomInset: false,
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF7F9FC),
-              Colors.white,
-            ],
-          ),
+          color: AppColors.bg,
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // ── 로고 영역 (화면 중앙 확장) ──────────────────────────
               Expanded(
                 child: Center(
                   child: Column(
@@ -53,8 +45,7 @@ class _LoginViewState extends State<LoginView> {
                         'assets/images/logo.png',
                         width: 220,
                       ),
-                      SizedBox(height: 16),
-                      Text(
+                      const Text(
                         '같이간직',
                         style: TextStyle(
                           fontSize: 30,
@@ -63,8 +54,8 @@ class _LoginViewState extends State<LoginView> {
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      SizedBox(height: 8),
-                      Text(
+                      const SizedBox(height: 8),
+                      const Text(
                         '소중한 순간을 함께 간직하세요',
                         style: TextStyle(
                           fontSize: 14,
@@ -75,26 +66,24 @@ class _LoginViewState extends State<LoginView> {
                   ),
                 ),
               ),
-
-              // ── 소셜 버튼 + 텍스트 링크 (하단 고정) ─────────────────
+              const SizedBox(height: 16,),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Obx(() => _SocialLoginButton(
-                          icon: Icons.g_mobiledata_rounded,
-                          label: 'Google로 계속하기',
-                          onTap: _controller.isLoading.value
-                              ? null
-                              : _controller.googleLogin,
-                          iconColor: Colors.red,
-                        )),
+                      icon: Icons.g_mobiledata_rounded,
+                      label: 'Google로 계속하기',
+                      onTap: _controller.isLoading.value
+                          ? null
+                          : _controller.googleLogin,
+                      iconColor: Colors.red,
+                    )),
                     const SizedBox(height: 14),
                     _SocialLoginButton(
                       label: 'Kakao로 계속하기',
                       onTap: null,
-                      isComingSoon: true,
                       iconColor: const Color(0xFF3C1E1E),
                       icon: Icons.chat_bubble,
                     ),
@@ -102,12 +91,10 @@ class _LoginViewState extends State<LoginView> {
                     _SocialLoginButton(
                       label: 'Apple로 계속하기',
                       onTap: null,
-                      isComingSoon: true,
                       iconColor: Colors.black,
                       icon: Icons.apple,
                     ),
                     const SizedBox(height: 14),
-                    // 회원가입 없이 시작하기
                     GestureDetector(
                       onTap: () => Get.toNamed(Routes.guestEntry),
                       child: Container(
@@ -140,9 +127,7 @@ class _LoginViewState extends State<LoginView> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(30),
-                          border: Border.all(
-                            color: const Color(0xFFEAEAEA),
-                          ),
+                          border: Border.all(color: const Color(0xFFEAEAEA)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.03),
@@ -151,9 +136,9 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ],
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.mail_outline_rounded,
                               size: 16,
@@ -190,7 +175,6 @@ class _LoginViewState extends State<LoginView> {
   }
 }
 
-// ── 이메일 로그인 바텀 시트 ──────────────────────────────────────────
 class _EmailLoginSheet extends StatefulWidget {
   final LoginController controller;
 
@@ -218,9 +202,7 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(32),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -238,7 +220,6 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 핸들바
               Center(
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 12),
@@ -251,17 +232,15 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
                         blurRadius: 24,
-                        spreadRadius: 0,
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
                 ),
               ),
-
-              Center(
+              const Center(
                 child: Column(
-                  children: const [
+                  children: [
                     Text(
                       '이메일 로그인',
                       style: TextStyle(
@@ -280,11 +259,9 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 20),
-
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -300,7 +277,7 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
                     ),
                     const SizedBox(height: 16),
                     Obx(
-                      () => CustomTextField(
+                          () => CustomTextField(
                         label: '비밀번호',
                         hint: '비밀번호를 입력해주세요',
                         controller: _passwordController,
@@ -321,20 +298,17 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 24),
-
               Obx(() => CustomButton(
-                    text: '로그인',
-                    isLoading: widget.controller.isLoading.value,
-                    onTap: () => widget.controller.emailLogin(
-                      formKey: _formKey,
-                      email: _emailController.text.trim(),
-                      password: _passwordController.text,
-                    ),
-                  )),
+                text: '로그인',
+                isLoading: widget.controller.isLoading.value,
+                onTap: () => widget.controller.emailLogin(
+                  formKey: _formKey,
+                  email: _emailController.text.trim(),
+                  password: _passwordController.text,
+                ),
+              )),
               const SizedBox(height: 16),
-
               Center(
                 child: GestureDetector(
                   onTap: () {
@@ -369,92 +343,56 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
   }
 }
 
-// ── 소셜 로그인 버튼 ────────────────────────────────────────────────
 class _SocialLoginButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final IconData icon;
   final Color iconColor;
-  final bool isComingSoon;
 
   const _SocialLoginButton({
     required this.label,
     required this.onTap,
     required this.icon,
     required this.iconColor,
-    this.isComingSoon = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: isComingSoon ? 0.5 : 1.0,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 20,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isComingSoon
-                  ? const Color(0xFFF0F0F0)
-                  : const Color(0xFFE8E8E8),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE8E8E8)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 24,
+              spreadRadius: 0,
+              offset: const Offset(0, 8),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 24,
-                spreadRadius: 0,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    icon,
-                    size: 24,
-                    color: iconColor,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isComingSoon
-                            ? AppColors.inactive
-                            : AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                ],
-              ),
-              if (isComingSoon)
-                const Positioned(
-                  right: 16,
-                  child: Text(
-                    'Coming Soon',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: AppColors.main,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: iconColor),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
                 ),
-            ],
-          ),
+              ),
+            ),
+            const SizedBox(width: 24),
+          ],
         ),
       ),
     );

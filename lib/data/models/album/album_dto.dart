@@ -12,6 +12,7 @@ class AlbumDto {
   final int memberCount;
   final String createdAt;
   final String? updatedAt;
+  final String? lastPhotoUploadedAt;
 
   // 권한
   final String ownerId;  // 목록 응답에 없으면 currentUserId로 대체
@@ -31,6 +32,7 @@ class AlbumDto {
     required this.memberCount,
     required this.createdAt,
     this.updatedAt,
+    this.lastPhotoUploadedAt,
     required this.ownerId,
     required this.role,
     this.currentUserId,
@@ -58,6 +60,7 @@ class AlbumDto {
       memberCount: json['memberCount'] as int? ?? 0,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String?,
+      lastPhotoUploadedAt: json['lastPhotoUploadedAt'] as String?,
       ownerId: ownerId,
       role: role,
       currentUserId: currentUserId,
@@ -78,6 +81,9 @@ class AlbumDto {
       memberCount: memberCount,
       createdAt: DateTime.parse(createdAt),
       updatedAt: updatedAt != null ? DateTime.parse(updatedAt!) : null,
+      lastPhotoUploadedAt: lastPhotoUploadedAt != null
+          ? DateTime.parse(lastPhotoUploadedAt!)
+          : null,
       ownerId: ownerId,
       currentUserId: currentUserId ?? '',
       role: role,

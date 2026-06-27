@@ -96,35 +96,6 @@ class AlbumCard extends StatelessWidget {
                           fit: BoxFit.contain,
                         ),
                       ),
-                    if (album.categories.isNotEmpty)
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: album.categories.map((cat) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.main,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                cat,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
                   ],
                 ),
               ),
