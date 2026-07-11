@@ -43,6 +43,7 @@ import '../../presentation/controllers/user/user_controller.dart';
 import '../network/dio_client.dart';
 import '../storage/local_storage.dart';
 import '../storage/secure_storage.dart';
+import '../../core/services/websocket_service.dart';
 
 const bool _useRealApi = bool.fromEnvironment('USE_REAL_API', defaultValue: false);
 
@@ -127,6 +128,10 @@ class InitialBinding extends Bindings {
       ),
       permanent: true,
     );
+
+    final wsService = WebSocketService(secureStorage: Get.find());
+    Get.put<WebSocketService>(wsService, permanent: true);
+    wsService.connect();
 
     Get.lazyPut<LoginController>(
           () => LoginController(authRepository: Get.find()),

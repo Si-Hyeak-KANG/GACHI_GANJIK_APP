@@ -17,11 +17,17 @@ class CategoryAlbumListView extends GetView<CategoryAlbumListController> {
         onPressed: () => showModalBottomSheet(
           context: context,
           backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          isDismissible: true,
+          enableDrag: true,
           builder: (_) => const AlbumActionSheet(),
         ),
-        backgroundColor: AppColors.textPrimary,
-        elevation: 4,
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        backgroundColor: AppColors.main,
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(50),
+        ),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       ),
       body: SafeArea(
         child: Column(

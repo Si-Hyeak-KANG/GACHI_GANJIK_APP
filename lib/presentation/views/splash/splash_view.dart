@@ -62,12 +62,11 @@ class _SplashViewState extends State<SplashView>
               ),
               const SizedBox(height: 30),
               const Text(
-                '같이간직',
+                'MOWA',
                 style: TextStyle(
                   fontSize: 36,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w900,
                   color: AppColors.main,
-                  fontFamily: 'NotoSansKR',
                 ),
               ),
               const SizedBox(height: 8),
@@ -76,7 +75,7 @@ class _SplashViewState extends State<SplashView>
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.main,
+                  color: AppColors.textSecondary,
                   fontFamily: 'NotoSansKR',
                 ),
               ),

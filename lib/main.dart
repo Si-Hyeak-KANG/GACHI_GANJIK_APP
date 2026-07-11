@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: '같이간직',
+      title: '모와',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.main),
         useMaterial3: true,

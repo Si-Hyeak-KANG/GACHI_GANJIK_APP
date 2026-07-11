@@ -47,9 +47,12 @@ class _HomeViewState extends State<HomeView> {
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
         onPressed: () => _showActionSheet(context),
-        backgroundColor: AppColors.textPrimary,
-        elevation: 4,
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        backgroundColor: AppColors.main,
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(50),
+        ),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       )
           : null,
       bottomNavigationBar: BottomNavigationBar(
@@ -86,6 +89,9 @@ class _HomeViewState extends State<HomeView> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
       builder: (_) => const AlbumActionSheet(),
     );
   }
@@ -176,28 +182,28 @@ class _AlbumListScreen extends GetView<AlbumListController> {
         children: [
           // 헤더
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+            padding: const EdgeInsets.fromLTRB(28, 20, 28, 12),
             child: Row(
               children: [
-                const Text(
-                  '같이간직',
+                Text(
+                  'MOWA',
                   style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1,
+                    color: AppColors.main,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.search,
+                  icon: const Icon(Icons.search_rounded,
                       color: AppColors.textPrimary, size: 24),
                   onPressed: () {},
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
-                const SizedBox(width: 16),
                 IconButton(
-                  icon: const Icon(Icons.notifications_none,
+                  icon: const Icon(Icons.notifications_none_rounded,
                       color: AppColors.textPrimary, size: 24),
                   onPressed: () {},
                   padding: EdgeInsets.zero,
@@ -232,14 +238,14 @@ class _AlbumListScreen extends GetView<AlbumListController> {
                   children: [
                     // 앨범 코드로 참여하기
                     _JoinButton(),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 36),
 
                     // 카테고리 섹션
                     _CategorySection(albums: controller.albums),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 36),
 
                     // 최근 활동한 앨범
-                    _RecentAlbumsSection(albums: controller.albums),
+                    const _RecentAlbumsSection(),
                   ],
                 ),
               );
@@ -261,7 +267,7 @@ class _JoinButton extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.toNamed(Routes.guestEntry),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         decoration: BoxDecoration(
           color: AppColors.cardBg,
           borderRadius: BorderRadius.circular(12),
@@ -276,7 +282,7 @@ class _JoinButton extends StatelessWidget {
               child: Text(
                 '앨범 코드로 참여하기',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textPrimary,
                 ),
@@ -322,22 +328,33 @@ class _CategorySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+
             Text(
               '카테고리',
               style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
+            ),
+
+            SizedBox(height: 4),
+
+            Text(
+              '주제별 앨범을 둘러보세요',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
               ),
             ),
           ],
         ),
         const SizedBox(height: 14),
         SizedBox(
-          height: 130,
+          height: 190,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: grouped.length,
@@ -389,91 +406,79 @@ class _CategoryCard extends StatelessWidget {
   final String? thumbUrl;
   final List<String> categories;
 
-  static const _gradients = {
-    '결혼': [Color(0xFFc0392b), Color(0xFFe84393)],
-    '여행': [Color(0xFF1a5276), Color(0xFF2e86c1)],
-    '모임': [Color(0xFF6c3483), Color(0xFFa569bd)],
-    '생일': [Color(0xFF784212), Color(0xFFd4ac0d)],
-    '기념일': [Color(0xFF0e6655), Color(0xFF1abc9c)],
-    '연인': [Color(0xFFc0392b), Color(0xFFf1948a)],
-    '반려동물': [Color(0xFF6e2f1a), Color(0xFFe59866)],
-    '취미': [Color(0xFF935116), Color(0xFFf0b27a)],
-    '일상': [Color(0xFF616a6b), Color(0xFF99a3a4)],
-    '기록': [Color(0xFF1b2631), Color(0xFF5d6d7e)],
-    '친구': [Color(0xFF0e6655), Color(0xFF52be80)],
-    '독서': [Color(0xFF784212), Color(0xFFdc7633)],
-    '공부': [Color(0xFF0e6251), Color(0xFF45b39d)],
-  };
-
   @override
   Widget build(BuildContext context) {
-    final colors = _gradients[category] ??
-        [const Color(0xFF616a6b), const Color(0xFF99a3a4)];
 
     return Container(
-      width: 110,
+      width: 160,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.divider),
         color: AppColors.cardBg,
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          // 썸네일
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (thumbUrl != null && thumbUrl!.trim().isNotEmpty)
-                  Image.network(
-                    thumbUrl!.trim(),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: colors,
-                        ),
-                      ),
-                    ),
-                  )
-                else
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: colors,
-                      ),
-                    ),
-                  ),
-                Container(color: Colors.black.withOpacity(0.25)),
-              ],
+
+          if (thumbUrl != null && thumbUrl!.trim().isNotEmpty)
+            Image.network(
+              thumbUrl!,
+              fit: BoxFit.cover,
+            )
+          else
+            Container(
+              color: const Color(0xFFF4F5F7),
+              child: const Center(
+                child: Icon(
+                  Icons.photo_library_outlined,
+                  size: 48,
+                  color: Color(0xFFB7BEC8),
+                ),
+              ),
+            ),
+
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Color(0x99000000),
+                ],
+                stops: [
+                  0.45,
+                  1,
+                ],
+              ),
             ),
           ),
-          // 정보
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 7, 10, 8),
+
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
                 Text(
                   category,
                   style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 2),
+
+                const SizedBox(height:4),
+
                 Text(
-                  '${count}개 앨범',
+                  '$count개의 앨범',
                   style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: Colors.white70,
+                    fontSize:13,
                   ),
                 ),
               ],
@@ -489,11 +494,10 @@ class _CategoryCard extends StatelessWidget {
 // 최근 활동한 앨범 섹션
 // ─────────────────────────────────────────────────────────────
 
-class _RecentAlbumsSection extends StatelessWidget {
-  const _RecentAlbumsSection({required this.albums});
-  final List<Album> albums;
+class _RecentAlbumsSection extends GetView<AlbumListController> {
+  const _RecentAlbumsSection();
 
-  List<Album> get _sorted {
+  List<Album> _sorted(List<Album> albums) {
     final list = List<Album>.from(albums);
     list.sort((a, b) {
       final aTime = a.lastPhotoUploadedAt ?? a.createdAt;
@@ -505,8 +509,6 @@ class _RecentAlbumsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sorted = _sorted;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -524,16 +526,19 @@ class _RecentAlbumsSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 14),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: sorted.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (_, index) {
-            final album = sorted[index];
-            return _RecentAlbumCard(album: album);
-          },
-        ),
+        Obx(() {
+          final sorted = _sorted(controller.albums);
+          return ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: sorted.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (_, index) {
+              final album = sorted[index];
+              return _RecentAlbumCard(album: album);
+            },
+          );
+        }),
       ],
     );
   }
@@ -542,22 +547,6 @@ class _RecentAlbumsSection extends StatelessWidget {
 class _RecentAlbumCard extends StatelessWidget {
   const _RecentAlbumCard({required this.album});
   final Album album;
-
-  static const _gradients = {
-    '결혼': [Color(0xFFc0392b), Color(0xFFe84393)],
-    '여행': [Color(0xFF1a5276), Color(0xFF2e86c1)],
-    '모임': [Color(0xFF6c3483), Color(0xFFa569bd)],
-    '생일': [Color(0xFF784212), Color(0xFFd4ac0d)],
-    '기념일': [Color(0xFF0e6655), Color(0xFF1abc9c)],
-    '연인': [Color(0xFFc0392b), Color(0xFFf1948a)],
-    '반려동물': [Color(0xFF6e2f1a), Color(0xFFe59866)],
-    '취미': [Color(0xFF935116), Color(0xFFf0b27a)],
-    '일상': [Color(0xFF616a6b), Color(0xFF99a3a4)],
-    '기록': [Color(0xFF1b2631), Color(0xFF5d6d7e)],
-    '친구': [Color(0xFF0e6655), Color(0xFF52be80)],
-    '독서': [Color(0xFF784212), Color(0xFFdc7633)],
-    '공부': [Color(0xFF0e6251), Color(0xFF45b39d)],
-  };
 
   String _timeAgo(DateTime? dt) {
     if (dt == null) return '';
@@ -572,113 +561,151 @@ class _RecentAlbumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final key = album.categories.isNotEmpty ? album.categories.first : '기타';
-    final colors = _gradients[key] ??
-        [const Color(0xFF616a6b), const Color(0xFF99a3a4)];
     final timeAgo = _timeAgo(album.lastPhotoUploadedAt ?? album.updatedAt);
 
-    return GestureDetector(
-      onTap: () => Get.toNamed(
-        Routes.albumDetail,
-        arguments: {'album': album, 'albumId': album.id},
-      ),
-      child: Container(
-        height: 130,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // 배경 이미지 또는 그라디언트
-            if (album.coverImageUrl != null &&
-                album.coverImageUrl!.trim().isNotEmpty)
-              Image.network(
-                album.coverImageUrl!.trim(),
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: colors,
-                    ),
-                  ),
-                ),
+    return Obx(() {
+      final hasUpdate = Get.isRegistered<AlbumListController>()
+          ? Get.find<AlbumListController>().updatedAlbumIds.contains(album.id)
+          : false;
+
+      return GestureDetector(
+        onTap: () {
+          if (Get.isRegistered<AlbumListController>()) {
+            Get.find<AlbumListController>().clearBadge(album.id);
+          }
+          Get.toNamed(
+            Routes.albumDetail,
+            arguments: {'album': album, 'albumId': album.id},
+          );
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+          height: 150,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: hasUpdate
+                ? [
+              BoxShadow(
+                color: AppColors.main.withOpacity(0.3),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               )
-            else
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: colors,
-                  ),
-                ),
-              ),
-
-            // 딤
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Color(0xCC000000)],
-                  stops: [0.3, 1.0],
-                ),
-              ),
-            ),
-
-            // 텍스트
-            Positioned(
-              left: 14,
-              right: 14,
-              bottom: 12,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    album.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          timeAgo.isNotEmpty
-                              ? '$timeAgo · 사진 ${album.photoCount}장'
-                              : '사진 ${album.photoCount}장',
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.white70),
-                        ),
+            ]
+                : [],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (album.coverImageUrl != null &&
+                  album.coverImageUrl!.trim().isNotEmpty)
+                Image.network(
+                  album.coverImageUrl!.trim(),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: const Color(0xFFF3F4F6),
+                    child: const Center(
+                      child: Icon(
+                        Icons.photo_library_outlined,
+                        size: 48,
+                        color: Color(0xFFB6BCC6),
                       ),
-                      Row(
-                        children: [
-                          const Icon(Icons.people_outline,
-                              size: 13, color: Colors.white70),
-                          const SizedBox(width: 3),
-                          Text(
-                            '${album.memberCount}',
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  color: const Color(0xFFF3F4F6),
+                  child: const Center(
+                    child: Icon(
+                      Icons.photo_library_outlined,
+                      size: 48,
+                      color: Color(0xFFB6BCC6),
+                    ),
+                  ),
+                ),
+
+              // 딤
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Color(0x99000000)],
+                    stops: [0.3, 1.0],
+                  ),
+                ),
+              ),
+
+              // 뱃지
+              if (hasUpdate)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: AppColors.main,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.main, width: 1.5),
+                    ),
+                  ),
+                ),
+
+              // 텍스트
+              Positioned(
+                left: 14,
+                right: 14,
+                bottom: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      album.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            timeAgo.isNotEmpty
+                                ? '$timeAgo · 사진 ${album.photoCount}장'
+                                : '사진 ${album.photoCount}장',
                             style: const TextStyle(
                                 fontSize: 12, color: Colors.white70),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
+                        ),
+                        Row(
+                          children: [
+                            const Icon(Icons.people_outline,
+                                size: 13, color: Colors.white70),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${album.memberCount}',
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }); // Obx
   }
 }

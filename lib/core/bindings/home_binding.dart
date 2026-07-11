@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../core/services/websocket_service.dart';
 import '../../data/repositories/album_repository_impl.dart';
 import '../../data/sources/remote/mock/mock_album_remote_source.dart';
 import '../../domain/repositories/album_repository.dart';
@@ -16,7 +17,10 @@ class HomeBinding extends Bindings {
     );
 
     Get.lazyPut<AlbumListController>(
-          () => AlbumListController(albumRepository: Get.find()),
+          () => AlbumListController(
+        albumRepository: Get.find(),
+        wsService: Get.find<WebSocketService>(),
+      ),
       fenix: true,
     );
   }

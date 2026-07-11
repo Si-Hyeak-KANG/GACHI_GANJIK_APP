@@ -8,7 +8,6 @@ import '../../../domain/repositories/photo_repository.dart';
 import '../../../core/network/network_exception.dart';
 import '../../../core/routes/app_pages.dart';
 import '../album/album_list_controller.dart';
-import '../network/network_controller.dart';
 
 class AlbumDetailController extends GetxController {
   final PhotoRepository _photoRepository;
@@ -32,6 +31,13 @@ class AlbumDetailController extends GetxController {
   void onInit() {
     super.onInit();
     fetchMoments();
+  }
+
+  @override
+  void onClose() {
+    // 앨범 상세에서 나갈 때 홈 목록 갱신 → 최신순 재정렬
+    _refreshAlbumList();
+    super.onClose();
   }
 
   Future<void> fetchMoments() async {

@@ -46,12 +46,12 @@ class _LoginViewState extends State<LoginView> {
                         width: 220,
                       ),
                       const Text(
-                        '같이간직',
+                        'MOWA',
                         style: TextStyle(
                           fontSize: 30,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w900,
                           letterSpacing: -1,
-                          color: AppColors.textPrimary,
+                          color: AppColors.main,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -259,7 +259,7 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 decoration: BoxDecoration(
