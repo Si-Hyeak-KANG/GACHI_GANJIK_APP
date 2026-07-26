@@ -20,11 +20,36 @@ class RealPhotoRemoteSource implements PhotoRemoteSource {
 
     final photos = <PhotoDto>[];
     for (final moment in moments) {
-      final photoList =
-          (moment as Map<String, dynamic>)['photos'] as List<dynamic>? ?? [];
+      final momentMap = moment as Map<String, dynamic>;
+      final momentId = momentMap['momentId']?.toString();
+      final momentComment = momentMap['comment'] as String?;
+
+      // 업로더 정보가 moment 레벨에 있을 수 있으므로 각 photo에 보강한다.
+      final mUploaderId = momentMap['uploaderId'];
+      final mUploaderNickname = momentMap['uploaderNickname'];
+      final mUploaderProfile =
+          momentMap['uploaderProfileImageUrl'] ?? momentMap['profileImageUrl'];
+
+      final photoList = momentMap['photos'] as List<dynamic>? ?? [];
       for (final photo in photoList) {
         final photoMap = photo as Map<String, dynamic>;
-        photos.add(PhotoDto.fromJson({...photoMap, 'albumId': albumId}));
+        final photoHasProfile =
+            (photoMap['uploaderProfileImageUrl'] ?? photoMap['profileImageUrl']) !=
+                null;
+
+        photos.add(PhotoDto.fromJson({
+          ...photoMap,
+          'albumId': albumId,
+          if (momentId != null) 'momentId': momentId,
+          if (momentComment != null) 'message': momentComment,
+          // photo에 업로더 정보가 없을 때만 moment 레벨 값으로 채운다.
+          if (photoMap['uploaderId'] == null && mUploaderId != null)
+            'uploaderId': mUploaderId,
+          if (photoMap['uploaderNickname'] == null && mUploaderNickname != null)
+            'uploaderNickname': mUploaderNickname,
+          if (!photoHasProfile && mUploaderProfile != null)
+            'uploaderProfileImageUrl': mUploaderProfile,
+        }));
       }
     }
     return photos;
@@ -41,6 +66,7 @@ class RealPhotoRemoteSource implements PhotoRemoteSource {
     return PhotoDto.fromJson({
       ...(photoList.first as Map<String, dynamic>),
       'albumId': request.albumId,
+      if (request.momentId != null) 'momentId': request.momentId,
     });
   }
 

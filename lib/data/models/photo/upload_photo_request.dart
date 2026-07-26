@@ -5,6 +5,7 @@ class UploadPhotoRequest {
   final String? message;
   final String? colorCode;
   final String photoDate;
+  final String? momentId;
 
   UploadPhotoRequest({
     required this.albumId,
@@ -13,12 +14,14 @@ class UploadPhotoRequest {
     this.message,
     this.colorCode,
     required this.photoDate,
+    this.momentId,
   });
 
   /// POST /albums/{albumId}/photos
-  /// Body: { "photos": [{ imageUrl, thumbnailUrl, message, colorCode }], "photoDate": "..." }
+  /// Body: { "momentId"?, "photos": [{ imageUrl, thumbnailUrl, message, colorCode }], "photoDate": "..." }
   Map<String, dynamic> toJson() {
     return {
+      if (momentId != null) 'momentId': momentId,
       'photos': [
         {
           'imageUrl': imageUrl,

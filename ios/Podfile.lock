@@ -9,6 +9,8 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
+  - camera_avfoundation (0.0.1):
+    - Flutter
   - connectivity_plus (0.0.1):
     - Flutter
   - Firebase/CoreOnly (11.15.0):
@@ -103,6 +105,8 @@ PODS:
   - mobile_scanner (7.0.0):
     - Flutter
     - FlutterMacOS
+  - native_device_orientation (0.0.1):
+    - Flutter
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -127,6 +131,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
@@ -138,6 +143,7 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - isar_community_flutter_libs (from `.symlinks/plugins/isar_community_flutter_libs/ios`)
   - mobile_scanner (from `.symlinks/plugins/mobile_scanner/darwin`)
+  - native_device_orientation (from `.symlinks/plugins/native_device_orientation/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
@@ -167,6 +173,8 @@ SPEC REPOS:
     - SDWebImageWebPCoder
 
 EXTERNAL SOURCES:
+  camera_avfoundation:
+    :path: ".symlinks/plugins/camera_avfoundation/ios"
   connectivity_plus:
     :path: ".symlinks/plugins/connectivity_plus/ios"
   firebase_core:
@@ -189,6 +197,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/isar_community_flutter_libs/ios"
   mobile_scanner:
     :path: ".symlinks/plugins/mobile_scanner/darwin"
+  native_device_orientation:
+    :path: ".symlinks/plugins/native_device_orientation/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -205,6 +215,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
+  camera_avfoundation: 968a9a5323c79a99c166ad9d7866bfd2047b5a9b
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   Firebase: d99ac19b909cd2c548339c2241ecd0d1599ab02e
   firebase_core: 995454a784ff288be5689b796deb9e9fa3601818
@@ -229,6 +240,7 @@ SPEC CHECKSUMS:
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   Mantle: c5aa8794a29a022dfbbfc9799af95f477a69b62d
   mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
+  native_device_orientation: f3ba5f2ddbab3deee23a5f6693b4f97b02dafea2
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d

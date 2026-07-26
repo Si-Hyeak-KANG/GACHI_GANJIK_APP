@@ -38,8 +38,8 @@ class AlbumListController extends GetxController {
   // 앨범 목록 조회
   // ─────────────────────────────────────────
 
-  Future<void> fetchAlbums() async {
-    isLoading.value = true;
+  Future<void> fetchAlbums({bool silent = false}) async {
+    if (!silent) isLoading.value = true;
     try {
       final result = await _albumRepository.getAlbums();
       result.sort((a, b) {
@@ -48,17 +48,19 @@ class AlbumListController extends GetxController {
         return bTime.compareTo(aTime);
       });
       albums.assignAll(result);
-      _subscribeToAllAlbums();
     } on NetworkException catch (e) {
-      Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
+      if (!silent) {
+        Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
+      }
     } catch (_) {
-      Get.snackbar('오류', '앨범 목록을 불러오지 못했습니다',
-          snackPosition: SnackPosition.BOTTOM);
+      if (!silent) {
+        Get.snackbar('오류', '앨범 목록을 불러오지 못했습니다',
+            snackPosition: SnackPosition.BOTTOM);
+      }
     } finally {
-      isLoading.value = false;
+      if (!silent) isLoading.value = false;
     }
   }
-
   // ─────────────────────────────────────────
   // WebSocket 구독
   // ─────────────────────────────────────────

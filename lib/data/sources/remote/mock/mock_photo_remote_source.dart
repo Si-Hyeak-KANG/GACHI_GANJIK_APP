@@ -9,9 +9,11 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
 
   final Map<String, List<PhotoDto>> _photosByAlbum = {
     'album-uuid-1': [
+      // ── moment-uuid-1 : 석스키, 사진 1장 ──
       PhotoDto(
         id: 'photo-uuid-1',
         albumId: 'album-uuid-1',
+        momentId: 'moment-uuid-1',
         imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=400&q=70',
         message: '정말 행복한 순간이었어요 🌸',
@@ -20,26 +22,39 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
         uploaderNickname: '석스키',
         uploaderProfileImageUrl: null,
         createdAt: '2025-04-18T14:30:00Z',
-        likeCount: 5,
-        commentCount: 1,
       ),
+      // ── moment-uuid-2 : 민지, 사진 2장 (가로 스크롤 확인용, 코멘트 공유) ──
       PhotoDto(
         id: 'photo-uuid-2',
         albumId: 'album-uuid-1',
+        momentId: 'moment-uuid-2',
         imageUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=70',
-        message: '축하해! 정말 예뻐 💍',
+        message: '웨딩 촬영 너무 예뻤어, 축하해 💍',
         photoDate: '2025-04-18',
         uploaderId: 'user-uuid-2',
         uploaderNickname: '민지',
         uploaderProfileImageUrl: null,
         createdAt: '2025-04-18T14:35:00Z',
-        likeCount: 3,
-        commentCount: 0,
       ),
+      PhotoDto(
+        id: 'photo-uuid-4',
+        albumId: 'album-uuid-1',
+        momentId: 'moment-uuid-2',
+        imageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&q=70',
+        message: '웨딩 촬영 너무 예뻤어, 축하해 💍',
+        photoDate: '2025-04-18',
+        uploaderId: 'user-uuid-2',
+        uploaderNickname: '민지',
+        uploaderProfileImageUrl: null,
+        createdAt: '2025-04-18T14:36:00Z',
+      ),
+      // ── moment-uuid-3 : 준혁, 사진 1장 (코멘트 없음 케이스) ──
       PhotoDto(
         id: 'photo-uuid-3',
         albumId: 'album-uuid-1',
+        momentId: 'moment-uuid-3',
         imageUrl: 'https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&q=70',
         message: null,
@@ -48,26 +63,12 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
         uploaderNickname: '준혁',
         uploaderProfileImageUrl: null,
         createdAt: '2025-04-18T14:40:00Z',
-        likeCount: 2,
-        commentCount: 1,
       ),
-      PhotoDto(
-        id: 'photo-uuid-4',
-        albumId: 'album-uuid-1',
-        imageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&q=70',
-        message: '웨딩 부케 🌷',
-        photoDate: '2025-04-18',
-        uploaderId: 'user-uuid-2',
-        uploaderNickname: '민지',
-        uploaderProfileImageUrl: null,
-        createdAt: '2025-04-18T15:00:00Z',
-        likeCount: 8,
-        commentCount: 2,
-      ),
+      // ── moment-uuid-4 : 석스키, 사진 1장 ──
       PhotoDto(
         id: 'photo-uuid-5',
         albumId: 'album-uuid-1',
+        momentId: 'moment-uuid-4',
         imageUrl: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&q=70',
         message: '리허설 날! 드디어 내일이야 🥹',
@@ -76,12 +77,12 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
         uploaderNickname: '석스키',
         uploaderProfileImageUrl: null,
         createdAt: '2025-04-17T10:00:00Z',
-        likeCount: 4,
-        commentCount: 0,
       ),
+      // ── moment-uuid-5 : 민지, 사진 1장 ──
       PhotoDto(
         id: 'photo-uuid-6',
         albumId: 'album-uuid-1',
+        momentId: 'moment-uuid-5',
         imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&q=70',
         message: '설레서 잠 못 자겠다~',
@@ -90,14 +91,13 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
         uploaderNickname: '민지',
         uploaderProfileImageUrl: null,
         createdAt: '2025-04-17T10:30:00Z',
-        likeCount: 1,
-        commentCount: 0,
       ),
     ],
     'album-uuid-2': [
       PhotoDto(
         id: 'photo-uuid-7',
         albumId: 'album-uuid-2',
+        momentId: 'moment-uuid-6',
         imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=70',
         message: '한라산 정상 🏔️',
@@ -106,12 +106,11 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
         uploaderNickname: '석스키',
         uploaderProfileImageUrl: null,
         createdAt: '2025-06-15T09:00:00Z',
-        likeCount: 10,
-        commentCount: 3,
       ),
       PhotoDto(
         id: 'photo-uuid-8',
         albumId: 'album-uuid-2',
+        momentId: 'moment-uuid-7',
         imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=70',
         message: '성산일출봉 앞에서 🌅',
@@ -120,8 +119,6 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
         uploaderNickname: '민지',
         uploaderProfileImageUrl: null,
         createdAt: '2025-06-15T11:00:00Z',
-        likeCount: 6,
-        commentCount: 1,
       ),
     ],
   };
@@ -141,6 +138,7 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
     final newPhoto = PhotoDto(
       id: 'photo-uuid-$_nextId',
       albumId: request.albumId,
+      momentId: request.momentId,
       imageUrl: request.imageUrl,
       thumbnailUrl: request.imageUrl,
       message: request.message,
@@ -149,8 +147,6 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
       uploaderNickname: _currentUserNickname,
       uploaderProfileImageUrl: null,
       createdAt: DateTime.now().toIso8601String(),
-      likeCount: 0,
-      commentCount: 0,
     );
 
     _photosByAlbum.putIfAbsent(request.albumId, () => []);
@@ -188,6 +184,7 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
     photos[index] = PhotoDto(
       id: photo.id,
       albumId: photo.albumId,
+      momentId: photo.momentId,
       imageUrl: photo.imageUrl,
       thumbnailUrl: photo.thumbnailUrl,
       message: message.isEmpty ? null : message,
@@ -196,8 +193,6 @@ class MockPhotoRemoteSource implements PhotoRemoteSource {
       uploaderNickname: photo.uploaderNickname,
       uploaderProfileImageUrl: photo.uploaderProfileImageUrl,
       createdAt: photo.createdAt,
-      likeCount: photo.likeCount,
-      commentCount: photo.commentCount,
     );
   }
 }

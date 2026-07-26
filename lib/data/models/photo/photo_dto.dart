@@ -3,6 +3,7 @@ import '../../../domain/entities/photo.dart';
 class PhotoDto {
   final String id;
   final String albumId;
+  final String? momentId;
   final String imageUrl;
   final String? thumbnailUrl;
   final String? message;
@@ -20,6 +21,7 @@ class PhotoDto {
   PhotoDto({
     required this.id,
     required this.albumId,
+    this.momentId,
     required this.imageUrl,
     this.thumbnailUrl,
     this.message,
@@ -34,17 +36,32 @@ class PhotoDto {
   });
 
   factory PhotoDto.fromJson(Map<String, dynamic> json) {
+    // 업로더 정보가 중첩 객체(uploader)로 올 수도 있어 함께 확인
+    final uploader = json['uploader'] is Map
+        ? (json['uploader'] as Map).cast<String, dynamic>()
+        : const <String, dynamic>{};
+
+    // 서버가 uploaderProfileImageUrl / profileImageUrl 중 무엇을 쓰든 대응
+    final profileImage = (json['uploaderProfileImageUrl'] ??
+        json['profileImageUrl'] ??
+        uploader['profileImageUrl'] ??
+        uploader['uploaderProfileImageUrl']) as String?;
+
     return PhotoDto(
       id: json['photoId']?.toString() ?? '',
       albumId: json['albumId']?.toString() ?? '',
+      momentId: json['momentId']?.toString(),
       imageUrl: json['imageUrl'] as String,
       thumbnailUrl: json['thumbnailUrl'] as String?,
       message: json['message'] as String?,
       photoDate: json['photoDate'] as String,
       colorCode: json['colorCode'] as String?,
-      uploaderId: json['uploaderId']?.toString() ?? '',
-      uploaderNickname: json['uploaderNickname'] as String? ?? '',
-      uploaderProfileImageUrl: json['uploaderProfileImageUrl'] as String?,
+      uploaderId: (json['uploaderId'] ?? uploader['userId'] ?? uploader['id'])
+          ?.toString() ??
+          '',
+      uploaderNickname:
+      (json['uploaderNickname'] ?? uploader['nickname']) as String? ?? '',
+      uploaderProfileImageUrl: profileImage,
       createdAt: json['uploadDt'] as String? ?? json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
       likeCount: json['likeCount'] as int? ?? 0,
       commentCount: json['commentCount'] as int? ?? 0,
@@ -55,6 +72,7 @@ class PhotoDto {
     return Photo(
       id: id,
       albumId: albumId,
+      momentId: momentId,
       imageUrl: imageUrl,
       thumbnailUrl: thumbnailUrl,
       message: message,

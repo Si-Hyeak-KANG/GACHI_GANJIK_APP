@@ -263,7 +263,7 @@ class _UserInfoStep extends StatelessWidget {
               children: [
                 TextSpan(text: '환영합니다.\n\n'),
                 TextSpan(
-                  text: '같이간직',
+                  text: 'MOWA',
                   style: TextStyle(color: AppColors.main),
                 ),
                 TextSpan(text: '에서 사용할 \n이름과 비밀번호를 입력해주세요.'),
@@ -430,7 +430,7 @@ class _CompleteStep extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           const Text(
-            '환영합니다.\n\n같이간직에서 소중한 순간을\n함께 간직해보세요.',
+            'MOWA에 오신 것을 환영합니다.\n\n소중한 순간을\n함께 간직해보세요.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,

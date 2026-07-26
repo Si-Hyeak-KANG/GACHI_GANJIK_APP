@@ -23,6 +23,8 @@ import '../../presentation/views/splash/splash_view.dart';
 import '../../presentation/views/user/edit_profile_view.dart';
 import '../../presentation/views/album/category_album_list_view.dart';
 import '../../core/bindings/category_album_list_binding.dart';
+import '../../presentation/views/camera/camera_view.dart';
+import '../../core/bindings/camera_binding.dart';
 
 class AppPages {
   static const initial = Routes.splash;
@@ -65,6 +67,13 @@ class AppPages {
       name: Routes.home,
       page: () => const HomeView(),
       binding: HomeBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
+    ),
+    GetPage(
+      name: Routes.camera,
+      page: () => const CameraView(),
+      binding: CameraBinding(),
       transition: defaultTransition,
       transitionDuration: transitionDuration,
     ),
@@ -133,4 +142,5 @@ class Routes {
   static const photoDetail = '/photo-detail';
   static const editProfile = '/edit-profile';
   static const settings = '/settings';
+  static const camera = '/camera';
 }

@@ -183,17 +183,13 @@ class _CompactInfoOverlay extends GetView<PhotoDetailController> {
           children: [
             Row(
               children: [
-                CircleAvatar(
+                _ProfileAvatar(
+                  profileUrl: controller.currentPhoto.uploaderProfileImageUrl,
+                  initial: controller.currentPhoto.uploaderInitial,
                   radius: 16,
                   backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  child: Text(
-                    controller.currentPhoto.uploaderNickname[0],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
-                  ),
+                  textColor: Colors.white,
+                  fontSize: 13,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -402,17 +398,13 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
           children: [
             Row(
               children: [
-                CircleAvatar(
+                _ProfileAvatar(
+                  profileUrl: photo.uploaderProfileImageUrl,
+                  initial: photo.uploaderInitial,
                   radius: 18,
                   backgroundColor: AppColors.mainLight,
-                  child: Text(
-                    photo.uploaderNickname[0],
-                    style: const TextStyle(
-                      color: AppColors.main,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
+                  textColor: AppColors.main,
+                  fontSize: 14,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -665,6 +657,47 @@ class _CommentSection extends GetView<PhotoDetailController> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// 프로필 아바타 (프로필 이미지 우선, 없으면 닉네임 첫 글자)
+// ─────────────────────────────────────────
+class _ProfileAvatar extends StatelessWidget {
+  final String? profileUrl;
+  final String initial;
+  final double radius;
+  final Color backgroundColor;
+  final Color textColor;
+  final double fontSize;
+
+  const _ProfileAvatar({
+    required this.profileUrl,
+    required this.initial,
+    required this.radius,
+    required this.backgroundColor,
+    required this.textColor,
+    required this.fontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasUrl = profileUrl != null && profileUrl!.isNotEmpty;
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: backgroundColor,
+      backgroundImage: hasUrl ? CachedNetworkImageProvider(profileUrl!) : null,
+      child: hasUrl
+          ? null
+          : Text(
+        initial,
+        style: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.w700,
+          fontSize: fontSize,
+        ),
+      ),
     );
   }
 }

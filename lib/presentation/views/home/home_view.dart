@@ -8,11 +8,12 @@ import '../../../data/sources/remote/mock/mock_user_remote_source.dart';
 import '../../../domain/entities/album.dart';
 import '../../../domain/repositories/user_repository.dart';
 import '../../controllers/album/album_list_controller.dart';
+import '../../controllers/camera/camera_controller.dart';
 import '../../controllers/network/network_controller.dart';
 import '../../controllers/settings/settings_controller.dart';
 import '../../controllers/user/user_controller.dart';
 import '../../widgets/album/album_action_sheet.dart';
-import '../../widgets/common/empty_state.dart';
+import '../camera/camera_view.dart';
 import '../user/mypage_view.dart';
 import '../settings/settings_view.dart';
 
@@ -26,22 +27,29 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const _AlbumListScreen(),
-    const MyPageView(),
-    const SettingsView(),
-  ];
+  void _onTabSelected(int index) {
+    setState(() => _currentIndex = index);
+    if (index == 1 && Get.isRegistered<CameraController>()) {
+      Get.find<CameraController>().onTabResumed();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     _initializeControllers();
+
+    final screens = [
+      _AlbumListScreen(onGoToCamera: () => _onTabSelected(1)),
+      const CameraView(),
+      const MyPageView(),
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: Column(
         children: [
           const _OfflineBanner(),
-          Expanded(child: _screens[_currentIndex]),
+          Expanded(child: screens[_currentIndex]),
         ],
       ),
       floatingActionButton: _currentIndex == 0
@@ -58,7 +66,7 @@ class _HomeViewState extends State<HomeView> {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: _onTabSelected,
         selectedItemColor: AppColors.main,
         unselectedItemColor: AppColors.inactive,
         selectedFontSize: 10,
@@ -71,14 +79,14 @@ class _HomeViewState extends State<HomeView> {
             label: '앨범',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.camera_alt_outlined),
+            activeIcon: Icon(Icons.camera_alt),
+            label: '촬영',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: '마이페이지',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: '설정',
           ),
         ],
       ),
@@ -98,6 +106,8 @@ class _HomeViewState extends State<HomeView> {
 
   void _initializeControllers() {
     if (_currentIndex == 1) {
+      // 촬영 탭 — CameraController는 CameraBinding에서 등록
+    } else if (_currentIndex == 2) {
       if (!Get.isRegistered<UserRepository>()) {
         Get.lazyPut<UserRepository>(
               () => UserRepositoryImpl(
@@ -110,25 +120,6 @@ class _HomeViewState extends State<HomeView> {
       if (!Get.isRegistered<UserController>()) {
         Get.lazyPut(() => UserController(userRepository: Get.find()),
             fenix: true);
-      }
-    } else if (_currentIndex == 2) {
-      if (!Get.isRegistered<UserRepository>()) {
-        Get.lazyPut<UserRepository>(
-              () => UserRepositoryImpl(
-            remoteSource: MockUserRemoteSource(),
-            storageSource: FirebaseStorageSource(),
-          ),
-          fenix: true,
-        );
-      }
-      if (!Get.isRegistered<SettingsController>()) {
-        Get.lazyPut(
-              () => SettingsController(
-            userRepository: Get.find(),
-            localStorage: Get.find(),
-          ),
-          fenix: true,
-        );
       }
     }
   }
@@ -173,7 +164,9 @@ class _OfflineBanner extends GetView<NetworkController> {
 // ─────────────────────────────────────────────────────────────
 
 class _AlbumListScreen extends GetView<AlbumListController> {
-  const _AlbumListScreen();
+  const _AlbumListScreen({required this.onGoToCamera});
+
+  final VoidCallback onGoToCamera;
 
   @override
   Widget build(BuildContext context) {
@@ -221,13 +214,7 @@ class _AlbumListScreen extends GetView<AlbumListController> {
               }
 
               if (controller.albums.isEmpty) {
-                return EmptyState(
-                  icon: Icons.photo_album_outlined,
-                  message: '아직 앨범이 없어요',
-                  subMessage: '새로운 앨범을 만들어\n추억을 함께 저장해보세요',
-                  buttonLabel: '앨범 만들기',
-                  onButtonTap: () => Get.toNamed(Routes.createAlbum),
-                );
+                return _EmptyAlbumState(onGoToCamera: onGoToCamera);
               }
 
               return RefreshIndicator(
@@ -236,8 +223,6 @@ class _AlbumListScreen extends GetView<AlbumListController> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                   children: [
-                    // 앨범 코드로 참여하기
-                    _JoinButton(),
                     const SizedBox(height: 36),
 
                     // 카테고리 섹션
@@ -707,5 +692,178 @@ class _RecentAlbumCard extends StatelessWidget {
         ),
       );
     }); // Obx
+  }
+}
+// ─────────────────────────────────────────────────────────────
+// 앨범 없음 빈 상태
+// ─────────────────────────────────────────────────────────────
+
+class _EmptyAlbumState extends StatelessWidget {
+  const _EmptyAlbumState({required this.onGoToCamera});
+
+  final VoidCallback onGoToCamera;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '아직 추억이 시작되지 않았어요',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              '사진을 찍거나 새로운 앨범을 만들어\n소중한 순간을 함께 간직해보세요.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: onGoToCamera,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.main,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: const Icon(Icons.photo_camera_rounded, size: 20),
+                label: const Text(
+                  '사진 찍으러 가기',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Row(
+              children: [
+                Expanded(child: Divider(color: AppColors.divider)),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    '또는',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                Expanded(child: Divider(color: AppColors.divider)),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _EmptyActionCard(
+              icon: Icons.add_photo_alternate_outlined,
+              title: '새 앨범 만들기',
+              subtitle: '빈 앨범부터 시작해요',
+              onTap: () => Get.toNamed(Routes.createAlbum),
+            ),
+            const SizedBox(height: 12),
+            _EmptyActionCard(
+              icon: Icons.qr_code_rounded,
+              title: '앨범 코드로 참여하기',
+              subtitle: '친구의 앨범에 함께 참여해요',
+              onTap: () => Get.toNamed(Routes.guestEntry),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyActionCard extends StatelessWidget {
+  const _EmptyActionCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppColors.cardBg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.cardBorder),
+          boxShadow: const [
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: AppColors.mainLight,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 22, color: AppColors.main),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right,
+                size: 18, color: AppColors.textSecondary),
+          ],
+        ),
+      ),
+    );
   }
 }

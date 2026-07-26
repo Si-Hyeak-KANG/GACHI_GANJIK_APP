@@ -149,6 +149,30 @@ class MyPageView extends GetView<UserController> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
+                          onPressed: () => Get.toNamed(Routes.settings),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.textPrimary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              side: const BorderSide(color: AppColors.divider),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            '설정',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
                           onPressed: () => Get.find<AuthController>().logout(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFFFEBEE),

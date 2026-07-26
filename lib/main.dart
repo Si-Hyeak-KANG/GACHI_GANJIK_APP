@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -10,6 +11,11 @@ import 'core/storage/secure_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 앱 전체 세로 고정 (카메라 촬영 방향은 센서로 별도 처리)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
 
   // Firebase 초기화
   await Firebase.initializeApp(

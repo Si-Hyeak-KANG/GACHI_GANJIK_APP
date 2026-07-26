@@ -78,40 +78,12 @@ class AlbumMenuSheet extends StatelessWidget {
           const SizedBox(height: 8),
           const Divider(height: 1, color: AppColors.divider),
 
-          // 공유하기 (OWNER/ADMIN)
-          if (album.albumRole.canManage) ...[
-            _MenuItem(
-              icon: Icons.share,
-              title: '앨범 공유하기',
-              onTap: () {
-                Get.back();
-                showDialog(
-                  context: context,
-                  builder: (_) => AlbumShareDialog(album: album),
-                );
-              },
-            ),
-            const Divider(height: 1, color: AppColors.divider),
-          ],
-
-          // 커버 사진 등록 (OWNER/ADMIN)
-          if (album.albumRole.canManage) ...[
-            _MenuItem(
-              icon: Icons.image_outlined,
-              title: '커버 사진 등록',
-              onTap: () {
-                Get.back();
-                Get.find<AlbumDetailController>().pickCoverImage();
-              },
-            ),
-            const Divider(height: 1, color: AppColors.divider),
-          ],
-
           // 앨범 정보 수정 (OWNER/ADMIN)
           if (album.albumRole.canManage) ...[
             _MenuItem(
               icon: Icons.edit_outlined,
               title: '앨범 정보 수정',
+              subtitle: '제목, 기간, 설명, 썸네일 수정',
               onTap: () {
                 Get.back();
                 Get.toNamed(Routes.editAlbum, arguments: {'album': album});
@@ -120,11 +92,12 @@ class AlbumMenuSheet extends StatelessWidget {
             const Divider(height: 1, color: AppColors.divider),
           ],
 
-          // 멤버 관리 (OWNER/ADMIN)
+          // 참여 인원 관리 (OWNER/ADMIN)
           if (album.albumRole.canManage) ...[
             _MenuItem(
               icon: Icons.people_outline,
-              title: '멤버 관리',
+              title: '참여 인원 관리',
+              subtitle: '참여 인원 추가 및 권한 설정',
               onTap: () {
                 Get.back();
                 _showMemberSheet(context);
@@ -133,26 +106,44 @@ class AlbumMenuSheet extends StatelessWidget {
             const Divider(height: 1, color: AppColors.divider),
           ],
 
-          // 사진 전체 다운로드
+          // 앨범 공유 및 초대
           _MenuItem(
-            icon: Icons.download,
-            title: '사진 전체 다운로드',
-            subtitle: '준비 중',
+            icon: Icons.share_outlined,
+            title: '앨범 공유 및 초대',
+            subtitle: '앨범 코드 및 QR 확인',
             onTap: () {
               Get.back();
-              Get.snackbar('준비 중', '사진 전체 다운로드 기능은 곧 제공될 예정입니다',
+              showDialog(
+                context: context,
+                builder: (_) => AlbumShareDialog(album: album),
+              );
+            },
+          ),
+
+          const Divider(height: 1, color: AppColors.divider),
+
+          // 사진 다운로드
+          _MenuItem(
+            icon: Icons.download_outlined,
+            title: '사진 다운로드',
+            onTap: () {
+              Get.back();
+              Get.snackbar('준비 중', '사진 다운로드 기능은 곧 제공될 예정입니다',
                   snackPosition: SnackPosition.BOTTOM);
             },
           ),
 
           const Divider(height: 1, color: AppColors.divider),
 
-          // 삭제 / 나가기
+          // 앨범 삭제 / 나가기
           _MenuItem(
             icon: album.albumRole.canDelete
                 ? Icons.delete_outline
                 : Icons.logout,
             title: album.albumRole.canDelete ? '앨범 삭제' : '앨범 나가기',
+            subtitle: album.albumRole.canDelete
+                ? '앨범과 모든 데이터를 삭제합니다'
+                : null,
             isDestructive: true,
             onTap: () {
               Get.back();

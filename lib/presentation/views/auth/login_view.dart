@@ -42,8 +42,8 @@ class _LoginViewState extends State<LoginView> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
-                        'assets/images/logo.png',
-                        width: 220,
+                        'assets/images/logo2.png',
+                        width: 150,
                       ),
                       const Text(
                         'MOWA',
@@ -66,7 +66,6 @@ class _LoginViewState extends State<LoginView> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16,),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
                 child: Column(

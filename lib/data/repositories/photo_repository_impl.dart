@@ -53,11 +53,11 @@ class PhotoRepositoryImpl implements PhotoRepository {
         await _localSource.savePhoto(dto);
       }
       final photos = dtos.map((dto) => dto.toEntity()).toList();
-      return _groupPhotosByDate(photos);
+      return _groupPhotosByMoment(photos);
     } catch (e, st) {
       final dtos = await _localSource.getLocalPhotos(albumId);
       final photos = dtos.map((dto) => dto.toEntity()).toList();
-      return _groupPhotosByDate(photos);
+      return _groupPhotosByMoment(photos);
     }
   }
 
@@ -67,11 +67,12 @@ class PhotoRepositoryImpl implements PhotoRepository {
     required File imageFile,
     String? message,
     required String photoDate,
+    String? momentId,
   }) async {
     final networkController = Get.find<NetworkController>();
 
     if (!networkController.isConnected.value) {
-      return await _addToUploadQueue(albumId, imageFile, message, photoDate);
+      return await _addToUploadQueue(albumId, imageFile, message, photoDate, momentId);
     }
 
     const useRealApi = bool.fromEnvironment('USE_REAL_API', defaultValue: false);
@@ -90,6 +91,7 @@ class PhotoRepositoryImpl implements PhotoRepository {
       thumbnailUrl: thumbnailUrl,
       message: message,
       photoDate: photoDate,
+      momentId: momentId,
     );
 
     final dto = await _remoteSource.uploadPhoto(request);
@@ -119,22 +121,39 @@ class PhotoRepositoryImpl implements PhotoRepository {
 
   // ========== Private ==========
 
-  List<Moment> _groupPhotosByDate(List<Photo> photos) {
+  /// 업로드 배치 단위로 그룹화.
+  /// momentId(서버 미지원 시 null)가 없으면, 같은 배치가 공유하는
+  /// (업로더 + 날짜 + 추억 메시지)로 묶는다. 메시지가 없으면 업로더+날짜로 묶는다.
+  List<Moment> _groupPhotosByMoment(List<Photo> photos) {
     final grouped = <String, List<Photo>>{};
     for (final photo in photos) {
-      grouped.putIfAbsent(photo.photoDate, () => []).add(photo);
+      grouped.putIfAbsent(_momentKey(photo), () => []).add(photo);
     }
 
-    final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
-
-    return sortedKeys.map((date) {
-      final datePhotos = grouped[date]!;
+    final moments = grouped.values.map((batch) {
+      batch.sort((a, b) => a.createdAt.compareTo(b.createdAt)); // 업로드 순
       return Moment(
-        date: date,
-        photos: datePhotos,
-        contributors: datePhotos.map((p) => p.uploaderNickname).toSet().toList(),
+        date: batch.first.photoDate,
+        photos: batch,
+        contributors: batch.map((p) => p.uploaderNickname).toSet().toList(),
       );
     }).toList();
+
+    // 최신 배치 우선 정렬
+    moments.sort((a, b) =>
+        b.photos.first.createdAt.compareTo(a.photos.first.createdAt));
+    return moments;
+  }
+
+  /// 업로드 배치 식별 키
+  String _momentKey(Photo p) {
+    final id = p.momentId;
+    if (id != null && id.isNotEmpty) return id;
+    final msg = p.message?.trim();
+    if (msg != null && msg.isNotEmpty) {
+      return 'msg|${p.uploaderId}|${p.photoDate}|$msg';
+    }
+    return 'nomsg|${p.uploaderId}|${p.photoDate}';
   }
 
   Future<Photo> _addToUploadQueue(
@@ -142,6 +161,7 @@ class PhotoRepositoryImpl implements PhotoRepository {
       File imageFile,
       String? message,
       String photoDate,
+      String? momentId,
       ) async {
     final now = DateTime.now();
     final tempId = 'temp-${now.millisecondsSinceEpoch}';
@@ -169,6 +189,7 @@ class PhotoRepositoryImpl implements PhotoRepository {
     return Photo(
       id: tempId,
       albumId: albumId,
+      momentId: momentId,
       imageUrl: imageFile.path,
       thumbnailUrl: imageFile.path,
       message: message,

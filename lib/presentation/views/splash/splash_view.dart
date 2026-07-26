@@ -24,11 +24,13 @@ class _SplashViewState extends State<SplashView>
   }
 
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(milliseconds: 2500));
+    final results = await Future.wait([
+      Future.delayed(const Duration(milliseconds: 3500)),
+      Get.find<AuthRepository>().isLoggedIn(),
+    ]);
+    if (!mounted) return;
 
-    final authRepository = Get.find<AuthRepository>();
-    final isLoggedIn = await authRepository.isLoggedIn();
-
+    final isLoggedIn = results[1] as bool;
     Get.offAllNamed(isLoggedIn ? Routes.home : Routes.login);
   }
 
@@ -50,8 +52,8 @@ class _SplashViewState extends State<SplashView>
             children: [
               Lottie.asset(
                 'assets/lottie/move_logo.json',
-                width: 220,
-                height: 220,
+                width: 280,
+                height: 280,
                 fit: BoxFit.contain,
                 controller: _lottieController,
                 onLoaded: (composition) {

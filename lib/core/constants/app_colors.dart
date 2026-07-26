@@ -3,21 +3,40 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const Color main = Color(0xFFEF5F18);       // 브랜드 메인 코랄
+  // Brand
+  static const Color main = Color(0xFFEF5F18);
+  static const Color mainDark = Color(0xFFD85012);
+  static const Color mainLight = Color(0xFFFFF3EF);
+  static const Color mainSoft = Color(0xFFFFE7DE);
 
-  static const Color mainLight = Color(0xFFFFF1EE);  // 코랄 기운이 아주 옅은 배경톤
+  // Background
+  static const Color bg = Color(0xFFFDFCF8);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceSecondary = Color(0xFFF8F6F2);
 
-  static const Color bg = Color(0xFFFDFCF8);         // 기본 배경 (화이트)
+  // Text
+  static const Color textPrimary = Color(0xFF232323);
+  static const Color textSecondary = Color(0xFF6E6E6E);
+  static const Color textHint = Color(0xFF9E9A94);
 
-  static const Color textPrimary = Color(0xFF232323);   // 약간 부드럽게 조정 (완전 블랙보다 고급스러움)
+  // Border
+  static const Color divider = Color(0xFFEAE6DE);
+  static const Color border = Color(0xFFF0ECE5);
 
-  static const Color textSecondary = Color(0xFF6E6E6E); // 너무 차갑지 않게 톤 다운
-
-  static const Color inactive = Color(0xFFE3E3E3);      // 비활성은 약간 더 따뜻하게
-
+  // Card
   static const Color cardBg = Color(0xFFFFFFFF);
+  static const Color cardBorder = Color(0xFFF2EEE8);
 
-  static const Color divider = Color(0xFFEAE6DE);       // 코랄 기운 살짝 포함
-
+  // Status
+  static const Color inactive = Color(0xFFE3E3E3);
+  static const Color success = Color(0xFF2DB46A);
+  static const Color warning = Color(0xFFF6B23C);
   static const Color error = Color(0xFFD64541);
+
+  // Shadow
+  static const Color shadow = Color(0x14000000);
+  static const Color shadowStrong = Color(0x22000000);
+
+  // Glass
+  static const Color glass = Color(0xEFFFFFFF);
 }

@@ -1,7 +1,6 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../domain/entities/album_member.dart';
 import '../../../domain/entities/moment.dart';
 import '../../../domain/repositories/album_repository.dart';
 import '../../../domain/repositories/photo_repository.dart';
@@ -23,7 +22,8 @@ class AlbumDetailController extends GetxController {
 
   final RxList<Moment> moments = <Moment>[].obs;
   final RxBool isLoading = false.obs;
-  final RxBool isUploading = false.obs;
+  final RxList<AlbumMember> members = <AlbumMember>[].obs;
+  final RxBool isMembersLoading = false.obs;
 
   final _picker = ImagePicker();
 
@@ -31,11 +31,11 @@ class AlbumDetailController extends GetxController {
   void onInit() {
     super.onInit();
     fetchMoments();
+    fetchMembers();
   }
 
   @override
   void onClose() {
-    // 앨범 상세에서 나갈 때 홈 목록 갱신 → 최신순 재정렬
     _refreshAlbumList();
     super.onClose();
   }
@@ -48,26 +48,33 @@ class AlbumDetailController extends GetxController {
     } on NetworkException catch (e) {
       Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
     } catch (_) {
-      Get.snackbar('오류', '사진을 불러오지 못했습니다', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('오류', '사진을 불러오지 못했습니다',
+          snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
     }
   }
 
+  Future<void> fetchMembers() async {
+    isMembersLoading.value = true;
+    try {
+      final result = await _albumRepository.getMembers(albumId);
+      members.assignAll(result);
+    } on NetworkException catch (e) {
+      Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
+    } catch (_) {
+      // 멤버 조회 실패는 silent
+    } finally {
+      isMembersLoading.value = false;
+    }
+  }
+
   // ── 커버 사진 등록 ──────────────────────────────
   Future<void> pickCoverImage() async {
-    final image = await _picker.pickImage(
-      source: ImageSource.gallery, // 또는 camera
-    );
+    final image = await _picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
-
-    isUploading.value = true;
-    try {
-      Get.snackbar('준비 중', '커버 사진 등록은 앨범 수정 API 연동 후 지원됩니다',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isUploading.value = false;
-    }
+    Get.snackbar('준비 중', '커버 사진 등록은 앨범 수정 API 연동 후 지원됩니다',
+        snackPosition: SnackPosition.BOTTOM);
   }
 
   // ── 앨범 삭제 (OWNER만) ──────────────────────────
@@ -75,10 +82,13 @@ class AlbumDetailController extends GetxController {
     try {
       await _albumRepository.deleteAlbum(albumId);
       if (Get.isRegistered<AlbumListController>()) {
-        Get.find<AlbumListController>().albums.removeWhere((a) => a.id == albumId);
+        Get.find<AlbumListController>()
+            .albums
+            .removeWhere((a) => a.id == albumId);
       }
       Get.until((route) => route.settings.name == Routes.home);
-      Get.snackbar('삭제 완료', '앨범이 삭제되었습니다', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('삭제 완료', '앨범이 삭제되었습니다',
+          snackPosition: SnackPosition.BOTTOM);
     } on NetworkException catch (e) {
       Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
     }
@@ -89,103 +99,21 @@ class AlbumDetailController extends GetxController {
     try {
       await _albumRepository.leaveAlbum(albumId);
       if (Get.isRegistered<AlbumListController>()) {
-        Get.find<AlbumListController>().albums.removeWhere((a) => a.id == albumId);
+        Get.find<AlbumListController>()
+            .albums
+            .removeWhere((a) => a.id == albumId);
       }
       Get.until((route) => route.settings.name == Routes.home);
-      Get.snackbar('완료', '앨범에서 나왔습니다', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('완료', '앨범에서 나왔습니다',
+          snackPosition: SnackPosition.BOTTOM);
     } on NetworkException catch (e) {
       Get.snackbar('오류', e.message, snackPosition: SnackPosition.BOTTOM);
     }
   }
 
-  // ── 사진 업로드 ──────────────────────────────────
-  Future<void> pickFromCamera() async {
-    final image = await _picker.pickImage(
-      source: ImageSource.camera, // 또는 camera
-    );
-    if (image != null) _showMessageDialog(File(image.path));
-  }
-
-  Future<void> pickFromGallery() async {
-    final image = await _picker.pickImage(
-      source: ImageSource.gallery, // 또는 camera
-    );
-    if (image != null) _showMessageDialog(File(image.path));
-  }
-
-  void _showMessageDialog(File imageFile) {
-    Get.dialog(
-      _MessageInputDialog(onSubmit: (message) => _uploadPhoto(imageFile, message)),
-      barrierDismissible: false,
-    );
-  }
-
-  Future<void> _uploadPhoto(File imageFile, String? message) async {
-    Get.back();
-    isUploading.value = true;
-    try {
-      final now = DateTime.now();
-      final photoDate =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-
-      await _photoRepository.uploadPhoto(
-        albumId: albumId,
-        imageFile: imageFile,
-        message: message,
-        photoDate: photoDate,
-      );
-
-      await fetchMoments();
-      _refreshAlbumList();
-      Get.snackbar('업로드 완료', '사진이 추가되었습니다', snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      Get.snackbar('오류', '사진 업로드에 실패했습니다', snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isUploading.value = false;
-    }
-  }
-
   void _refreshAlbumList() {
     if (Get.isRegistered<AlbumListController>()) {
-      Get.find<AlbumListController>().fetchAlbums();
+      Get.find<AlbumListController>().fetchAlbums(silent: true);
     }
-  }
-}
-
-class _MessageInputDialog extends StatelessWidget {
-  final Function(String?) onSubmit;
-
-  const _MessageInputDialog({required this.onSubmit});
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = TextEditingController();
-
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('메시지 추가 (선택)'),
-      content: TextField(
-        controller: controller,
-        decoration: const InputDecoration(
-          hintText: '이 순간에 대한 메시지를 남겨보세요',
-          border: OutlineInputBorder(),
-        ),
-        maxLines: 3,
-        maxLength: 100,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => onSubmit(null),
-          child: const Text('건너뛰기'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            final text = controller.text.trim();
-            onSubmit(text.isEmpty ? null : text);
-          },
-          child: const Text('업로드'),
-        ),
-      ],
-    );
   }
 }
