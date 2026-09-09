@@ -8,12 +8,11 @@ class SignupView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<SignupController>();
-
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
         child: Obx(() {
+          final controller = Get.find<SignupController>();
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 320),
             transitionBuilder: (child, animation) => FadeTransition(
@@ -28,14 +27,14 @@ class SignupView extends StatelessWidget {
             ),
             child: switch (controller.currentStep.value) {
               SignupStep.emailVerification => const _EmailVerificationStep(
-                  key: ValueKey('email'),
-                ),
+                key: ValueKey('email'),
+              ),
               SignupStep.userInfo => const _UserInfoStep(
-                  key: ValueKey('userInfo'),
-                ),
+                key: ValueKey('userInfo'),
+              ),
               SignupStep.complete => const _CompleteStep(
-                  key: ValueKey('complete'),
-                ),
+                key: ValueKey('complete'),
+              ),
             },
           );
         }),
@@ -124,12 +123,11 @@ class _EmailVerificationStep extends StatelessWidget {
               children: [
                 Expanded(
                   child: Obx(() => _InputField(
-                        // ← Obx 추가
-                        controller: c.emailController,
-                        hint: 'email@example.com',
-                        keyboardType: TextInputType.emailAddress,
-                        enabled: !c.isCodeSent.value,
-                      )),
+                    controller: c.emailController,
+                    hint: 'email@example.com',
+                    keyboardType: TextInputType.emailAddress,
+                    enabled: !c.isCodeSent.value,
+                  )),
                 ),
                 const SizedBox(width: 10),
                 Obx(() {
@@ -139,10 +137,8 @@ class _EmailVerificationStep extends StatelessWidget {
                   final label = !sent
                       ? '인증하기'
                       : cooldown > 0
-                          ? '재발송 ${cooldown}초'
-                          : '재발송';
-                  // 인증하기: 이메일 1자 이상 입력 시 활성
-                  // 재발송: 쿨다운 0일 때만 활성
+                      ? '재발송 ${cooldown}초'
+                      : '재발송';
                   final onTap = sent
                       ? (c.canResend ? c.sendVerificationCode : null)
                       : (hasEmail ? c.sendVerificationCode : null);
@@ -196,9 +192,9 @@ class _EmailVerificationStep extends StatelessWidget {
                       Obx(() {
                         final remaining = c.codeExpireCountdown.value;
                         final mins =
-                            (remaining ~/ 60).toString().padLeft(2, '0');
+                        (remaining ~/ 60).toString().padLeft(2, '0');
                         final secs =
-                            (remaining % 60).toString().padLeft(2, '0');
+                        (remaining % 60).toString().padLeft(2, '0');
                         final expired = c.isCodeExpired;
                         return Text(
                           expired ? '인증코드가 만료되었습니다' : '남은 시간  $mins:$secs',
@@ -280,19 +276,20 @@ class _UserInfoStep extends StatelessWidget {
               children: [
                 Expanded(
                   child: Obx(() => _InputField(
-                        controller: c.nicknameController,
-                        hint: '어떻게 불러드릴까요?',
-                        enabled: c.userInfoPhase.value == 0,
-                      )),
+                    controller: c.nicknameController,
+                    hint: '어떻게 불러드릴까요?',
+                    enabled: c.userInfoPhase.value == 0,
+                  )),
                 ),
                 const SizedBox(width: 10),
                 Obx(() => _SmallButton(
-                      label: c.userInfoPhase.value > 0 ? '✓' : '다음',
-                      isLoading: false,
-                      onTap:
-                          c.userInfoPhase.value == 0 ? c.confirmNickname : null,
-                      isDone: c.userInfoPhase.value > 0,
-                    )),
+                  label: c.userInfoPhase.value > 0 ? '수정' : '다음',
+                  isLoading: false,
+                  onTap: c.userInfoPhase.value == 0
+                      ? c.confirmNickname
+                      : c.editNickname,
+                  isDone: c.userInfoPhase.value > 0,
+                )),
               ],
             ),
           ),
@@ -314,27 +311,30 @@ class _UserInfoStep extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Obx(() => _InputField(
-                                  controller: c.passwordController,
-                                  hint: '비밀번호를 입력해주세요',
-                                  obscureText: c.obscurePassword.value,
-                                  enabled: c.userInfoPhase.value == 1,
-                                  suffixIcon: c.userInfoPhase.value == 1
-                                      ? _VisibilityToggle(
-                                          obscure: c.obscurePassword.value,
-                                          onTap: c.togglePasswordVisibility,
-                                        )
-                                      : null,
-                                )),
+                              controller: c.passwordController,
+                              hint: '비밀번호를 입력해주세요',
+                              obscureText: c.obscurePassword.value,
+                              enabled: c.userInfoPhase.value == 1,
+                              suffixIcon: c.userInfoPhase.value == 1
+                                  ? _VisibilityToggle(
+                                obscure: c.obscurePassword.value,
+                                onTap: c.togglePasswordVisibility,
+                              )
+                                  : null,
+                            )),
                           ),
                           const SizedBox(width: 10),
                           Obx(() => _SmallButton(
-                                label: c.userInfoPhase.value > 1 ? '✓' : '다음',
-                                isLoading: false,
-                                onTap: c.userInfoPhase.value == 1
-                                    ? c.confirmPassword
-                                    : null,
-                                isDone: c.userInfoPhase.value > 1,
-                              )),
+                            label:
+                            c.userInfoPhase.value > 1 ? '수정' : '다음',
+                            isLoading: false,
+                            onTap: c.userInfoPhase.value == 1
+                                ? c.confirmPassword
+                                : (c.userInfoPhase.value > 1
+                                ? c.editPassword
+                                : null),
+                            isDone: c.userInfoPhase.value > 1,
+                          )),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -364,21 +364,21 @@ class _UserInfoStep extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Obx(() => _InputField(
-                              controller: c.passwordConfirmController,
-                              hint: '비밀번호를 다시 입력해주세요',
-                              obscureText: c.obscurePasswordConfirm.value,
-                              suffixIcon: _VisibilityToggle(
-                                obscure: c.obscurePasswordConfirm.value,
-                                onTap: c.togglePasswordConfirmVisibility,
-                              ),
-                            )),
+                          controller: c.passwordConfirmController,
+                          hint: '비밀번호를 다시 입력해주세요',
+                          obscureText: c.obscurePasswordConfirm.value,
+                          suffixIcon: _VisibilityToggle(
+                            obscure: c.obscurePasswordConfirm.value,
+                            onTap: c.togglePasswordConfirmVisibility,
+                          ),
+                        )),
                       ),
                       const SizedBox(width: 10),
                       Obx(() => _SmallButton(
-                            label: '완료',
-                            isLoading: c.isLoading.value,
-                            onTap: c.confirmPasswordAndSignup,
-                          )),
+                        label: '완료',
+                        isLoading: c.isLoading.value,
+                        onTap: c.confirmPasswordAndSignup,
+                      )),
                     ],
                   ),
                 ),
@@ -513,7 +513,7 @@ class _InputField extends StatelessWidget {
         filled: true,
         fillColor: enabled ? AppColors.cardBg : AppColors.divider,
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.divider),
@@ -560,20 +560,20 @@ class _SmallButton extends StatelessWidget {
         ),
         child: isLoading
             ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Colors.white,
+          ),
+        )
             : Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

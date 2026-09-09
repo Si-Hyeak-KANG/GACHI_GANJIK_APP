@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'firebase_options.dart';
 import 'core/bindings/initial_binding.dart';
 import 'core/constants/app_colors.dart';
@@ -16,6 +17,11 @@ void main() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
+
+  // Kakao SDK 초기화 (네이티브 앱 키는 env.json으로 주입)
+  KakaoSdk.init(
+    nativeAppKey: const String.fromEnvironment('KAKAO_NATIVE_APP_KEY'),
+  );
 
   // Firebase 초기화
   await Firebase.initializeApp(

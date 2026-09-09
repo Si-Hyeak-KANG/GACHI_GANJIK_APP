@@ -19,6 +19,27 @@ allprojects {
     }
 }
 
+// AGP 8+ 에서 namespace 미지정 옛 플러그인(flutter_naver_login 등) 대응
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            project.android {
+                if (namespace == null) {
+                    def manifestFile = project.android.sourceSets.main.manifest.srcFile
+                    if (manifestFile.exists()) {
+                        def pkg = new XmlSlurper()
+                                .parse(manifestFile)
+                                .@package.text()
+                        if (pkg != null && !pkg.isEmpty()) {
+                            namespace pkg
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"

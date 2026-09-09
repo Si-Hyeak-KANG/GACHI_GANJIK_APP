@@ -41,6 +41,33 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.googleusercontent.apps.573789200095-o8a5rt5q1gn4rqjku7vvca51rs0ravil</string>
+          <string>kakao18d5491dcb17889f5104e34baebc078f</string>
+          <string>gachiganjiknaver</string>                                <!-- Naver -->
+        </array>
+      </dict>
+    </array>
+
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>kakaokompassauth</string>
+      <string>kakaotalk</string>
+      <string>kakaolink</string>
+      <string>naversearchapp</string>
+      <string>naversearchthirdlogin</string>
+    </array>
+
+    <key>NidUrlScheme</key><string>gachiganjiknaver</string>
+    <key>NidClientID</key><string>DC8TqAJ2FusU8jkXv9hs</string>
+    <key>NidClientSecret</key><string>$(NID_CLIENT_SECRET)</string>
+    <key>NidAppName</key><string>모와</string>
+
+    <key>GIDClientID</key><string>573789200095-o8a5rt5q1gn4rqjku7vvca51rs0ravil.apps.googleusercontent.com</string>
 
 	<!-- 카메라 권한 -->
     <key>NSCameraUsageDescription</key>

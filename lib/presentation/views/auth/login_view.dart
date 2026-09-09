@@ -71,28 +71,34 @@ class _LoginViewState extends State<LoginView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Google
                     Obx(() => _SocialLoginButton(
                       icon: Icons.g_mobiledata_rounded,
+                      iconColor: Colors.red,
                       label: 'Google로 계속하기',
                       onTap: _controller.isLoading.value
                           ? null
                           : _controller.googleLogin,
-                      iconColor: Colors.red,
                     )),
                     const SizedBox(height: 14),
-                    _SocialLoginButton(
-                      label: 'Kakao로 계속하기',
-                      onTap: null,
-                      iconColor: const Color(0xFF3C1E1E),
+                    // Kakao
+                    Obx(() => _SocialLoginButton(
                       icon: Icons.chat_bubble,
-                    ),
+                      iconColor: const Color(0xFF3C1E1E),
+                      label: 'Kakao로 계속하기',
+                      onTap: _controller.isLoading.value
+                          ? null
+                          : _controller.kakaoLogin,
+                    )),
                     const SizedBox(height: 14),
-                    _SocialLoginButton(
-                      label: 'Apple로 계속하기',
-                      onTap: null,
-                      iconColor: Colors.black,
-                      icon: Icons.apple,
-                    ),
+                    // Naver
+                    Obx(() => _SocialLoginButton(
+                      leading: _NaverBadge(),
+                      label: 'Naver로 계속하기',
+                      onTap: _controller.isLoading.value
+                          ? null
+                          : _controller.naverLogin,
+                    )),
                     const SizedBox(height: 14),
                     GestureDetector(
                       onTap: () => Get.toNamed(Routes.guestEntry),
@@ -342,17 +348,42 @@ class _EmailLoginSheetState extends State<_EmailLoginSheet> {
   }
 }
 
+class _NaverBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 24,
+      height: 24,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFF03C75A),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: const Text(
+        'N',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 14,
+        ),
+      ),
+    );
+  }
+}
+
 class _SocialLoginButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
-  final IconData icon;
+  final IconData? icon;
   final Color iconColor;
+  final Widget? leading;
 
   const _SocialLoginButton({
     required this.label,
     required this.onTap,
-    required this.icon,
-    required this.iconColor,
+    this.icon,
+    this.iconColor = Colors.black,
+    this.leading,
   });
 
   @override
@@ -377,13 +408,13 @@ class _SocialLoginButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 24, color: iconColor),
+            leading ?? Icon(icon, size: 24, color: iconColor),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 label,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,

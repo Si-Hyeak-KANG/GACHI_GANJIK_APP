@@ -23,6 +23,8 @@ build/
 # 🔥 Firebase (중요!)
 **/google-services.json
 **/GoogleService-Info.plist
+env.json
+android/gradle.properties
 
 # 🔐 서명 키 (매우 중요!)
 *.jks
@@ -65,5 +67,10 @@ build/
 *.iws
 
 # macOS
-.DS_Storelib/firebase_options.dart
+.DS_Store
+
 lib/firebase_options.dart
+
+android/app/src/main/res/values/strings.xml
+
+ios/Flutter/Secrets.xcconfig

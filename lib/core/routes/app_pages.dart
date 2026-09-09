@@ -25,6 +25,8 @@ import '../../presentation/views/album/category_album_list_view.dart';
 import '../../core/bindings/category_album_list_binding.dart';
 import '../../presentation/views/camera/camera_view.dart';
 import '../../core/bindings/camera_binding.dart';
+import '../../presentation/views/auth/social_onboarding_view.dart';
+import '../../core/bindings/social_onboarding_binding.dart';
 
 class AppPages {
   static const initial = Routes.splash;
@@ -53,6 +55,13 @@ class AppPages {
       name: Routes.signup,
       page: () => const SignupView(),
       binding: SignupBinding(),
+      transition: defaultTransition,
+      transitionDuration: transitionDuration,
+    ),
+    GetPage(
+      name: Routes.socialOnboarding,
+      page: () => const SocialOnboardingView(),
+      binding: SocialOnboardingBinding(),
       transition: defaultTransition,
       transitionDuration: transitionDuration,
     ),
@@ -133,6 +142,7 @@ class Routes {
   static const splash = '/splash';
   static const login = '/login';
   static const signup = '/signup';
+  static const socialOnboarding = '/social-onboarding';
   static const guestEntry = '/guest-entry';
   static const home = '/home';
   static const createAlbum = '/create-album';

@@ -4,6 +4,10 @@
 
 # 기본 명령어
 FLUTTER = fvm flutter
+DART = fvm dart
+
+# 소셜 로그인 키 등 환경변수 주입 (env.json 은 .gitignore 대상)
+ENV = --dart-define-from-file=env.json
 
 # ──────────────────────────────────────────
 # 실행
@@ -11,18 +15,18 @@ FLUTTER = fvm flutter
 
 ## Mock 데이터 기반 실행 (서버 불필요)
 mock:
-	$(FLUTTER) run
+	$(FLUTTER) run $(ENV)
 
 ## 실제 서버 연동 실행
 real:
-	$(FLUTTER) run --dart-define=USE_REAL_API=true
+	$(FLUTTER) run $(ENV) --dart-define=USE_REAL_API=true
 
-## 특정 기기 지정 실행 (make dev-mock device=<device-id>)
+## 특정 기기 지정 실행 (make mock-d device=<device-id>)
 mock-d:
-	$(FLUTTER) run -d $(device)
+	$(FLUTTER) run $(ENV) -d $(device)
 
 real-d:
-	$(FLUTTER) run -d $(device) --dart-define=USE_REAL_API=true
+	$(FLUTTER) run $(ENV) -d $(device) --dart-define=USE_REAL_API=true
 
 # ──────────────────────────────────────────
 # 빌드
@@ -30,23 +34,23 @@ real-d:
 
 ## Android APK (Mock)
 apk-mock:
-	$(FLUTTER) build apk
+	$(FLUTTER) build apk $(ENV)
 
 ## Android APK (Real)
 apk-real:
-	$(FLUTTER) build apk --dart-define=USE_REAL_API=true
+	$(FLUTTER) build apk $(ENV) --dart-define=USE_REAL_API=true
 
 ## Android App Bundle (Play Store)
 aab:
-	$(FLUTTER) build appbundle --dart-define=USE_REAL_API=true
+	$(FLUTTER) build appbundle $(ENV) --dart-define=USE_REAL_API=true
 
 ## iOS (Mock)
 ios-mock:
-	$(FLUTTER) build ios --no-codesign
+	$(FLUTTER) build ios $(ENV) --no-codesign
 
 ## iOS (Real)
 ios-real:
-	$(FLUTTER) build ios --no-codesign --dart-define=USE_REAL_API=true
+	$(FLUTTER) build ios $(ENV) --no-codesign --dart-define=USE_REAL_API=true
 
 # ──────────────────────────────────────────
 # 개발 도구
@@ -58,7 +62,7 @@ get:
 
 ## Isar 코드 생성
 gen:
-	$(FLUTTER) pub run build_runner build --delete-conflicting-outputs
+	$(DART) run build_runner build --delete-conflicting-outputs
 
 ## 클린 빌드
 clean:
@@ -69,7 +73,7 @@ clean:
 reset:
 	$(FLUTTER) clean
 	$(FLUTTER) pub get
-	$(FLUTTER) pub run build_runner build --delete-conflicting-outputs
+	$(DART) run build_runner build --delete-conflicting-outputs
 
 ## 정적 분석
 analyze:

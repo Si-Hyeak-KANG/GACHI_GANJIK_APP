@@ -6,8 +6,10 @@ class ApiConstants {
   // iOS 시뮬레이터:     http://localhost:8080
   // 실제 기기(Mac IP):  http://192.168.x.x:8080
   // 운영 서버:          https://api.gachiganjik.com
-   // static const String _host = 'http://localhost:8080';
-  static const String _host = 'http://172.30.1.19:8080';
+  //:
+  // ;
+  // ㄷstatic const String _host = 'http://localhost:8080';
+   static const String _host = 'http://192.168.219.187:8080';
   static const String baseUrl = '$_host/api/v1';
 
   // ─────────────────────────────────────────
@@ -18,6 +20,11 @@ class ApiConstants {
   static const String logout = '/auth/logout';
   static const String tokenRefresh = '/auth/token/refresh';
   static const String googleLogin = '/auth/social/google';
+  static const String kakaoLogin = '/auth/social/kakao';
+  static const String naverLogin = '/auth/social/naver';
+  static const String socialComplete = '/auth/social/complete';
+  static const String socialLink = '/auth/social/link';
+  static const String emailLink = '/auth/link/email';
   static const String withdraw = '/auth/withdraw';
 
   // ─────────────────────────────────────────

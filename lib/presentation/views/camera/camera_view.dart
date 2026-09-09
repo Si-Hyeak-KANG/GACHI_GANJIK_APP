@@ -10,7 +10,6 @@ import 'package:get/get.dart';
 import 'package:image/image.dart' as img;
 import 'package:native_device_orientation/native_device_orientation.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/routes/app_pages.dart';
 import '../../controllers/camera/camera_controller.dart';
 
 class CameraView extends GetView<CameraController> {

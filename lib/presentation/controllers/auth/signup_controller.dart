@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../domain/repositories/auth_repository.dart';
 import '../../../core/network/network_exception.dart';
 import '../../../core/routes/app_pages.dart';
+import '../../widgets/common/account_link_dialog.dart';
 import 'auth_controller.dart';
 
 enum SignupStep { emailVerification, userInfo, complete }
@@ -116,6 +117,11 @@ class SignupController extends GetxController {
       _startResendCooldown();
       _startExpireCountdown();
     } on NetworkException catch (e) {
+      // 이미 이메일 로그인 수단이 있는 순수 중복 → 인라인 안내만 (자동 이동 안 함)
+      if (e.errorCode == 'EMAIL_ALREADY_EXISTS') {
+        errorMessage.value = '이미 가입된 이메일입니다. 기존 방식으로 로그인해주세요.';
+        return;
+      }
       errorMessage.value = e.message;
     } catch (_) {
       errorMessage.value = '인증코드 발송에 실패했습니다';
@@ -228,6 +234,19 @@ class SignupController extends GetxController {
     userInfoPhase.value = 2;
   }
 
+  /// 완료된 비밀번호를 다시 수정 (비밀번호 확인 초기화 후 입력 단계로 되돌림)
+  void editPassword() {
+    errorMessage.value = '';
+    passwordConfirmController.clear();
+    userInfoPhase.value = 1;
+  }
+
+  /// 완료된 닉네임을 다시 수정
+  void editNickname() {
+    errorMessage.value = '';
+    userInfoPhase.value = 0;
+  }
+
   /// 비밀번호 확인 완료 → 회원가입 API 호출
   Future<void> confirmPasswordAndSignup() async {
     final error = validatePasswordConfirm(passwordConfirmController.text);
@@ -242,14 +261,28 @@ class SignupController extends GetxController {
   Future<void> _signup() async {
     isLoading.value = true;
     try {
-      final user = await _authRepository.signup(
+      final outcome = await _authRepository.signup(
         emailController.text.trim(),
         passwordController.text,
         nicknameController.text.trim(),
       );
-      Get.find<AuthController>().onLoginSuccess(user);
-      currentStep.value = SignupStep.complete;
+      if (outcome.needsLink) {
+        // 동일 이메일이 다른 로그인 수단으로 이미 가입됨 → 연동 확인
+        showAccountLinkDialog(
+          maskedEmail: outcome.maskedEmail,
+          onLink: () => _linkEmail(outcome.linkTicket!),
+          onGoLogin: _goToLogin,
+        );
+      } else {
+        Get.find<AuthController>().onLoginSuccess(outcome.user!);
+        currentStep.value = SignupStep.complete;
+      }
     } on NetworkException catch (e) {
+      // 이미 이메일 로그인 수단이 있는 순수 중복 → 인라인 안내만 (자동 이동 안 함)
+      if (e.errorCode == 'EMAIL_ALREADY_EXISTS') {
+        errorMessage.value = '이미 가입된 이메일입니다.';
+        return;
+      }
       errorMessage.value = e.message;
     } catch (_) {
       errorMessage.value = '알 수 없는 오류가 발생했습니다';
@@ -257,6 +290,27 @@ class SignupController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  // 기존 계정에 이메일/비밀번호 수단 연동 (사용자가 입력한 비밀번호 재전송)
+  Future<void> _linkEmail(String linkTicket) async {
+    isLoading.value = true;
+    try {
+      final user = await _authRepository.linkEmailAccount(
+        linkTicket: linkTicket,
+        password: passwordController.text,
+      );
+      Get.find<AuthController>().onLoginSuccess(user);
+      currentStep.value = SignupStep.complete;
+    } on NetworkException catch (e) {
+      errorMessage.value = e.message;
+    } catch (_) {
+      errorMessage.value = '계정 연동에 실패했습니다';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _goToLogin() => Get.offAllNamed(Routes.login);
 
   // ─────────────────────────────────────────
   // STEP 3 액션

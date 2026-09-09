@@ -1,0 +1,5 @@
+<resources>
+    <string name="client_id"><NAVER_CLIENT_ID></string>
+    <string name="client_secret"><NAVER_CLIENT_SECRET></string>
+    <string name="client_name"><APP_DISPLAY_NAME></string>
+</resources>
