@@ -42,6 +42,8 @@ class NetworkException implements Exception {
     'ONLY_OWNER_CAN_PROMOTE': '앨범 소유자만 관리자를 지정할 수 있습니다',
     'CANNOT_CHANGE_OWNER_ROLE': '앨범 소유자의 역할은 변경할 수 없습니다',
     'CANNOT_PROMOTE_GUEST': 'GUEST는 관리자로 승격할 수 없습니다',
+    'OWNER_CANNOT_WITHDRAW':
+        '앨범 소유자(OWNER)로 있는 앨범이 있어 탈퇴할 수 없습니다. 먼저 다른 멤버에게 앨범 소유권을 이전해주세요',
     // 리소스 없음
     'ALBUM_NOT_FOUND': '앨범을 찾을 수 없습니다',
     'PHOTO_NOT_FOUND': '사진을 찾을 수 없습니다',

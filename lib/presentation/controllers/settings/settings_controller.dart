@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/network/network_exception.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../domain/repositories/user_repository.dart';
 import '../../controllers/auth/auth_controller.dart';
@@ -145,6 +146,12 @@ class SettingsController extends GetxController {
       Get.snackbar(
         '완료',
         '회원탈퇴가 완료되었습니다',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } on NetworkException catch (e) {
+      Get.snackbar(
+        '오류',
+        e.message,
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e) {
