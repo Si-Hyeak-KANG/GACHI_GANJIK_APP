@@ -250,28 +250,10 @@ class _CompactInfoOverlay extends GetView<PhotoDetailController> {
               ),
             ],
 
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Obx(() => _OutlinedIconButton(
-                  icon: controller.isLiked.value
-                      ? Icons.favorite
-                      : Icons.favorite_border,
-                  label: controller.likeCount.value.toString(),
-                  filled: controller.isLiked.value,
-                  onTap: controller.toggleLike,
-                )),
-                const SizedBox(width: 16),
-                _OutlinedIconButton(
-                  icon: Icons.chat_bubble_outline,
-                  label: controller.comments.isNotEmpty
-                      ? controller.comments.length.toString()
-                      : controller.currentPhoto.commentCount.toString(),
-                  onTap: controller.expandModal,
-                ),
-                const SizedBox(width: 16),
-                if (controller.canDownload)
+            if (controller.canDownload) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
                   Obx(() => _OutlinedIconButton(
                     icon: Icons.file_download_outlined,
                     label: '저장',
@@ -280,8 +262,9 @@ class _CompactInfoOverlay extends GetView<PhotoDetailController> {
                         : controller.saveImage,
                     isLoading: controller.isSavingImage.value,
                   )),
-              ],
-            ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -292,14 +275,12 @@ class _CompactInfoOverlay extends GetView<PhotoDetailController> {
 class _OutlinedIconButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  final bool filled;
   final VoidCallback? onTap;
   final bool isLoading;
 
   const _OutlinedIconButton({
     required this.icon,
     required this.label,
-    this.filled = false,
     this.onTap,
     this.isLoading = false,
   });
@@ -314,28 +295,27 @@ class _OutlinedIconButton extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.white, width: 1.5),
           borderRadius: BorderRadius.circular(20),
-          color: filled ? Colors.white : Colors.transparent,
+          color: Colors.transparent,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             isLoading
-                ? SizedBox(
+                ? const SizedBox(
               width: 18,
               height: 18,
               child: CircularProgressIndicator(
-                color: filled ? Colors.black : Colors.white,
+                color: Colors.white,
                 strokeWidth: 2,
               ),
             )
-                : Icon(icon, size: 18,
-                color: filled ? Colors.red : Colors.white),
+                : Icon(icon, size: 18, color: Colors.white),
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
-                color: filled ? Colors.black : Colors.white,
+                color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -350,9 +330,9 @@ class _ExpandedInfoSheet extends GetView<PhotoDetailController> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.3,
-      maxChildSize: 0.9,
+      initialChildSize: 0.4,
+      minChildSize: 0.25,
+      maxChildSize: 0.6,
       builder: (context, scrollController) {
         return GestureDetector(
           onVerticalDragUpdate: (details) {
@@ -363,21 +343,22 @@ class _ExpandedInfoSheet extends GetView<PhotoDetailController> {
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            child: Column(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(top: 12, bottom: 8),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.inactive,
-                    borderRadius: BorderRadius.circular(2),
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.inactive,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                ),
-                _PhotoInfo(),
-                const Divider(height: 1),
-                Expanded(child: _CommentSection(scrollController)),
-              ],
+                  _PhotoInfo(),
+                ],
+              ),
             ),
           ),
         );
@@ -423,20 +404,9 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
                     ],
                   ),
                 ),
-                Row(
-                  children: [
-                    _ActionButton(
-                      icon: controller.isLiked.value
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      label: controller.likeCount.value.toString(),
-                      color: controller.isLiked.value
-                          ? Colors.red
-                          : AppColors.textSecondary,
-                      onTap: controller.toggleLike,
-                    ),
-                    if (controller.canDownload) ...[
-                      const SizedBox(width: 16),
+                if (controller.canDownload)
+                  Row(
+                    children: [
                       _ActionButton(
                         icon: Icons.file_download_outlined,
                         label: '저장',
@@ -446,8 +416,7 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
                         isLoading: controller.isSavingImage.value,
                       ),
                     ],
-                  ],
-                ),
+                  ),
               ],
             ),
             if (photo.message != null && photo.message!.isNotEmpty) ...[
@@ -468,14 +437,12 @@ class _PhotoInfo extends GetView<PhotoDetailController> {
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color? color;
   final VoidCallback? onTap;
   final bool isLoading;
 
   const _ActionButton({
     required this.icon,
     required this.label,
-    this.color,
     this.onTap,
     this.isLoading = false,
   });
@@ -490,173 +457,23 @@ class _ActionButton extends StatelessWidget {
         child: Row(
           children: [
             isLoading
-                ? SizedBox(
+                ? const SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
-                    color: color ?? AppColors.textSecondary,
+                    color: AppColors.textSecondary,
                     strokeWidth: 2))
                 : Icon(icon, size: 20,
-                color: color ?? AppColors.textSecondary),
+                color: AppColors.textSecondary),
             const SizedBox(width: 4),
             Text(label,
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 13,
-                    color: color ?? AppColors.textSecondary,
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500)),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _CommentSection extends GetView<PhotoDetailController> {
-  final ScrollController scrollController;
-  const _CommentSection(this.scrollController);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Obx(() {
-            if (controller.isLoadingComments.value) {
-              return const Center(
-                  child: CircularProgressIndicator(color: AppColors.main));
-            }
-            if (controller.comments.isEmpty) {
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.chat_bubble_outline,
-                        size: 48, color: AppColors.inactive),
-                    SizedBox(height: 12),
-                    Text('첫 댓글을 남겨보세요',
-                        style: TextStyle(
-                            fontSize: 14, color: AppColors.textSecondary)),
-                  ],
-                ),
-              );
-            }
-            return ListView.separated(
-              controller: scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: controller.comments.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, index) {
-                final comment = controller.comments[index];
-                final isMine =
-                    comment.nickname == controller.currentUserNickname;
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      radius: 14,
-                      backgroundColor: comment.isMine ? AppColors.mainLight : AppColors.cardBg,
-                      backgroundImage: comment.profileImageUrl != null
-                          ? CachedNetworkImageProvider(comment.profileImageUrl!)
-                          : null,
-                      child: comment.profileImageUrl == null
-                          ? Text(comment.nickname.isNotEmpty ? comment.nickname[0] : '?',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: comment.isMine ? AppColors.main : AppColors.textSecondary,
-                          ))
-                          : null,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(comment.nickname,
-                              style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary)),
-                          const SizedBox(height: 2),
-                          Text(comment.content,
-                              style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textPrimary,
-                                  height: 1.3)),
-                        ],
-                      ),
-                    ),
-                    if (comment.isMine)
-                      IconButton(
-                        icon: const Icon(Icons.close,
-                            size: 18, color: AppColors.textSecondary),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () => controller.deleteComment(index),
-                      ),
-                  ],
-                );
-              },
-            );
-          }),
-        ),
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border(top: BorderSide(color: AppColors.divider)),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller.commentController,
-                  decoration: InputDecoration(
-                    hintText: '댓글을 남겨보세요',
-                    hintStyle: const TextStyle(
-                        fontSize: 14, color: AppColors.inactive),
-                    filled: true,
-                    fillColor: AppColors.cardBg,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  maxLines: null,
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (_) => controller.addComment(),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Obx(() => GestureDetector(
-                onTap: controller.isAddingComment.value
-                    ? null
-                    : controller.addComment,
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: controller.commentTextLength.value == 0
-                        ? AppColors.inactive
-                        : AppColors.main,
-                    shape: BoxShape.circle,
-                  ),
-                  child: controller.isAddingComment.value
-                      ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2))
-                      : const Icon(Icons.send,
-                      color: Colors.white, size: 18),
-                ),
-              )),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

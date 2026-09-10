@@ -178,7 +178,7 @@ class AlbumMenuSheet extends StatelessWidget {
         ),
         content: Text(
           isDelete
-              ? '앨범을 삭제하면 모든 사진과 댓글을 더 이상 볼 수 없습니다.\n정말 삭제하시겠습니까?'
+              ? '앨범을 삭제하면 모든 사진을 더 이상 볼 수 없습니다.\n정말 삭제하시겠습니까?'
               : '앨범에서 나가면 더 이상 사진을 볼 수 없습니다.\n정말 나가시겠습니까?',
           style: const TextStyle(
             fontSize: 14,

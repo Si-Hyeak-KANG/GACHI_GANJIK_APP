@@ -39,14 +39,12 @@ class NetworkException implements Exception {
     'PERMISSION_DENIED': '권한이 없습니다',
     'NOT_ALBUM_MEMBER': '앨범 멤버가 아닙니다',
     'NOT_PHOTO_OWNER': '사진 업로더가 아닙니다',
-    'NOT_COMMENT_OWNER': '본인의 댓글만 삭제할 수 있습니다',
     'ONLY_OWNER_CAN_PROMOTE': '앨범 소유자만 관리자를 지정할 수 있습니다',
     'CANNOT_CHANGE_OWNER_ROLE': '앨범 소유자의 역할은 변경할 수 없습니다',
     'CANNOT_PROMOTE_GUEST': 'GUEST는 관리자로 승격할 수 없습니다',
     // 리소스 없음
     'ALBUM_NOT_FOUND': '앨범을 찾을 수 없습니다',
     'PHOTO_NOT_FOUND': '사진을 찾을 수 없습니다',
-    'COMMENT_NOT_FOUND': '댓글을 찾을 수 없습니다',
     'GUEST_NOT_FOUND': 'GUEST 정보를 찾을 수 없습니다',
     'INVALID_INVITE_CODE': '유효하지 않은 초대 코드입니다',
     // 중복/충돌

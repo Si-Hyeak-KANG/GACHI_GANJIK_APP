@@ -49,20 +49,6 @@ class ApiConstants {
       '/albums/$albumId/photos/$photoId';
 
   // ─────────────────────────────────────────
-  // Comment 엔드포인트
-  // ─────────────────────────────────────────
-  static String photoComments(String albumId, String photoId) =>
-      '/albums/$albumId/photos/$photoId/comments';
-  static String commentDetail(String albumId, String photoId, String commentId) =>
-      '/albums/$albumId/photos/$photoId/comments/$commentId';
-
-  // ─────────────────────────────────────────
-  // Reaction 엔드포인트
-  // ─────────────────────────────────────────
-  static String photoLike(String albumId, String photoId) =>
-      '/albums/$albumId/photos/$photoId/like';
-
-  // ─────────────────────────────────────────
   // Timeout
   // ─────────────────────────────────────────
   static const Duration connectTimeout = Duration(seconds: 30);

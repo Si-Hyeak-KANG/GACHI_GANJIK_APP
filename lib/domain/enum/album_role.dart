@@ -6,7 +6,7 @@ enum AlbumRole {
   /// 관리자 (생성자가 권한 부여, 공유/설정 가능)
   admin,
 
-  /// 일반 회원 (사진 업로드/댓글 작성)
+  /// 일반 회원 (사진 업로드)
   member,
 
   /// 비회원 (링크로 접근, 조회만 가능)
@@ -23,9 +23,6 @@ extension AlbumRoleExtension on AlbumRole {
 
   /// 사진 업로드 권한 여부
   bool get canUpload => this != AlbumRole.guest;
-
-  /// 댓글 작성 권한 여부
-  bool get canComment => this != AlbumRole.guest;
 
   /// 역할 표시 텍스트
   String get displayName {

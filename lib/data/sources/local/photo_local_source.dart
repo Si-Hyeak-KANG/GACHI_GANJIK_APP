@@ -34,8 +34,6 @@ class PhotoLocalSource {
       ..uploaderNickname = dto.uploaderNickname
       ..uploaderProfileImageUrl = dto.uploaderProfileImageUrl
       ..createdAt = DateTime.parse(dto.createdAt)
-      ..likeCount = dto.likeCount
-      ..commentCount = dto.commentCount
       ..status = 'synced';
   }
 
@@ -52,8 +50,6 @@ class PhotoLocalSource {
       uploaderNickname: local.uploaderNickname,
       uploaderProfileImageUrl: local.uploaderProfileImageUrl,
       createdAt: local.createdAt.toIso8601String(),
-      likeCount: local.likeCount,
-      commentCount: local.commentCount,
     );
   }
 }

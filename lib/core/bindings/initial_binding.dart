@@ -2,27 +2,20 @@ import 'package:get/get.dart';
 import '../../core/services/sync_service.dart';
 import '../../data/repositories/album_repository_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
-import '../../data/repositories/comment_repository_impl.dart';
 import '../../data/repositories/photo_repository_impl.dart';
 import '../../data/repositories/user_repository_impl.dart';
 import '../../data/sources/firebase/firebase_storage_source.dart';
 import '../../data/sources/local/photo_local_source.dart';
 import '../../data/sources/remote/album_remote_source.dart';
 import '../../data/sources/remote/auth_remote_source.dart';
-import '../../data/sources/remote/comment_remote_source.dart';
 import '../../data/sources/remote/mock/mock_album_remote_source.dart';
 import '../../data/sources/remote/mock/mock_auth_remote_source.dart';
-import '../../data/sources/remote/mock/mock_comment_remote_source.dart';
 import '../../data/sources/remote/mock/mock_photo_remote_source.dart';
-import '../../data/sources/remote/mock/mock_reaction_remote_source.dart';
 import '../../data/sources/remote/mock/mock_user_remote_source.dart';
 import '../../data/sources/remote/photo_remote_source.dart';
-import '../../data/sources/remote/reaction_remote_source.dart';
 import '../../data/sources/remote/real/real_album_remote_source.dart';
 import '../../data/sources/remote/real/real_auth_remote_source.dart';
-import '../../data/sources/remote/real/real_comment_remote_source.dart';
 import '../../data/sources/remote/real/real_photo_remote_source.dart';
-import '../../data/sources/remote/real/real_reaction_remote_source.dart';
 import '../../data/sources/remote/real/real_user_remote_source.dart';
 import '../../data/sources/remote/user_remote_source.dart';
 import '../../data/repositories/guest_repository_impl.dart';
@@ -32,7 +25,6 @@ import '../../data/sources/remote/real/real_guest_remote_source.dart';
 import '../../domain/repositories/guest_repository.dart';
 import '../../domain/repositories/album_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../../domain/repositories/comment_repository.dart';
 import '../../domain/repositories/photo_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../presentation/controllers/auth/auth_controller.dart';
@@ -81,17 +73,11 @@ class InitialBinding extends Bindings {
 
     final photoRepo = PhotoRepositoryImpl(
       remoteSource: Get.find(),
-      reactionRemoteSource: Get.find(),
       localSource: Get.find(),
       storageSource: Get.find(),
     );
     Get.put<PhotoRepository>(photoRepo, permanent: true);
     Get.put<PhotoRepositoryImpl>(photoRepo, permanent: true);
-
-    Get.lazyPut<CommentRepository>(
-          () => CommentRepositoryImpl(remoteSource: Get.find()),
-      fenix: true,
-    );
 
     Get.lazyPut<UserRepository>(
           () => UserRepositoryImpl(
@@ -153,8 +139,6 @@ class InitialBinding extends Bindings {
     Get.put<AuthRemoteSource>(MockAuthRemoteSource(), permanent: true);
     Get.put<AlbumRemoteSource>(MockAlbumRemoteSource(), permanent: true);
     Get.put<PhotoRemoteSource>(MockPhotoRemoteSource(), permanent: true);
-    Get.put<ReactionRemoteSource>(MockReactionRemoteSource(), permanent: true);
-    Get.put<CommentRemoteSource>(MockCommentRemoteSource(), permanent: true);
     Get.put<UserRemoteSource>(MockUserRemoteSource(), permanent: true);
     Get.put<GuestRemoteSource>(MockGuestRemoteSource(), permanent: true);
   }
@@ -181,16 +165,6 @@ class InitialBinding extends Bindings {
     // Phase 4 완료: Photo Real
     Get.put<PhotoRemoteSource>(
       RealPhotoRemoteSource(dioClient: Get.find()),
-      permanent: true,
-    );
-    // Phase 5 대기: Mock 유지
-    Get.put<CommentRemoteSource>(
-      RealCommentRemoteSource(dioClient: Get.find()),
-      permanent: true,
-    );
-
-    Get.put<ReactionRemoteSource>(
-      RealReactionRemoteSource(dioClient: Get.find()),
       permanent: true,
     );
 

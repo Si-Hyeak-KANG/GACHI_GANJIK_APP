@@ -15,8 +15,6 @@ class PhotoDto {
   final String? uploaderProfileImageUrl;
 
   final String createdAt;
-  final int likeCount;
-  final int commentCount;
 
   PhotoDto({
     required this.id,
@@ -31,8 +29,6 @@ class PhotoDto {
     required this.uploaderNickname,
     this.uploaderProfileImageUrl,
     required this.createdAt,
-    this.likeCount = 0,
-    this.commentCount = 0,
   });
 
   factory PhotoDto.fromJson(Map<String, dynamic> json) {
@@ -63,8 +59,6 @@ class PhotoDto {
       (json['uploaderNickname'] ?? uploader['nickname']) as String? ?? '',
       uploaderProfileImageUrl: profileImage,
       createdAt: json['uploadDt'] as String? ?? json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
-      likeCount: json['likeCount'] as int? ?? 0,
-      commentCount: json['commentCount'] as int? ?? 0,
     );
   }
 
@@ -81,62 +75,6 @@ class PhotoDto {
       uploaderNickname: uploaderNickname,
       uploaderProfileImageUrl: uploaderProfileImageUrl,
       createdAt: DateTime.parse(createdAt),
-      likeCount: likeCount,
-      commentCount: commentCount,
-    );
-  }
-}
-
-class CommentDto {
-  final String commentId;
-  final String photoId;
-  final String userId;
-  final String nickname;
-  final String? profileImageUrl;
-  final String content;
-  final String createdAt;
-  final bool isMine;
-
-  CommentDto({
-    required this.commentId,
-    required this.photoId,
-    required this.userId,
-    required this.nickname,
-    this.profileImageUrl,
-    required this.content,
-    required this.createdAt,
-    this.isMine = false,
-  });
-
-  factory CommentDto.fromJson(Map<String, dynamic> json) {
-    return CommentDto(
-      commentId: json['commentId']?.toString() ?? '',
-      photoId: json['photoId']?.toString() ?? '',
-      userId: json['authorId']?.toString() ?? '',
-      nickname: json['nickname'] as String? ?? '',
-      profileImageUrl: json['profileImageUrl'] as String?,
-      content: json['content'] as String,
-      createdAt: json['createdAt'] as String,
-      isMine: json['isMine'] as bool? ?? false,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'content': content,
-    };
-  }
-
-  Comment toEntity() {
-    return Comment(
-      commentId: commentId,
-      photoId: photoId,
-      userId: userId,
-      nickname: nickname,
-      profileImageUrl: profileImageUrl,
-      content: content,
-      createdAt: DateTime.parse(createdAt),
-      isMine: isMine,
     );
   }
 }

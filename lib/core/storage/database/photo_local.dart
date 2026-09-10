@@ -22,8 +22,6 @@ class PhotoLocal {
   String? uploaderProfileImageUrl;
 
   late DateTime createdAt;
-  int likeCount = 0;
-  int commentCount = 0;
 
   @Index()
   String status = 'synced';         // synced, pending, failed

@@ -11,21 +11,17 @@ import '../models/photo/upload_photo_request.dart';
 import '../sources/firebase/firebase_storage_source.dart';
 import '../sources/local/photo_local_source.dart';
 import '../sources/remote/photo_remote_source.dart';
-import '../sources/remote/reaction_remote_source.dart';
 
 class PhotoRepositoryImpl implements PhotoRepository {
   final PhotoRemoteSource _remoteSource;
-  final ReactionRemoteSource _reactionRemoteSource;
   final PhotoLocalSource _localSource;
   final FirebaseStorageSource _storageSource;
 
   PhotoRepositoryImpl({
     required PhotoRemoteSource remoteSource,
-    required ReactionRemoteSource reactionRemoteSource,
     required PhotoLocalSource localSource,
     required FirebaseStorageSource storageSource,
   })  : _remoteSource = remoteSource,
-        _reactionRemoteSource = reactionRemoteSource,
         _localSource = localSource,
         _storageSource = storageSource;
 
@@ -115,10 +111,6 @@ class PhotoRepositoryImpl implements PhotoRepository {
     await _remoteSource.updatePhotoMessage(albumId, photoId, message);
   }
 
-  Future<ReactionResult> toggleLike(String albumId, String photoId) async {
-    return await _reactionRemoteSource.toggleLike(albumId, photoId);
-  }
-
   // ========== Private ==========
 
   /// 업로드 배치 단위로 그룹화.
@@ -177,8 +169,6 @@ class PhotoRepositoryImpl implements PhotoRepository {
       ..uploaderNickname = _currentUserNickname
       ..uploaderProfileImageUrl = null
       ..createdAt = now
-      ..likeCount = 0
-      ..commentCount = 0
       ..status = 'pending'
       ..localPath = imageFile.path
       ..retryCount = 0
@@ -198,8 +188,6 @@ class PhotoRepositoryImpl implements PhotoRepository {
       uploaderNickname: _currentUserNickname,
       uploaderProfileImageUrl: null,
       createdAt: now,
-      likeCount: 0,
-      commentCount: 0,
     );
   }
 }

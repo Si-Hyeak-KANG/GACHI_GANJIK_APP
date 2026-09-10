@@ -13,8 +13,6 @@ class Photo {
   final String? uploaderProfileImageUrl;
 
   final DateTime createdAt;
-  final int likeCount;
-  final int commentCount;
 
   Photo({
     required this.id,
@@ -28,8 +26,6 @@ class Photo {
     required this.uploaderNickname,
     this.uploaderProfileImageUrl,
     required this.createdAt,
-    this.likeCount = 0,
-    this.commentCount = 0,
   });
 
   String get photoDateDisplay => photoDate.replaceAll('-', '.');
@@ -43,34 +39,4 @@ class Photo {
   String get dateOnly => photoDateDisplay;
 
   String get uploaderInitial => uploaderNickname.isNotEmpty ? uploaderNickname[0] : '?';
-}
-
-class Comment {
-  final String commentId;
-  final String photoId;
-  final String userId;
-  final String nickname;
-  final String? profileImageUrl;
-  final String content;
-  final DateTime createdAt;
-  final bool isMine;
-
-  Comment({
-    required this.commentId,
-    required this.photoId,
-    required this.userId,
-    required this.nickname,
-    this.profileImageUrl,
-    required this.content,
-    required this.createdAt,
-    this.isMine = false,
-  });
-
-  String get createdAtDisplay {
-    final date = createdAt.toLocal();
-    return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')} '
-        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-  }
-
-  String get initial => nickname.isNotEmpty ? nickname[0] : '?';
 }
