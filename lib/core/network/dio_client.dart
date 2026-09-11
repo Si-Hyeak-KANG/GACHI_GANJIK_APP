@@ -259,27 +259,31 @@ class DioClient {
       default:
         if (statusCode == 401) {
           return NetworkException(
-            message: '인증이 필요합니다. 다시 로그인해주세요.',
+            message: errorMessage ?? '인증이 필요합니다. 다시 로그인해주세요.',
             type: NetworkExceptionType.unauthorized,
             statusCode: statusCode,
+            errorCode: errorCode,
           );
         } else if (statusCode == 403) {
           return NetworkException(
             message: errorMessage ?? '접근 권한이 없습니다.',
             type: NetworkExceptionType.forbidden,
             statusCode: statusCode,
+            errorCode: errorCode,
           );
         } else if (statusCode == 404) {
           return NetworkException(
             message: errorMessage ?? '요청한 리소스를 찾을 수 없습니다.',
             type: NetworkExceptionType.notFound,
             statusCode: statusCode,
+            errorCode: errorCode,
           );
         }
         return NetworkException(
           message: errorMessage ?? '서버 오류가 발생했습니다.',
           type: NetworkExceptionType.serverError,
           statusCode: statusCode,
+          errorCode: errorCode,
         );
     }
   }
