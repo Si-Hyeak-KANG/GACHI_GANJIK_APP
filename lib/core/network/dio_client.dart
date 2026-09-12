@@ -255,6 +255,13 @@ class DioClient {
           statusCode: statusCode,
           errorCode: errorCode,
         );
+      case 'GUEST_NOT_ALLOWED':
+        return NetworkException(
+          message: '게스트는 이용할 수 없는 기능입니다. 회원가입 또는 로그인 후 이용해주세요.',
+          type: NetworkExceptionType.forbidden,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
 // ─────────────────────────────────────────────────
       default:
         if (statusCode == 401) {

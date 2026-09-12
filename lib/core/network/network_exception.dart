@@ -54,6 +54,7 @@ class NetworkException implements Exception {
     'ALREADY_JOINED': '이미 참여 중인 앨범입니다',
     'DUPLICATE_GUEST_KEY': '이미 사용 중인 GUEST KEY입니다',
     'GUEST_ALREADY_CONVERTED': '이미 회원으로 전환된 GUEST KEY입니다',
+    'GUEST_NOT_ALLOWED': '게스트는 이용할 수 없는 기능입니다. 회원가입 또는 로그인 후 이용해주세요',
     // 파일
     'INVALID_FILE_TYPE': '지원하지 않는 파일 형식입니다 (JPEG, PNG, HEIC, WebP)',
     'FILE_SIZE_EXCEEDED': '파일 크기가 초과되었습니다 (최대 10MB)',
