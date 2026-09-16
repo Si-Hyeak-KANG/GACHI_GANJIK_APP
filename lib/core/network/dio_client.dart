@@ -202,6 +202,14 @@ class DioClient {
           statusCode: statusCode,
           errorCode: errorCode,
         );
+      case 'OWNER_CANNOT_LEAVE_ALBUM':
+        return NetworkException(
+          message: '앨범 소유자(OWNER)는 이 앨범을 나갈 수 없습니다. '
+              '먼저 다른 멤버에게 소유권을 이전해주세요.',
+          type: NetworkExceptionType.forbidden,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
     // ── Phase 12: Photos ──────────────────────────────
       case 'NOT_PHOTO_OWNER':
         return NetworkException(
