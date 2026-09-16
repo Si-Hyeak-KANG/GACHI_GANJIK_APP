@@ -262,6 +262,13 @@ class DioClient {
           statusCode: statusCode,
           errorCode: errorCode,
         );
+      case 'RESOURCE_NOT_FOUND':
+        return NetworkException(
+          message: '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+          type: NetworkExceptionType.notFound,
+          statusCode: statusCode,
+          errorCode: errorCode,
+        );
 // ─────────────────────────────────────────────────
       default:
         if (statusCode == 401) {

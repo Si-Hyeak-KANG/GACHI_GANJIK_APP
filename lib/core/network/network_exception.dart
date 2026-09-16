@@ -49,6 +49,7 @@ class NetworkException implements Exception {
     'PHOTO_NOT_FOUND': '사진을 찾을 수 없습니다',
     'GUEST_NOT_FOUND': 'GUEST 정보를 찾을 수 없습니다',
     'INVALID_INVITE_CODE': '유효하지 않은 초대 코드입니다',
+    'RESOURCE_NOT_FOUND': '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요',
     // 중복/충돌
     'EMAIL_ALREADY_EXISTS': '이미 사용 중인 이메일입니다',
     'ALREADY_JOINED': '이미 참여 중인 앨범입니다',
